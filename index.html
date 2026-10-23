@@ -849,14 +849,14 @@ function openFaceFusion(){
     try{
       var data=new FormData();data.append('template_image',template);data.append('user_image',user);
       var started=await supabaseClient.functions.invoke('face-fusion',{body:data});
-      if(started.error)throw new Error(started.data?.error||started.error.message||'Could not start Face Fusion.');
+      if(started.error){var msg=started.data?.error||started.error.message;try{var detail=await started.error.context.json();msg=detail.error||detail.message||msg;}catch(_){}throw new Error(msg||'Could not start Face Fusion.');}
       var job=started.data||{};
       if(job.error)throw new Error(job.error);
       for(var attempt=0;!job.output&&job.status!=='succeeded'&&job.status!=='failed'&&job.status!=='canceled'&&attempt<50;attempt++){
         setStatus('Blending facial features with AI… '+(attempt+1)+'/50');
         await new Promise(function(resolve){setTimeout(resolve,2000)});
         var polled=await supabaseClient.functions.invoke('face-fusion',{body:{action:'status',prediction_id:job.id}});
-        if(polled.error)throw new Error(polled.data?.error||polled.error.message||'Could not check Face Fusion progress.');
+        if(polled.error){var msg=polled.data?.error||polled.error.message;try{var detail=await polled.error.context.json();msg=detail.error||detail.message||msg;}catch(_){}throw new Error(msg||'Could not check Face Fusion progress.');}
         job=polled.data||{};
         if(job.error)throw new Error(job.error);
       }

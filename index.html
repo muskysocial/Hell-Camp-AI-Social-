@@ -1211,6 +1211,7 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
   finally{submit.disabled=false;submit.textContent='🤖 Validate & publish eligible job'}
  },true);
  document.addEventListener('click',function(e){var p=e.target&&e.target.closest?e.target.closest('[data-page]'):null;if(p&&p.getAttribute('data-page')==='Jobs')setTimeout(function(){if(typeof window.loadJobImportStatus==='function')window.loadJobImportStatus()},250)});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshUnreadNotificationDot();});setInterval(refreshUnreadNotificationDot,30000);
 })();
 </script>
 <style id="hc-live-notification-dot">.hc-notification-button{position:relative!important}.hc-notification-dot{position:absolute;right:5px;top:4px;width:9px;height:9px;border-radius:50%;background:#ef3340;border:2px solid var(--surface,#fff);box-shadow:0 0 0 1px rgba(239,51,64,.12);display:inline-block}.hc-notification-dot[hidden]{display:none!important}.hc-notification-drawer-dot{position:relative;right:auto;top:auto;margin-left:auto;flex:0 0 9px}</style>

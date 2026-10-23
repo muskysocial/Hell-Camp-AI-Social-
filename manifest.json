@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Hell Camp",
+  "short_name": "Hell Camp",
+  "description": "Hell Camp social community and marketplace",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3f7fa",
+  "theme_color": "#0799c5",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

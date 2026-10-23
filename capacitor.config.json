@@ -1,0 +1,6 @@
+{
+  "appId": "com.hellcamp.social",
+  "appName": "Hell Camp",
+  "webDir": "www",
+  "server": { "androidScheme": "https" }
+}

@@ -771,7 +771,7 @@ function openHelldevelHeadSwap(){
       var response=await supabaseClient.functions.invoke('helldevel-headswap',{body:data});
       if(response.error)throw new Error(response.data?.error||response.error.message||'Could not connect to Helldevel HeadSwap.');
       if(response.data?.error)throw new Error(response.data.error);
-      var out=response.data?.image_url;if(!out||!/^https?:\\/\\//i.test(out))throw new Error('The AI service did not return an image link.');
+      var out=response.data?.image_url;if(!out||!(out.startsWith('https://')||out.startsWith('http://')))throw new Error('The AI service did not return an image link.');
       setStatus('Head swap complete!');
       resultBox.style.display='block';resultBox.innerHTML='<h3>Your Helldevel result</h3><img alt="Helldevel HeadSwap result" src="'+esc(out)+'" style="display:block;width:100%;max-height:440px;object-fit:contain;border-radius:12px;background:#000"><p><a href="'+esc(out)+'" target="_blank" rel="noopener noreferrer" style="color:#c59aff;font-weight:700">Open or download image ↗</a></p>';
       submit.textContent='Create another head swap';

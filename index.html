@@ -785,10 +785,10 @@ function openHelldevelHeadSwap(){
       if(response.data?.error)throw new Error(response.data.error);
       if(!response.data?.ok)throw new Error('The head-swap service returned an unexpected response. Please retry.');
       var out=response.data?.image_url;if(!out||!(out.startsWith('https://')||out.startsWith('http://')||out.startsWith('data:image/')))throw new Error('The AI service did not return an image link.');
-      setStatus(isFaceSwap?'Face swap complete!':'Head swap complete!');
+      setStatus('Helldevel HeadSwap complete!');
       resultBox.style.display='block';resultBox.innerHTML='<h3>Your Helldevel result</h3><img alt="Helldevel HeadSwap result" src="'+esc(out)+'" style="display:block;width:100%;max-height:440px;object-fit:contain;border-radius:12px;background:#000"><p><a href="'+esc(out)+'" target="_blank" rel="noopener noreferrer" style="color:#c59aff;font-weight:700">Open or download image ↗</a></p>';
       submit.textContent='Create another head swap';
-    }catch(err){setStatus('Could not finish '+(isFaceSwap?'face swap':'head swap')+': '+(err&&err.message||'Please try again.'));}
+    }catch(err){setStatus('Could not finish Helldevel HeadSwap: '+(err&&err.message||'Please try again.'));}
     finally{submit.disabled=false;}
   });
 }
@@ -960,5 +960,23 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
  .sub,.muted,p,li{font-size:16px}
  .mobile button{font-size:13px!important}
 }
-</style>
+/* Light glass treatment for photo-swap tools: rounded cards, readable dark text */
+.hc-ai-space{color:#30243a!important}
+.hc-ai-hero{border:1px solid rgba(167,139,250,.3)!important;border-radius:30px!important;background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(245,236,255,.82))!important;color:#30243a!important;box-shadow:0 12px 34px rgba(78,45,110,.08)!important}
+.hc-ai-hero h1,.hc-ai-hero small,.hc-ai-hero p{color:#30243a!important}
+.hc-ai-tools-grid .hc-ai-tool{color:#30243a!important;border:1px solid rgba(168,130,205,.32)!important;border-radius:26px!important;background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(244,235,255,.76))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 8px 22px rgba(71,40,100,.08)!important}
+.hc-ai-tool-info b,.hc-ai-tool-arrow{color:#38274a!important}
+.hc-ai-tool-info small,.hc-ai-tool-info em,.hc-ai-note{color:#6d5b7b!important}
+.hc-pink-modal,#hcHeadSwapModal .hc-pink-modal,#hcHelldevelHeadSwapModal .hc-pink-modal{color:#30243a!important;border:1px solid rgba(174,145,207,.38)!important;border-radius:30px!important;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(247,240,255,.94))!important;box-shadow:0 24px 80px rgba(44,22,64,.2),inset 0 1px 0 #fff!important}
+#hcHeadSwapModal .hc-pink-modal h2,#hcHeadSwapModal .hc-pink-modal h3,#hcHelldevelHeadSwapModal .hc-pink-modal h2,#hcHelldevelHeadSwapModal .hc-pink-modal h3{color:#30243a!important}
+#hcHeadSwapModal .hc-pink-modal p,#hcHelldevelHeadSwapModal .hc-pink-modal p{color:#665572!important}
+.hc-pink-photo-card,.hc-pink-result-card{border:1px solid rgba(169,137,202,.32)!important;border-radius:25px!important;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(245,236,255,.78))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 8px 20px rgba(62,35,88,.06)!important;color:#30243a!important}
+.hc-pink-photo-label{color:#352542!important}
+.hc-pink-photo-label small{color:#766382!important}
+.hc-pink-photo-preview{border:1px dashed rgba(133,100,163,.48)!important;border-radius:21px!important;background:rgba(255,255,255,.65)!important;color:#38274a!important}
+.hc-pink-photo-preview span,.hc-pink-result-placeholder span{color:#8d5bb5!important}
+.hc-pink-photo-preview small{color:#766382!important}
+.hc-pink-file{border:1px solid rgba(153,120,183,.36)!important;border-radius:17px!important;background:rgba(255,255,255,.82)!important;color:#30243a!important}
+.hc-pink-result-placeholder{border:1px dashed rgba(133,100,163,.42)!important;border-radius:21px!important;color:#594666!important;background:rgba(255,255,255,.55)!important}
+#hcHeadSwapModal #hcHeadStatus,#hcHelldevelHeadSwapModal #hcHelldevelHeadSwapStatus{background:rgba(238,228,248,.9)!important;color:#392747!important}</style>
 </body></html>

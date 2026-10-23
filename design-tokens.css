@@ -1,0 +1,14 @@
+/* Hell Camp approved design tokens — shared by all screens */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Yellowtail&display=swap');
+:root{
+ --hc-bg:#070912;--hc-bg-deep:#05060f;--hc-panel:#0f1124;--hc-panel-raised:#14172b;
+ --hc-border:rgba(255,255,255,.08);--hc-text:#f8f8ff;--hc-muted:#9ca3c7;
+ --hc-purple:#8b3dff;--hc-purple-bright:#a855f7;--hc-pink:#ff5bbd;--hc-cyan:#22d3ee;--hc-red:#f43f5e;
+ --hc-green:#34d399;--hc-orange:#fb923c;--hc-yellow:#facc15;
+ --hc-gradient:linear-gradient(135deg,var(--hc-purple),var(--hc-pink));
+ --hc-glow:0 0 22px rgba(139,61,255,.28);--hc-radius-sm:10px;--hc-radius:15px;--hc-radius-lg:18px;
+ --hc-space-1:4px;--hc-space-2:8px;--hc-space-3:12px;--hc-space-4:16px;--hc-space-5:20px;--hc-space-6:24px;
+ --hc-font:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}html{background:var(--hc-bg-deep);color-scheme:dark}body{margin:0;background:radial-gradient(ellipse at 50% -25%,#1b1034 0,transparent 48%),var(--hc-bg-deep);color:var(--hc-text);font:14px/1.45 var(--hc-font);-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--hc-purple-bright);outline-offset:2px}

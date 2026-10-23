@@ -552,7 +552,10 @@ function datingDirectoryPage(){
 }
 
 function contentPage(type,title,subtitle){
- return heading(title,subtitle||'Official listings published by Hell Camp.')+'<div id="publicContentList"><div class="card"><p class="muted">Loading published listings…</p></div></div>';
+ var importPanel=type==='job'&&authProfile&&authProfile.role==='admin'?'<section class="card hc-job-import-card" style="border:1px solid rgba(168,85,247,.45);background:linear-gradient(145deg,rgba(124,58,237,.13),var(--panel))"><div class="row" style="align-items:flex-start"><div style="font-size:28px">🤖</div><div style="flex:1"><h2 style="margin:0 0 5px">AI WhatsApp Job Importer</h2><p class="muted" style="margin:0 0 10px">Save a Channel link, paste a vacancy update, and AI will screen it and publish eligible jobs automatically.</p></div></div><div class="notice">WhatsApp does not provide Hell Camp with automatic access to Channels you follow. Copy or forward each update here. The AI rejects unclear listings, suspicious fee requests and duplicate posts.</div><label for="hcJobChannelUrl">WhatsApp Channel link</label><input class="field" id="hcJobChannelUrl" type="url" inputmode="url" placeholder="https://whatsapp.com/channel/..." style="margin:6px 0 10px"><button class="btn" id="hcJobSaveSource" type="button">Save Channel link</button><div id="hcJobSourceStatus" class="muted tiny" style="margin:8px 0 14px">Loading source settings…</div><label for="hcJobRawMessage">Paste or forward the complete job update</label><textarea class="field" id="hcJobRawMessage" rows="7" maxlength="12000" placeholder="Paste the job vacancy text here, including the application link and source details…" style="margin:6px 0 10px"></textarea><button class="btn primary" id="hcJobImportSubmit" type="button" style="width:100%">🤖 Validate & publish eligible job</button><div id="hcJobImportResult" aria-live="polite" style="margin-top:10px"></div><h3 style="margin:18px 0 8px">Recent imports</h3><div id="hcJobImportHistory"><p class="muted tiny">Loading import history…</p></div></section>':'';
+ var page=heading(title,subtitle||'Official listings published by Hell Camp.')+importPanel+'<div id="publicContentList"><div class="card"><p class="muted">Loading published listings…</p></div></div>';
+ if(type==='job'&&authProfile&&authProfile.role==='admin'&&typeof loadJobImportStatus==='function')setTimeout(loadJobImportStatus,0);
+ return page;
 }
 async function loadDiscoverPeople(){var h=document.getElementById('discoverPeople');if(!h||!authUser)return;if(!supabaseClient){h.textContent='Profile service unavailable.';return;}var r=await supabaseClient.from('public_member_profiles').select('user_id,display_name,bio,location,avatar_path,latitude,longitude').neq('user_id',authUser.id).order('updated_at',{ascending:false}).limit(100);if(r.error){h.innerHTML='<p>Could not load members: '+esc(r.error.message)+'</p>';return;}var rows=r.data||[];if(!rows.length){h.innerHTML='<p class="muted">No other public profiles yet. Invite a friend to join Hell Camp.</p>';return;}var fr=await supabaseClient.from('member_follows').select('following_id').eq('follower_id',authUser.id).in('following_id',rows.map(x=>x.user_id)),following=new Set((fr.data||[]).map(x=>x.following_id));h.innerHTML=rows.map(p=>'<div class="profile-person"><span class="profile-person-avatar" data-member-avatar="'+p.user_id+'">'+esc((p.display_name||'H').charAt(0).toUpperCase())+'</span><div style="flex:1;min-width:0"><b>'+esc(p.display_name||'Hell Camp member')+'</b><div class="muted tiny">'+esc(p.location||'Hell Camp member')+'</div>'+(typeof p.latitude==='number'&&typeof p.longitude==='number'?'<a class="muted tiny" target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat='+p.latitude+'&mlon='+p.longitude+'#map=13/'+p.latitude+'/'+p.longitude+'">📍 View map</a>':'')+'<p class="muted tiny" style="margin:3px 0">'+esc(p.bio||'')+'</p></div><button class="btn '+(following.has(p.user_id)?'':'primary')+'" data-action="toggleFollow" data-id="'+p.user_id+'">'+(following.has(p.user_id)?'Following ✓':'Follow +')+'</button></div>').join('');for(var p of rows){if(!p.avatar_path)continue;var el=h.querySelector('[data-member-avatar="'+p.user_id+'"]');if(el){var u=await supabaseClient.storage.from('profile-media').createSignedUrl(p.avatar_path,3600);if(!u.error&&u.data){el.style.backgroundImage='url("'+u.data.signedUrl+'")';el.textContent='';}}}}
 async function toggleMemberFollow(uid,button){if(!authUser||!uid||uid===authUser.id)return;button.disabled=true;var exists=await supabaseClient.from('member_follows').select('follower_id').eq('follower_id',authUser.id).eq('following_id',uid).maybeSingle();if(exists.error){alert('Could not check follow status: '+exists.error.message);button.disabled=false;return;}var result=exists.data?await supabaseClient.from('member_follows').delete().eq('follower_id',authUser.id).eq('following_id',uid):await supabaseClient.from('member_follows').insert({follower_id:authUser.id,following_id:uid});if(result.error){alert('Could not update follow: '+result.error.message);button.disabled=false;return;}if(state.page==='Discover')await loadDiscoverPeople();if(state.page==='Creators')await loadCreators();if(state.page==='Profile')await loadMyProfilePage();}
@@ -1191,6 +1194,42 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
   });
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
+
+<script id="hc-ai-job-import-ui">
+(function(){
+ const fn='job-channel-import';
+ function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+ function host(id){return document.getElementById(id)}
+ function showResult(message,ok){var h=host('hcJobImportResult');if(h)h.innerHTML='<div class="'+(ok?'notice':'notice')+'" style="background:'+(ok?'rgba(34,197,94,.12)':'rgba(245,158,11,.12)')+';border-color:'+(ok?'rgba(34,197,94,.45)':'rgba(245,158,11,.4)')+';color:var(--text)">'+escHtml(message)+'</div>'}
+ async function call(body){if(!window.supabaseClient)throw new Error('Hell Camp database is not ready. Refresh and try again.');var r=await supabaseClient.functions.invoke(fn,{body:body});if(r.error)throw new Error((r.data&&r.data.error)||r.error.message||'The job import service could not be reached.');if(r.data&&r.data.error)throw new Error(r.data.error);return r.data||{}}
+ window.loadJobImportStatus=async function(){
+  if(!host('hcJobChannelUrl')||!window.supabaseClient||!window.authUser||!window.authProfile||authProfile.role!=='admin')return;
+  try{var d=await call({action:'status'});var input=host('hcJobChannelUrl');if(input&&d.setting&&d.setting.source_channel_url)input.value=d.setting.source_channel_url;var st=host('hcJobSourceStatus');if(st)st.textContent=d.setting&&d.setting.enabled?'Channel link saved. Copy/forward a job update below to run AI screening.':'Add and save the WhatsApp Channel link to get started.';var hist=host('hcJobImportHistory');if(hist){var rows=d.recent||[];hist.innerHTML=rows.length?rows.map(function(x){var j=x.parsed_job||{};return '<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>'+escHtml(j.title||'Job import')+'</b><div class="muted tiny">'+escHtml(x.status)+' · '+escHtml(new Date(x.created_at).toLocaleString())+'</div>'+(x.reason?'<div class="muted tiny">'+escHtml(x.reason)+'</div>':'')+'</div>'}).join(''):'<p class="muted tiny">No jobs imported yet.</p>'}}
+  catch(e){var st=host('hcJobSourceStatus');if(st)st.textContent=e.message||'Could not load job import settings.'}
+ };
+ document.addEventListener('click',async function(e){
+  var save=e.target&&e.target.closest?e.target.closest('#hcJobSaveSource'):null;
+  var submit=e.target&&e.target.closest?e.target.closest('#hcJobImportSubmit'):null;
+  if(!save&&!submit)return;
+  e.preventDefault();
+  if(!window.authUser||!window.authProfile||authProfile.role!=='admin'){showResult('Only the Hell Camp administrator can use this importer.',false);return}
+  if(save){
+   save.disabled=true;save.textContent='Saving…';
+   try{var url=(host('hcJobChannelUrl').value||'').trim();var d=await call({action:'configure',source_channel_url:url});var st=host('hcJobSourceStatus');if(st)st.textContent=d.enabled?'Channel link saved. Paste each job update below.':'Channel link cleared.';showResult(d.note||'Source settings saved.',true)}
+   catch(err){showResult(err.message||'Could not save source settings.',false)}
+   finally{save.disabled=false;save.textContent='Save Channel link'}
+   return;
+  }
+  var raw=(host('hcJobRawMessage').value||'').trim();
+  if(raw.length<50){showResult('Paste the complete job update first (at least 50 characters).',false);return}
+  submit.disabled=true;submit.textContent='AI is checking the job…';showResult('Checking the employer details, application method, scam signals and duplicates. This can take a moment.',true);
+  try{var d=await call({action:'ingest',raw_message:raw,source_channel_url:(host('hcJobChannelUrl').value||'').trim()});if(d.duplicate){showResult(d.message||'This update has already been processed.',true)}else if(d.status==='published'){var j=d.job||{};showResult('Published to Hell Camp Jobs: '+(j.title||'Job')+' at '+(j.company||'the listed employer')+'. Please still verify the employer before applying.',true);host('hcJobRawMessage').value='';await loadJobImportStatus();if(typeof loadPublicContent==='function')loadPublicContent('job')}else{showResult(d.reason||d.message||'This job did not pass automatic publishing checks.',false);await loadJobImportStatus()}}
+  catch(err){showResult(err.message||'Job import failed. Try again.',false)}
+  finally{submit.disabled=false;submit.textContent='🤖 Validate & publish eligible job'}
+ },true);
+ document.addEventListener('click',function(e){var p=e.target&&e.target.closest?e.target.closest('[data-page]'):null;if(p&&p.getAttribute('data-page')==='Jobs')setTimeout(function(){if(typeof window.loadJobImportStatus==='function')window.loadJobImportStatus()},250)});
 })();
 </script>
 </body></html>

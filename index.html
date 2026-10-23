@@ -1130,4 +1130,40 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
 .hc-demo-real-posts-heading{margin-top:24px}
 @media(max-width:600px){.hc-demo-brand-post{padding:13px}.hc-demo-engagement{gap:9px}.hc-demo-brand-intro{padding:15px}}
 </style>
+
+<script id="hc-runtime-recovery">
+(function(){
+  'use strict';
+  function showRecovery(message){
+    var view=document.getElementById('view');
+    if(!view)return;
+    if(view.innerHTML&&view.innerHTML.trim()&&view.textContent.trim())return;
+    view.innerHTML='<section style="margin:18px 0;padding:20px;border:1px solid #a78bfa;border-radius:18px;background:var(--panel,#fff);color:var(--text,#222)"><h2 style="margin-top:0">Hell Camp is recovering</h2><p>The page did not finish displaying. You can retry without losing your account.</p><p style="font-size:12px;opacity:.8;overflow-wrap:anywhere">'+String(message||'App startup did not complete').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})+'</p><button type="button" id="hcRecoveryRetry" style="padding:12px 18px;border:0;border-radius:12px;background:#8b5cf6;color:white;font-weight:700">Reload Hell Camp</button></section>';
+    var b=document.getElementById('hcRecoveryRetry');
+    if(b)b.onclick=function(){location.reload()};
+  }
+  window.addEventListener('error',function(e){console.error('Hell Camp runtime error:',e.message,e.filename,e.lineno);setTimeout(function(){var v=document.getElementById('view');if(v&&(!v.innerHTML.trim()||!v.textContent.trim()))showRecovery(e.message||'A script error stopped the page');},0);});
+  window.addEventListener('unhandledrejection',function(e){console.error('Hell Camp startup error:',e.reason);setTimeout(function(){var v=document.getElementById('view');if(v&&(!v.innerHTML.trim()||!v.textContent.trim()))showRecovery(e.reason&&e.reason.message||'A startup request failed');},0);});
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('[data-page]'):null;
+    if(!b)return;
+    setTimeout(function(){
+      var v=document.getElementById('view');
+      if(v&&(!v.innerHTML.trim()||!v.textContent.trim())){
+        var page=b.getAttribute('data-page')||'Home';
+        try{
+          if(window.state)window.state.page=page;
+          if(typeof window.render==='function')window.render();
+        }catch(err){showRecovery(err.message||'Navigation failed');}
+      }
+    },250);
+  },true);
+  window.addEventListener('load',function(){
+    setTimeout(function(){
+      var v=document.getElementById('view');
+      if(v&&(!v.innerHTML.trim()||!v.textContent.trim()))showRecovery('The app shell loaded, but its main content stayed empty. Try reloading after the update.');
+    },5000);
+  });
+})();
+</script>
 </body></html>

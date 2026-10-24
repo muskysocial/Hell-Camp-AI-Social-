@@ -1475,6 +1475,34 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   host.innerHTML=rows.length?rows.map(function(x){var ex=x.extra||{};var next=x.status==='published'?'draft':'published';var label=x.status==='published'?'Move to draft':'Publish job';return '<article class="card" style="padding:12px;margin-top:10px"><div class="row spread" style="align-items:flex-start"><div style="min-width:0"><b>'+escapeHtml(x.title)+'</b><div class="muted tiny">'+escapeHtml(ex.company||'Employer not set')+' · '+escapeHtml(x.status)+' · '+escapeHtml(x.category||'Job')+'</div></div><button class="btn" data-hc-job-status="'+escapeHtml(x.id)+'" data-next-status="'+next+'">'+label+'</button></div></article>'}).join(''):'<p class="muted tiny">No job posts yet. Use the form above to add your first job.</p>';
  }
  function escapeHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+ document.addEventListener('click',async function(e){
+  var aiBtn=e.target&&e.target.closest?e.target.closest('#hcJobExperienceAnalyze'):null;
+  if(!aiBtn)return;
+  e.preventDefault();
+  if(!isOwner()){alert('Only the authorized administrator can use this tool.');return}
+  var title=(el('hcJobTitle')&&el('hcJobTitle').value||'').trim();
+  var desc=(el('hcJobDescription')&&el('hcJobDescription').value||'').trim();
+  var reqs=(el('hcJobRequirements')&&el('hcJobRequirements').value||'').trim();
+  var advice=el('hcJobExperienceAdvice'),select=el('hcJobExperience');
+  if(title.length<3||desc.length<20){if(advice)advice.textContent='Enter the job title and at least a short description first, then ask AI to analyze it.';return}
+  aiBtn.disabled=true;aiBtn.textContent='Analyzing…';if(advice)advice.textContent='Hell Camp AI is reviewing the responsibilities and requirements…';
+  try{
+   var prompt='You classify the experience level required for a job listing. Choose exactly one option from this list: Not specified; No experience required; Entry-level (0–1 year); Junior (1–2 years); Mid-level (3–5 years); Senior (5+ years); Expert / Lead (8+ years). Do not invent requirements. If there is not enough evidence, choose Not specified. Reply with one JSON object only: {"experience_level":"one exact option","reason":"one concise sentence"}.\\nJOB TITLE: '+title+'\\nDESCRIPTION: '+desc+'\\nREQUIREMENTS: '+reqs;
+   var response=await client().functions.invoke('groq-chat',{body:{messages:[{role:'user',content:prompt}]}});
+   if(response.error)throw new Error((response.data&&response.data.error)||response.error.message||'AI analysis failed');
+   var reply=String((response.data&&response.data.reply)||'').trim();
+   var match=reply.match(/\{[\s\S]*\}/),parsed=null;
+   if(match){try{parsed=JSON.parse(match[0])}catch(_){}}
+   var choices=['Not specified','No experience required','Entry-level (0–1 year)','Junior (1–2 years)','Mid-level (3–5 years)','Senior (5+ years)','Expert / Lead (8+ years)'];
+   var recommended=parsed&&choices.includes(parsed.experience_level)?parsed.experience_level:choices.find(function(x){return reply.indexOf(x)>=0});
+   if(!recommended)throw new Error('AI did not return a recognized experience level. Try again or choose one manually.');
+   select.value=recommended;
+   if(advice)advice.textContent='AI recommendation: '+recommended+'. '+String(parsed&&parsed.reason||'Review the job requirements and change the selection if needed.');
+  }catch(err){if(advice)advice.textContent=(err.message||'AI analysis failed')+' You can still choose the experience level manually.'}
+  finally{aiBtn.disabled=false;aiBtn.textContent='✨ Ask Hell Camp AI to analyze'}
+ });
+
  document.addEventListener('submit',async function(e){
   if(!e.target||e.target.id!=='hcManualJobForm')return;
   e.preventDefault();
@@ -1522,6 +1550,49 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   }
  });
  document.addEventListener('click',function(e){var p=e.target&&e.target.closest?e.target.closest('[data-page="Dashboard"]'):null;if(p)setTimeout(loadList,250)});
+
+ var audienceCache={users:[],guests:[]};
+ function fmtAudienceDate(v){if(!v)return 'Never';try{return new Date(v).toLocaleString()}catch(e){return String(v)}}
+ function renderAudience(){
+  var usersHost=el('hcAudienceUsers'),guestsHost=el('hcAudienceGuests'),stats=el('hcAudienceStats'),status=el('hcAudienceStatus');
+  if(!usersHost||!guestsHost)return;
+  var q=(el('hcAudienceSearch')&&el('hcAudienceSearch').value||'').trim().toLowerCase();
+  var users=audienceCache.users.filter(function(u){return [u.name,u.email,u.role,u.country].join(' ').toLowerCase().includes(q)});
+  var guests=audienceCache.guests.filter(function(g){return [g.visitor_id,g.last_page,g.visit_count].join(' ').toLowerCase().includes(q)});
+  if(stats)stats.innerHTML='<div class="card"><b>Registered users</b><h2>'+audienceCache.users.length+'</h2></div><div class="card"><b>Guest browsers tracked</b><h2>'+audienceCache.guests.length+'</h2></div>';
+  var uc=el('hcAudienceUserCount'),gc=el('hcAudienceGuestCount');if(uc)uc.textContent='('+users.length+')';if(gc)gc.textContent='('+guests.length+')';
+  usersHost.innerHTML=users.length?users.map(function(u){return '<article class="card" style="padding:12px;margin-top:8px"><div class="row spread" style="align-items:flex-start;gap:10px"><div style="min-width:0;overflow-wrap:anywhere"><b>'+escapeHtml(u.name||'Member')+'</b><div>'+escapeHtml(u.email||'No email')+'</div><div class="muted tiny">'+escapeHtml(u.role||'client')+(u.country?' · '+escapeHtml(u.country):'')+'</div></div><span class="badge">'+(u.email_confirmed?'Email confirmed':'Unconfirmed')+'</span></div><p class="muted tiny">Joined: '+escapeHtml(fmtAudienceDate(u.created_at))+'<br>Last sign-in: '+escapeHtml(fmtAudienceDate(u.last_sign_in_at))+'</p></article>'}).join(''):'<p class="muted tiny">No registered users match this search.</p>';
+  guestsHost.innerHTML=guests.length?guests.map(function(g){return '<article class="card" style="padding:12px;margin-top:8px"><b>Guest · '+escapeHtml(String(g.visitor_id||'').slice(0,8))+'</b><p class="muted tiny">Last page: '+escapeHtml(g.last_page||'Unknown')+' · Visits recorded: '+escapeHtml(g.visit_count||1)+'</p><p class="muted tiny">First seen: '+escapeHtml(fmtAudienceDate(g.first_seen))+'<br>Last seen: '+escapeHtml(fmtAudienceDate(g.last_seen))+'</p></article>'}).join(''):'<p class="muted tiny">No guest visits match this search yet. Guest tracking begins as visitors browse after this update.</p>';
+  if(status)status.textContent='Last refreshed: '+new Date().toLocaleTimeString();
+ }
+ async function loadAudience(){
+  if(!el('hcAdminAudience')||!isOwner())return;
+  var status=el('hcAudienceStatus');if(status)status.textContent='Loading registered users and guest visits…';
+  try{var r=await client().functions.invoke('site-audience',{body:{action:'list'}});if(r.error)throw new Error((r.data&&r.data.error)||r.error.message||'Could not load audience');if(r.data&&r.data.error)throw new Error(r.data.error);audienceCache={users:r.data.users||[],guests:r.data.guests||[]};renderAudience();}
+  catch(err){if(status)status.textContent=err.message||'Could not load the audience list.'}
+ }
+ document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#hcAudienceRefresh'):null;if(b){e.preventDefault();loadAudience()}});
+ document.addEventListener('input',function(e){if(e.target&&e.target.id==='hcAudienceSearch')renderAudience()});
+ window.loadHellCampAudience=loadAudience;
+ // A random browser ID lets the owner count guest visits without collecting IP addresses or device fingerprints.
+ var lastTrackedPage='',trackBusy=false;
+ async function trackPage(){
+  var page=String((typeof state!=='undefined'&&state.page)||'Home').slice(0,80);
+  if(!page||page===lastTrackedPage||trackBusy)return;
+  lastTrackedPage=page;trackBusy=true;
+  try{
+   var id='';
+   try{id=localStorage.getItem('hc_guest_visitor_id')||'';if(!/^[0-9a-f-]{36}$/i.test(id)){id=crypto.randomUUID();localStorage.setItem('hc_guest_visitor_id',id)}}catch(_){id=crypto.randomUUID?crypto.randomUUID():''}
+   if(!/^[0-9a-f-]{36}$/i.test(id))return;
+   await client().functions.invoke('site-audience',{body:{action:'track',visitor_id:id,page:page}});
+  }catch(err){lastTrackedPage='';}
+  finally{trackBusy=false}
+ }
+ window.hcTrackCurrentPage=trackPage;
+ setTimeout(trackPage,1200);
+ document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-page]'))setTimeout(trackPage,450)});
+ try{var view=document.getElementById('view');if(view&&window.MutationObserver){var observer=new MutationObserver(function(){setTimeout(trackPage,250)});observer.observe(view,{childList:true,subtree:true})}}catch(_){}
+
  window.loadAdminJobPosterList=loadList;
 })();
 </script>

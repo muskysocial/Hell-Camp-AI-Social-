@@ -1935,4 +1935,80 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
+
+<style id="hc-responsive-all-screens">
+/* Final responsive safety layer: phones, foldables, tablets, laptops and large displays. */
+html{width:100%;max-width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top)}
+*,*::before,*::after{box-sizing:border-box}
+body{width:100%;max-width:100%;min-width:0;overflow-x:hidden}
+.app{width:100%;max-width:none;min-width:0}
+.main{width:100%;min-width:0;max-width:1440px;margin-inline:auto}
+main,section,article,header,footer,nav,aside,.card,.tile,.product,.hero,.profile-card,.grid,.row,.spread,.composer{min-width:0}
+img,video,canvas,iframe{max-width:100%}
+img,video{height:auto}
+input,select,textarea,button{max-width:100%;min-width:0}
+input,select,textarea{width:100%}
+button{overflow-wrap:anywhere}
+p,h1,h2,h3,h4,h5,h6,a,small,strong,span,label{overflow-wrap:anywhere}
+.grid,.products,.library-grid,.hc-ai-tools-grid,.hc-gift-grid,#publicContentList,.hc-gift-owner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.row,.spread,.composer{flex-wrap:wrap}
+.card,.tile,.product,.profile-card{overflow-wrap:anywhere}
+table{max-width:100%;width:100%;border-collapse:collapse}
+pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
+[role="dialog"],.modal,.hc-member-modal{max-width:calc(100vw - 24px)}
+/* Compact phones and narrow foldable cover screens */
+@media(max-width:359px){
+ body{font-size:14px}
+ .main{padding-left:10px!important;padding-right:10px!important}
+ .title{font-size:clamp(20px,6vw,24px)}
+ .grid,.products,.library-grid,.hc-ai-tools-grid,.hc-gift-grid,#publicContentList,.hc-gift-owner-grid{grid-template-columns:minmax(0,1fr)!important}
+ .top{min-width:0;max-width:100%;flex-wrap:wrap}
+ .top .search{min-width:0;max-width:100%}
+ .card,.tile,.product{padding:10px}
+ .hc-home-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .hc-home-stat{min-width:0}
+}
+/* Standard phones */
+@media(min-width:360px) and (max-width:599px){
+ .main{padding-left:max(12px,env(safe-area-inset-left))!important;padding-right:max(12px,env(safe-area-inset-right))!important}
+ .grid,.products,.library-grid,.hc-ai-tools-grid,.hc-gift-grid,#publicContentList,.hc-gift-owner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hc-home-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* Tablets and small laptops */
+@media(min-width:600px) and (max-width:899px){
+ .app{display:grid;grid-template-columns:190px minmax(0,1fr)}
+ aside{display:flex;position:sticky;min-width:0;padding:14px 9px}
+ .main{max-width:none;padding:20px clamp(14px,2.5vw,28px) 32px}
+ .mobile{display:none!important}
+ .grid,.products,.library-grid,.hc-ai-tools-grid,.hc-gift-grid,#publicContentList,.hc-gift-owner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* Desktop and laptop widths */
+@media(min-width:900px){
+ .app{display:grid;grid-template-columns:minmax(190px,235px) minmax(0,1fr)}
+ aside{display:flex;min-width:0}
+ .main{max-width:1440px;padding:24px clamp(22px,3vw,48px) 40px}
+ .mobile{display:none!important}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .products,.library-grid,.hc-gift-grid,#publicContentList,.hc-gift-owner-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .hc-ai-tools-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* Wide monitors: use space without stretching text or cards excessively */
+@media(min-width:1440px){
+ .main{max-width:1600px;padding-left:clamp(40px,4vw,72px);padding-right:clamp(40px,4vw,72px)}
+ .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* Landscape phones: keep content reachable above the browser controls. */
+@media(orientation:landscape) and (max-height:500px) and (max-width:900px){
+ .main{padding-top:10px!important;padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+ .mobile{padding-bottom:calc(5px + env(safe-area-inset-bottom))}
+}
+/* Respect notches and home indicators on modern devices. */
+@supports(padding:max(0px)){
+ .main{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+
 </body></html>

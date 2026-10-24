@@ -974,7 +974,7 @@ function hcStartCommunityActivityFallback(host){
  var actions=['is exploring photo editing','is trying a creator template','is creating a new design','is exploring the marketplace','is trying a background edit','is exploring video editing','is working on a social media design','is exploring portrait tools','is checking out AI tools','is customizing a profile'];
  hcCommunityActivityRows=[];
  for(var i=0;i<1000;i++){
-  var name=first[i%first.length]+' '+last[Math.floor(i/first.length)%last.length];
+  var surnameIndex=(i*7+Math.floor(i/first.length))%last.length;var name=first[i%first.length]+' '+last[surnameIndex];
   hcCommunityActivityRows.push({name:name,text:actions[i%actions.length],country:'Nigeria',at:new Date().toISOString(),avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed='+encodeURIComponent(name)});
  }
  hcCommunityActivityIndex=0;host.hidden=false;

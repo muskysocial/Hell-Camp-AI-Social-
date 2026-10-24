@@ -1007,8 +1007,8 @@ function hcSpeakText(text,button){
  utterance.rate=.96;utterance.pitch=1;
  var st=document.getElementById('hcGroqStatus');
  utterance.onstart=function(){if(st)st.textContent='Speaking with '+(selected?selected.name:'your device voice')+' · free browser speech';if(button)button.textContent='■ Stop speaking'};
- utterance.onend=function(){if(st)st.textContent='Powered by Groq · free device voice available';if(button)button.textContent='🔊 Speak'};
- utterance.onerror=function(){if(st)st.textContent='Could not play speech. Try the AI Voice tool to choose another installed voice.';if(button)button.textContent='🔊 Speak'};
+ utterance.onend=function(){if(st)st.textContent='Powered by Groq · free device voice available';if(button){button.dataset.speaking='false';button.textContent='🔊 Speak'}};
+ utterance.onerror=function(){if(st)st.textContent='Could not play speech. Try the AI Voice tool to choose another installed voice.';if(button){button.dataset.speaking='false';button.textContent='🔊 Speak'}};
  window.speechSynthesis.speak(utterance);
 }
 document.addEventListener('click',function(e){

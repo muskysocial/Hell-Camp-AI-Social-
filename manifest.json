@@ -1,7 +1,7 @@
 {
   "id": "./",
   "name": "Hell Camp",
-  "short_name": "Hell Camp",
+  "short_name": "HellCamp",
   "description": "Hell Camp social community, creators, AI tools and marketplace",
   "start_url": "./",
   "scope": "./",
@@ -11,8 +11,8 @@
     "minimal-ui"
   ],
   "orientation": "portrait",
-  "background_color": "#080612",
-  "theme_color": "#7c3aed",
+  "background_color": "#080412",
+  "theme_color": "#a20dff",
   "prefer_related_applications": false,
   "categories": [
     "social",

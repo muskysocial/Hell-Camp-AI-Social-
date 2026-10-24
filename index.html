@@ -936,11 +936,10 @@ function adminSiteActivityMarkup(){
 }
 function dashboardPage(){
  var owner=isHellCampJobAdmin();
+ var hcOwnerAdmin=!!authUser&&String(authUser.email||'').trim().toLowerCase()==='kaptainarizonah@gmail.com';
  return heading('Dashboard','Your Hell Camp control room. Open any workspace card to manage it.')+
  '<div class="grid"><a class="tile" href="./hell-edits.html" style="display:block;width:100%;text-decoration:none;color:inherit"><div class="ico">🎨</div><h3>HELL EDITS</h3><p>Open template editing and design workspace.</p></a>'+
- '<button class="tile" data-page="ADMINhub"><div class="ico">🛡️</div><h3>ADMINhub</h3><p>Publishing, reports, support and site settings.</p></button>'+
- '<a class="tile" href="./hell-edits.html#admin" style="display:block;width:100%;text-decoration:none;color:inherit"><div class="ico">📈</div><h3>HELL EDITS analytics</h3><p>Usage reports for the editing tool.</p></a>'+
- '<button class="tile" data-page="ADMINhub"><div class="ico">👥</div><h3>Member management</h3><p>Open existing account management tools.</p></button>'+
+ (hcOwnerAdmin?'<button class="tile" data-page="ADMINhub"><div class="ico">🛡️</div><h3>Private Admin Dashboard</h3><p>Owner-only publishing, reports, support and site settings.</p></button><a class="tile" href="./hell-edits.html#admin" style="display:block;width:100%;text-decoration:none;color:inherit"><div class="ico">📈</div><h3>HELL EDITS analytics</h3><p>Usage reports for the editing tool.</p></a><button class="tile" data-page="ADMINhub"><div class="ico">👥</div><h3>Member management</h3><p>Open existing account management tools.</p></button>':'')+
  (hcOwnerAdmin?'<button class="tile" data-page="Customer Inbox"><div class="ico">💬</div><h3>Customer Message Room</h3><p>Read product questions and reply privately.</p></button>':'')+
  (owner?'<button class="tile" data-hc-open-panel="jobs"><div class="ico">💼</div><h3>Administrator Job Poster</h3><p>Click to open the private job posting workspace.</p></button><button class="tile" data-hc-open-panel="audience"><div class="ico">👥</div><h3>Users & Guest Visitors</h3><p>Registered accounts, guest visitors and access controls.</p></button><button class="tile" data-hc-open-panel="activity"><div class="ico">🟢</div><h3>Whole-site Presence & Tool Activity</h3><p>Online/offline counts and separate activity plates for each tool.</p></button>':'')+'</div>'+
  (owner?'<div data-hc-panel="jobs" hidden>'+adminJobPosterMarkup()+'</div><div data-hc-panel="audience" hidden>'+adminAudienceMarkup()+'</div><div data-hc-panel="activity" hidden>'+adminSiteActivityMarkup()+'</div>':'');

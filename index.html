@@ -368,6 +368,20 @@ if(supabaseClient&&supabaseClient.functions&&typeof supabaseClient.functions.inv
       authProfile.paid_coins=Math.max(0,Number(result.data.coin_balance));
       document.querySelectorAll('[data-coin-balance]').forEach(function(el){el.textContent=authProfile.paid_coins.toLocaleString('en-US');});
     }
+    if(result&&result.error&&result.error.context&&typeof result.error.context.json==='function'){
+      try{var detail=await result.error.context.json();if(Number(detail.required)===1400&&detail.balance!==undefined&&typeof openCoinPlans==='function')openCoinPlans((detail.error||'This AI generation needs 1,400 coins.')+' Current balance: '+Number(detail.balance||0).toLocaleString('en-US')+' coins.')}catch(_){}
+    }
+    return result;
+  };
+}
+if(supabaseClient&&supabaseClient.functions&&typeof supabaseClient.functions.invoke==='function'){
+  var hcOriginalInvoke=supabaseClient.functions.invoke.bind(supabaseClient.functions);
+  supabaseClient.functions.invoke=async function(functionName,options){
+    var result=await hcOriginalInvoke(functionName,options);
+    if(result&&result.data&&Number.isFinite(Number(result.data.coin_balance))&&authProfile){
+      authProfile.paid_coins=Math.max(0,Number(result.data.coin_balance));
+      document.querySelectorAll('[data-coin-balance]').forEach(function(el){el.textContent=authProfile.paid_coins.toLocaleString('en-US');});
+    }
     if(result&&result.error&&result.data&&Number(result.data.required)===1400&&result.data.balance!==undefined&&typeof openCoinPlans==='function'){
       openCoinPlans((result.data.error||'This AI generation needs 1,400 coins.')+' Current balance: '+Number(result.data.balance||0).toLocaleString('en-US')+' coins.');
     }
@@ -1544,16 +1558,10 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
  function stop(){cancelled=true;audio.pause();audio.removeAttribute('src');audio.load();release();setStatus('Playback stopped.')}
  async function loadVoices(){
   if(!voice)return;
-  voice.innerHTML='<option value="">Loading natural voices…</option>';
-  try{
-   var r=await fetch('https://api.tts.ai/v1/voices/?model=kokoro&language=en');
-   if(!r.ok)throw new Error('Voice list unavailable');
-   var data=await r.json();voiceList=Array.isArray(data.voices)?data.voices:[];
-   voice.innerHTML='';
-   if(!voiceList.length)throw new Error('No voices returned');
-   voiceList.forEach(function(v){var o=document.createElement('option');o.value=v.id;o.textContent=(v.name||v.id)+' · '+(v.gender||'voice');voice.appendChild(o)});
-   var preferred=voiceList.find(function(v){return /bella/i.test(v.id+' '+v.name)})||voiceList[0];voice.value=preferred.id;
-  }catch(err){voice.innerHTML='<option value="af_bella">Bella · female</option><option value="am_adam">Adam · male</option><option value="af_heart">Heart · female</option><option value="am_michael">Michael · male</option>';setStatus('Using available voice choices. If generation fails, the free voice service may be unavailable.')}
+  var choices=[['alloy','Alloy · neutral'],['ash','Ash · warm'],['ballad','Ballad · expressive'],['coral','Coral · clear'],['echo','Echo · masculine'],['fable','Fable · storytelling'],['nova','Nova · bright'],['onyx','Onyx · deep'],['sage','Sage · calm'],['shimmer','Shimmer · gentle'],['verse','Verse · expressive']];
+  voice.innerHTML='';
+  choices.forEach(function(v){var o=document.createElement('option');o.value=v[0];o.textContent=v[1];voice.appendChild(o)});
+  voice.value='nova';voiceList=choices.map(function(v){return {id:v[0],name:v[1]}});
  }
  function open(){if(!modal)return;modal.classList.add('hc-voice-open');cancelled=false;loadVoices();setStatus('Choose a natural neural voice, enter text, then generate. Free service has daily limits.');setTimeout(function(){if(textBox)textBox.focus()},50)}
  function close(){if(modal)modal.classList.remove('hc-voice-open');stop()}
@@ -1564,29 +1572,26 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('hc-voice-open'))close()});
  textBox.addEventListener('input',function(){document.getElementById('hcVoiceCount').textContent=textBox.value.length.toLocaleString()+' / 4,000'});
  generate.addEventListener('click',async function(){
-  var text=(textBox.value||'').trim(),selected=voice.value;
+  var text=(textBox.value||'').trim(),selected=voice.value||'nova';
   if(!text){setStatus('Enter the text you want the AI voice to speak.');textBox.focus();return}
-  if(text.length>500){setStatus('The free neural voice endpoint allows up to 500 characters per request. Please shorten the text.');return}
-  cancelled=false;generate.disabled=true;generate.textContent='Generating natural voice…';stopButton.disabled=false;setStatus('Generating natural neural speech. This can take a few seconds…');
+  if(text.length>4000){setStatus('Keep each request to 4,000 characters or fewer.');return}
+  if(!window.supabaseClient||!window.authUser){setStatus('Sign in to Hell Camp before generating speech.');return}
+  cancelled=false;generate.disabled=true;generate.textContent='Generating natural voice…';stopButton.disabled=false;setStatus('Generating natural speech. This can take a few seconds…');
   try{
-   var r=await fetch('https://api.tts.ai/v1/tts/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'kokoro',text:text,voice:selected||'af_bella',format:'mp3',language:'en',speed:0.96})});
-   var data=await r.json().catch(function(){return {}});
-   if(!r.ok)throw new Error(data.error||data.message||('Voice service returned '+r.status));
-   var uuid=data.uuid;
-   if(!uuid&&data.result_url){playUrl(data.result_url);return}
-   if(!uuid)throw new Error(data.message||'Voice service did not return a generation job.');
-   for(var i=0;i<40;i++){
-    if(cancelled)throw new Error('Generation cancelled.');
-    await new Promise(function(resolve){setTimeout(resolve,1500)});
-    var pr=await fetch('https://api.tts.ai/v1/speech/results/?uuid='+encodeURIComponent(uuid));
-    var result=await pr.json().catch(function(){return {}});
-    if(!pr.ok)throw new Error(result.error||result.message||'Could not check generated audio.');
-    if(result.status==='completed'&&result.result_url){playUrl(result.result_url);return}
-    if(result.status==='failed')throw new Error(result.error||'Voice generation failed. Try another voice.');
-    setStatus('Creating natural speech… '+(i+1)+' / 40');
+   var result=await window.supabaseClient.functions.invoke('hell-camp-tts',{body:{text:text,voice:selected}});
+   if(result.error){
+    var detail={};try{if(result.error.context&&typeof result.error.context.json==='function')detail=await result.error.context.json()}catch(_){}
+    var message=detail.error||result.error.message||'Speech generation failed.';
+    if(Number(detail.required)===1400&&detail.balance!==undefined&&typeof window.openCoinPlans==='function')window.openCoinPlans(message+' Current balance: '+Number(detail.balance||0).toLocaleString('en-US')+' coins.');
+    throw new Error(message);
    }
-   throw new Error('The voice service is taking too long. Please try again.');
-  }catch(err){if(!cancelled)setStatus((err&&err.message?err.message:'Voice generation failed.')+' Free neural voice access may have daily or rate limits.')}
+   var data=result.data||{};
+   if(!data.audioBase64)throw new Error(data.error||'The voice service returned no audio.');
+   var raw=atob(data.audioBase64),bytes=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+   var url=URL.createObjectURL(new Blob([bytes],{type:data.mimeType||'audio/mpeg'}));
+   release();activeObjectUrl=url;playUrl(url);
+   setStatus('Voice generated successfully · 1,400 coins deducted · '+Number(data.coin_balance||0).toLocaleString('en-US')+' coins remaining.');
+  }catch(err){if(!cancelled)setStatus(err&&err.message?err.message:'Voice generation failed. Please try again.')}
   finally{generate.disabled=false;generate.textContent='▶ Generate & play'}
  });
  function playUrl(url){release();audio.src=url;audio.load();audio.play().then(function(){setStatus('Playing natural neural voice: '+(voice.options[voice.selectedIndex]?voice.options[voice.selectedIndex].text:voice.value))}).catch(function(){setStatus('Audio is ready. Tap Play in the audio player.')});if(!document.getElementById('hcVoiceAudio')){audio.controls=true;audio.id='hcVoiceAudio';audio.style.cssText='display:block;width:100%;margin-top:14px';generate.parentNode.parentNode.appendChild(audio)}}

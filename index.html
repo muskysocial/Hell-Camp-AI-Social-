@@ -969,8 +969,25 @@ function hcRelativeTime(value){var d=new Date(value).getTime();if(!Number.isFini
 function hcStartDemoCommunityActivity(host){
  if(!host)return;
  if(hcCommunityActivityTimer){clearInterval(hcCommunityActivityTimer);hcCommunityActivityTimer=null;}
- hcCommunityActivityRows=[];hcCommunityActivityIndex=0;
- host.hidden=true;
+ var first=['Ada','Adebayo','Aisha','Amaka','Amarachi','Anita','Ayomide','Blessing','Chiamaka','Chidinma','Chika','Chisom','Daniel','David','Ebuka','Emeka','Esther','Favour','Faith','Hadiza','Ifeanyi','Ifeoma','Ibrahim','Joy','Kelechi','Kemi','Mariam','Michael','Ngozi','Nnamdi','Obinna','Olamide','Oluwaseun','Onyeka','Praise','Samuel','Somto','Tobi','Uche','Zainab'];
+ var last=['Adeyemi','Afolabi','Agu','Ahmed','Akinyemi','Anyanwu','Bello','Chukwu','Danjuma','Eze','Ezeani','Ibrahim','Ifeanyi','James','Johnson','Lawal','Mohammed','Nwosu','Okafor','Okeke','Okoro','Olawale','Onyema','Usman','Yakubu'];
+ var actions=['is exploring photo editing','is trying a creator template','is creating a new design','is exploring the marketplace','is trying a background edit','is exploring video editing','is working on a social media design','is exploring portrait tools','is checking out AI tools','is customizing a profile'];
+ hcCommunityActivityRows=[];
+ for(var i=0;i<1000;i++){
+  var name=first[i%first.length]+' '+last[Math.floor(i/first.length)%last.length];
+  hcCommunityActivityRows.push({name:name,text:actions[i%actions.length],country:'Nigeria',at:new Date().toISOString(),avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed='+encodeURIComponent(name)});
+ }
+ hcCommunityActivityIndex=0;host.hidden=false;
+ var label=host.querySelector('#hcActivityModeLabel');if(label)label.textContent='COMMUNITY';
+ var foot=host.querySelector('#hcActivityFoot');if(foot)foot.textContent='Explore the things you can do on Hell Camp.';
+ function showNext(){
+  var current=document.getElementById('hcCommunityActivity');if(!current)return;
+  var body=current.querySelector('.hc-community-body');if(!body)return;
+  var e=hcCommunityActivityRows[hcCommunityActivityIndex%hcCommunityActivityRows.length];hcCommunityActivityIndex++;
+  var avatar='<img class="hc-community-avatar" alt="" src="'+esc(e.avatar)+'" loading="lazy" referrerpolicy="no-referrer">';
+  body.innerHTML='<div class="hc-community-event">'+avatar+'<div class="hc-community-copy"><b>'+esc(e.name)+'</b> '+esc(e.text)+'<small>Nigeria · just now</small></div></div>';
+ }
+ showNext();hcCommunityActivityTimer=setInterval(showNext,5000);
 }
 function loadCommunityActivityFeed(){var host=document.getElementById('hcCommunityActivity');if(!host)return;var request=++hcCommunityActivityRequest;if(hcCommunityActivityTimer){clearInterval(hcCommunityActivityTimer);hcCommunityActivityTimer=null;}var body=host.querySelector('.hc-community-body');if(!body)return;body.innerHTML='<div class="hc-community-empty">Loading recent member activity…</div>';fetch('https://lwgbfnyjuxixduuehckp.supabase.co/functions/v1/community-activity',{method:'GET',headers:{'apikey':'sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS'}}).then(function(r){if(!r.ok)throw new Error('Activity feed unavailable');return r.json();}).then(function(data){if(request!==hcCommunityActivityRequest||!document.getElementById('hcCommunityActivity'))return;hcCommunityActivityRows=Array.isArray(data.events)?data.events.slice(0,1000):[];hcCommunityActivityIndex=0;if(!hcCommunityActivityRows.length){hcStartDemoCommunityActivity(host);return;}host.hidden=false;var label=host.querySelector('#hcActivityModeLabel');if(label)label.textContent='LIVE';var foot=host.querySelector('#hcActivityFoot');if(foot)foot.textContent='Recorded activity from members who opted in. Names and photos are shown only with their consent.';function showNext(){var currentHost=document.getElementById('hcCommunityActivity');if(!currentHost)return;var currentBody=currentHost.querySelector('.hc-community-body');if(!currentBody)return;var e=hcCommunityActivityRows[hcCommunityActivityIndex%hcCommunityActivityRows.length];hcCommunityActivityIndex++;var name=String(e.name||'Hell Camp member'),initials=name.split(/\s+/).filter(Boolean).map(function(x){return x.charAt(0)}).slice(0,2).join('').toUpperCase()||'H';var avatar=e.avatar&&/^https:\/\//i.test(e.avatar)?'<img class="hc-community-avatar" alt="" src="'+esc(e.avatar)+'" loading="lazy" referrerpolicy="no-referrer">':'<span class="hc-community-avatar" aria-hidden="true">'+esc(initials)+'</span>';var amount='';if(Number.isFinite(Number(e.amount))&&Number(e.amount)>0&&e.currency)amount='<span class="hc-community-amount">'+esc(e.currency==='NGN'?'₦':e.currency+' ')+Number(e.amount).toLocaleString('en-NG',{maximumFractionDigits:2})+'</span>';currentBody.innerHTML='<div class="hc-community-event">'+avatar+'<div class="hc-community-copy"><b>'+esc(name)+'</b> '+esc(String(e.text||'used Hell Camp'))+'<small>'+esc(String(e.country||'Nigeria'))+' · '+esc(hcRelativeTime(e.at))+'</small></div>'+amount+'</div>';}showNext();hcCommunityActivityTimer=setInterval(showNext,6000);}).catch(function(){if(request!==hcCommunityActivityRequest)return;hcStartDemoCommunityActivity(host);});}
 document.addEventListener('pointerdown',function(e){var handle=e.target.closest('[data-bonus-drag]');if(!handle)return;var banner=document.getElementById('hcLoginBonus');if(!banner)return;window.hcBonusDragState={id:e.pointerId,startX:e.clientX,startY:e.clientY,x:0,y:0,banner:banner};try{handle.setPointerCapture(e.pointerId)}catch(_){}});

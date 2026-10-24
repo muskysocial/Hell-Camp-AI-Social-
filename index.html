@@ -1263,6 +1263,87 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
 })();
 </script>
 <style id="hc-live-notification-dot">.hc-notification-button{position:relative!important}.hc-notification-dot{position:absolute;right:5px;top:4px;width:9px;height:9px;border-radius:50%;background:#ef3340;border:2px solid var(--surface,#fff);box-shadow:0 0 0 1px rgba(239,51,64,.12);display:inline-block}.hc-notification-dot[hidden]{display:none!important}.hc-notification-drawer-dot{position:relative;right:auto;top:auto;margin-left:auto;flex:0 0 9px}</style>
+
+<style id="hc-openai-voice-styles">
+#hcOpenAiVoiceModal{position:fixed;inset:0;z-index:10050;background:rgba(4,5,15,.78);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:16px}
+#hcOpenAiVoiceModal.hc-voice-open{display:flex}
+.hc-voice-panel{width:min(100%,560px);max-height:min(88vh,760px);overflow:auto;border:1px solid #8b5cf666;border-radius:23px;padding:20px;background:linear-gradient(145deg,#15142b,#080b17);color:#f8f7ff;box-shadow:0 24px 80px #0009}
+.hc-voice-panel h2{margin:4px 0 6px;font-size:24px}.hc-voice-panel p{color:#b7b6d0;font-size:13px}
+.hc-voice-panel label{display:block;font-size:13px;font-weight:750;margin:13px 0 6px}
+.hc-voice-panel textarea,.hc-voice-panel select{width:100%;background:#0b1020;color:#fff;border:1px solid #343354;border-radius:12px;padding:12px;font:inherit}
+.hc-voice-panel textarea{min-height:150px;resize:vertical}.hc-voice-buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.hc-voice-buttons button{min-height:44px}
+#hcVoiceStatus{font-size:13px;white-space:pre-wrap;margin-top:12px;color:#d7c9f7}
+#hcVoiceAudio{display:none;width:100%;margin-top:14px}
+.hc-voice-meta{display:flex;justify-content:space-between;gap:8px;color:#aaa8c7;font-size:11px;margin-top:5px}
+.light #hcOpenAiVoiceModal .hc-voice-panel{background:#fff;color:#251c32}.light .hc-voice-panel p{color:#6e6680}.light .hc-voice-panel textarea,.light .hc-voice-panel select{background:#faf7ff;color:#241c2d}
+</style>
+<div id="hcOpenAiVoiceModal" role="dialog" aria-modal="true" aria-labelledby="hcVoiceTitle">
+ <section class="hc-voice-panel">
+  <div class="row spread"><span style="font-size:12px;font-weight:900;letter-spacing:.12em;color:#c084fc">HELL CAMP · OPENAI VOICE</span><button class="btn" type="button" id="hcVoiceClose" aria-label="Close voice generator">✕</button></div>
+  <h2 id="hcVoiceTitle">AI Voice Generator</h2>
+  <p>Turn your text into natural speech and play the generated voice here in Hell Camp.</p>
+  <label for="hcVoiceText">Text to speak</label>
+  <textarea id="hcVoiceText" maxlength="4000" placeholder="Type or paste what you want Hell Camp to say…"></textarea>
+  <div class="hc-voice-meta"><span>OpenAI Text-to-Speech</span><span id="hcVoiceCount">0 / 4,000</span></div>
+  <label for="hcVoiceChoice">Voice</label>
+  <select id="hcVoiceChoice">
+   <option value="alloy">Alloy · balanced</option><option value="ash">Ash · warm</option><option value="ballad">Ballad · expressive</option><option value="coral">Coral · clear</option><option value="echo">Echo · deep</option><option value="fable">Fable · narrative</option><option value="onyx">Onyx · low</option><option value="nova">Nova · bright</option><option value="sage">Sage · measured</option><option value="shimmer">Shimmer · gentle</option><option value="verse">Verse · expressive</option>
+  </select>
+  <div class="hc-voice-buttons"><button class="btn primary" type="button" id="hcVoiceGenerate">▶ Generate & play</button><button class="btn" type="button" id="hcVoiceStop">■ Stop</button></div>
+  <div id="hcVoiceStatus" role="status" aria-live="polite">Sign in to Hell Camp before generating speech.</div>
+  <audio id="hcVoiceAudio" controls playsinline></audio>
+  <p style="font-size:11px;margin-bottom:0">Speech generation uses your configured OpenAI API account. Generated audio is played in this page and is not automatically saved.</p>
+ </section>
+</div>
+<script id="hc-openai-voice-runtime">
+(function(){
+ 'use strict';
+ var modal=document.getElementById('hcOpenAiVoiceModal');
+ var textBox=document.getElementById('hcVoiceText');
+ var voice=document.getElementById('hcVoiceChoice');
+ var status=document.getElementById('hcVoiceStatus');
+ var audio=document.getElementById('hcVoiceAudio');
+ var generate=document.getElementById('hcVoiceGenerate');
+ var activeUrl=null;
+ function setStatus(s){if(status)status.textContent=s}
+ function open(){if(!modal)return;modal.classList.add('hc-voice-open');setStatus('Ready. Enter text, choose a voice, then generate.');setTimeout(function(){if(textBox)textBox.focus()},50)}
+ function close(){if(modal)modal.classList.remove('hc-voice-open');if(audio){audio.pause();audio.currentTime=0}}
+ function stop(){if(audio){audio.pause();audio.currentTime=0}setStatus('Playback stopped.')}
+ function releaseUrl(){if(activeUrl){URL.revokeObjectURL(activeUrl);activeUrl=null}}
+ function decodeAudio(base64,mime){var raw=atob(base64),bytes=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);return new Blob([bytes],{type:mime||'audio/mpeg'})}
+ document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('[data-action="openAiTool"][data-tool="AI Voice"],[data-tool="AI Voice"]'):null;
+  if(!b)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();open();
+ },true);
+ document.getElementById('hcVoiceClose').addEventListener('click',close);
+ document.getElementById('hcVoiceStop').addEventListener('click',stop);
+ modal.addEventListener('click',function(e){if(e.target===modal)close()});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('hc-voice-open'))close()});
+ textBox.addEventListener('input',function(){document.getElementById('hcVoiceCount').textContent=textBox.value.length.toLocaleString()+' / 4,000'});
+ generate.addEventListener('click',async function(){
+  var text=(textBox.value||'').trim();
+  if(!text){setStatus('Enter the text you want the AI voice to speak.');textBox.focus();return}
+  if(text.length>4000){setStatus('Please keep the text under 4,000 characters.');return}
+  var client=window.supabaseClient;
+  if(!client||!client.functions){setStatus('Hell Camp database is not ready. Refresh and sign in again.');return}
+  generate.disabled=true;generate.textContent='Generating…';setStatus('Generating natural speech with OpenAI. Please wait…');
+  try{
+   var result=await client.functions.invoke('hell-camp-tts',{body:{text:text,voice:voice.value}});
+   if(result.error)throw new Error((result.data&&result.data.error)||result.error.message||'Speech service could not be reached.');
+   if(!result.data||result.data.error)throw new Error(result.data&&result.data.error||'No audio was returned.');
+   if(!result.data.audioBase64)throw new Error('The speech service returned no audio. Please try again.');
+   releaseUrl();activeUrl=URL.createObjectURL(decodeAudio(result.data.audioBase64,result.data.mimeType));
+   audio.src=activeUrl;audio.style.display='block';audio.load();
+   try{await audio.play();setStatus('Playing generated speech · '+text.length.toLocaleString()+' characters · '+voice.options[voice.selectedIndex].text)}
+   catch(playErr){setStatus('Speech is ready. Tap Play in the audio player to listen.')}
+  }catch(err){setStatus(err&&err.message?err.message:'Speech generation failed. Please try again.')}
+  finally{generate.disabled=false;generate.textContent='▶ Generate & play'}
+ });
+ audio.addEventListener('ended',function(){setStatus('Playback finished.')});
+ window.addEventListener('beforeunload',releaseUrl);
+})();
+</script>
 </body></html>
 
 <!-- deploy refresh 2026-10-24 -->

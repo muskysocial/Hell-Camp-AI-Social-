@@ -136,7 +136,7 @@
   async function loadGame(){
     if(!user) return;
     try{
-      const chosen = ($('displayName').value || '').trim();
+      const chosen = ($('displayName').value || (user.user_metadata && user.user_metadata.display_name) || (user.email ? user.email.split('@')[0] : '') || '').trim();
       await api('lagos_join',{p_display_name:chosen||null});
       const results=await Promise.all([
         client.from('lagos_game_profiles').select('user_id,display_name,district,career,level,xp,created_at').eq('user_id',user.id).single(),

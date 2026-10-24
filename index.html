@@ -1619,6 +1619,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   }catch(err){}
   finally{trackBusy=false}
  }
+ document.addEventListener('click',function(e){var job=e.target&&e.target.closest?e.target.closest('[data-action="getJobContact"]'):null;if(!job)return;try{var id=localStorage.getItem('hc_guest_visitor_id')||'';if(!/^[0-9a-f-]{36}$/i.test(id)){id=crypto.randomUUID();localStorage.setItem('hc_guest_visitor_id',id)}client().functions.invoke('site-audience',{body:{action:'track',visitor_id:id,page:'Jobs',tool_key:'jobs',event_action:'job_contact_unlock_clicked'}})}catch(_){}});
  document.addEventListener('click',function(e){var nav=e.target&&e.target.closest?e.target.closest('[data-page]'):null;if(nav){var key=inferTool(nav.getAttribute('data-page'));if(isBlocked(key)){e.preventDefault();e.stopImmediatePropagation();alert('Access to this tool is currently restricted.');return}setTimeout(trackPage,450)}});
  document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*="hell-edits.html"]'):null;if(a&&isBlocked('hell-edits')){e.preventDefault();alert('Access to HELL EDITS is currently restricted.')}});
  document.addEventListener('submit',function(e){var key=inferTool((typeof state!=='undefined'&&state.page)||'');if(isBlocked(key)){e.preventDefault();e.stopImmediatePropagation();alert('Access to this tool is currently restricted.')}},true);

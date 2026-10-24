@@ -5966,6 +5966,41 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   window.addEventListener('beforeunload',function(){clearInterval(timer);if(hcChannel&&window.supabaseClient)window.supabaseClient.removeChannel(hcChannel);});
 })();
 </script>
+<style id="hc-sitewide-activity-popup">
+.hc-site-activity-pop{position:fixed;z-index:100000;left:14px;bottom:84px;width:min(390px,calc(100vw - 28px));display:flex;align-items:center;gap:10px;padding:11px 13px;border:1px solid #d9e2f0;border-radius:17px;background:#fff;color:#19283b;box-shadow:0 14px 42px #0b122433;opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .32s ease,transform .32s ease;font:13px/1.35 system-ui,-apple-system,Segoe UI,sans-serif}
+.hc-site-activity-pop.is-visible{opacity:1;transform:translateY(0) scale(1)}
+.hc-site-activity-pop img{width:46px;height:46px;border-radius:50%;object-fit:cover;flex:none;background:#eee5ff}
+.hc-site-activity-copy{min-width:0;flex:1}.hc-site-activity-copy strong{font-size:13px;color:#172b45}.hc-site-activity-copy small{display:block;color:#6c7b8d;font-size:10px;margin-top:3px}.hc-site-activity-tag{display:inline-block;background:#fff1cf;color:#875400;border-radius:5px;padding:2px 5px;font-size:9px;font-weight:900;letter-spacing:.04em;margin-bottom:3px}.hc-site-activity-amount{font-size:11px;font-weight:900;color:#087d61;white-space:nowrap}
+@media(min-width:700px){.hc-site-activity-pop{left:auto;right:22px;bottom:24px}}@media(prefers-reduced-motion:reduce){.hc-site-activity-pop{transition:none}}
+</style>
+<script id="hc-sitewide-activity-popup-script">
+(function(){
+ var toast=null,hideTimer=null,nextTimer=null,index=0;
+ var demoRows=null;
+ function escText(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
+ function makeDemoRows(){
+  var first=['Ada','Adebayo','Aisha','Amaka','Amarachi','Anita','Ayomide','Blessing','Chiamaka','Chidinma','Chika','Chisom','Daniel','David','Ebuka','Emeka','Esther','Favour','Faith','Hadiza','Ifeanyi','Ifeoma','Ibrahim','Joy','Kelechi','Kemi','Mariam','Michael','Ngozi','Nnamdi','Obinna','Olamide','Oluwaseun','Onyeka','Praise','Samuel','Somto','Tobi','Uche','Zainab'];
+  var last=['Adeyemi','Afolabi','Agu','Ahmed','Akinyemi','Anyanwu','Bello','Chukwu','Danjuma','Eze','Ezeani','Ibrahim','Ifeanyi','James','Johnson','Lawal','Mohammed','Nwosu','Okafor','Okeke','Okoro','Olawale','Onyema','Usman','Yakubu'];
+  var acts=[{text:'completed a sample photo edit',amount:0},{text:'tried a demo creator template',amount:0},{text:'made a sample marketplace purchase',amount:2500},{text:'tested a demo AI design',amount:0},{text:'made a sample wallet top-up',amount:5000},{text:'completed a sample background edit',amount:0},{text:'tried a demo video edit',amount:0},{text:'bought a sample social media design',amount:1800},{text:'explored the Hell Camp marketplace',amount:0},{text:'tested a sample portrait enhancement',amount:0}];
+  var out=[];for(var i=0;i<1000;i++){var name=first[i%first.length]+' '+last[Math.floor(i/first.length)%last.length],a=acts[i%acts.length];out.push({name:name,text:a.text,amount:a.amount,currency:'NGN',country:'Nigeria',demo:true,avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed='+encodeURIComponent(name)});}return out;
+ }
+ function getRows(){var live=window.hcCommunityActivityRows;if(Array.isArray(live)&&live.length)return live;if(!demoRows)demoRows=makeDemoRows();return demoRows;}
+ function ensureToast(){if(toast&&document.body.contains(toast))return;toast=document.createElement('div');toast.className='hc-site-activity-pop';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');document.body.appendChild(toast);}
+ function showOne(){
+  ensureToast();var rows=getRows();if(!rows.length)return;var e=rows[index%rows.length]||{};index++;
+  var name=String(e.name||'Hell Camp member'),isDemo=!!e.demo||rows===demoRows;
+  var avatar=(typeof e.avatar==='string'&&/^https:\/\//i.test(e.avatar))?e.avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed='+encodeURIComponent(name);
+  var amount='';if(Number(e.amount)>0&&e.currency)amount='<span class="hc-site-activity-amount">'+(isDemo?'DEMO ':'')+escText(e.currency==='NGN'?'₦':e.currency+' ')+Number(e.amount).toLocaleString('en-NG',{maximumFractionDigits:2})+'</span>';
+  var label=isDemo?'DEMO SAMPLE':'LIVE ACTIVITY';
+  var detail=isDemo?'Nigeria · simulated example only':escText(String(e.country||'Member'))+' · '+(typeof hcRelativeTime==='function'?escText(hcRelativeTime(e.at)):'recently');
+  toast.innerHTML='<img src="'+escText(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer"><div class="hc-site-activity-copy"><span class="hc-site-activity-tag">'+label+'</span><div><strong>'+escText(name)+'</strong> '+escText(String(e.text||'used Hell Camp'))+'</div><small>'+detail+'</small></div>'+amount;
+  toast.classList.add('is-visible');if(hideTimer)clearTimeout(hideTimer);hideTimer=setTimeout(function(){if(toast)toast.classList.remove('is-visible');},4300);
+  if(nextTimer)clearTimeout(nextTimer);nextTimer=setTimeout(showOne,8500);
+ }
+ function start(){ensureToast();setTimeout(showOne,1800);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
 </body></html>
 
 <!-- deploy refresh 2026-10-24 -->

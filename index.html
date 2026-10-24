@@ -1787,7 +1787,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
     }catch(e){hcNotificationSetup=false;console.warn('Live phone notification listener unavailable',e);}
   }
   document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest&&e.target.closest('#hcEnablePhoneNotifications');if(b){e.preventDefault();enablePhoneNotifications();return;}
+    var b=e.target&&e.target.closest&&e.target.closest('#hcEnablePhoneNotifications');if(b){return;}
     var card=e.target&&e.target.closest&&e.target.closest('#notificationsList article');
     if(card&&!e.target.closest('button')){
       var title=card.querySelector('b');var text=title&&title.textContent||'';

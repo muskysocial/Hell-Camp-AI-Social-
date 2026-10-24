@@ -1704,6 +1704,104 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
  window.loadAdminJobPosterList=loadList;
 })();
 </script>
+
+<script id="hc-native-notifications-v1">
+(function(){
+  'use strict';
+  var hcChannel=null, hcSeen=new Set(), hcNotificationSetup=false;
+  function safeTarget(value){
+    var raw=String(value||'Notifications').trim();
+    if(/^https?:\/\//i.test(raw)){try{var u=new URL(raw,location.href);return u.origin===location.origin?u.href:location.origin+location.pathname+'?hc_page=Notifications';}catch(e){}}
+    var clean=raw.replace(/^\.\//,'').replace(/^\//,'');
+    if(clean.indexOf('..')>=0 || clean.indexOf('\\')>=0) clean='Notifications';
+    if(clean.indexOf('?')>=0 || clean.indexOf('#')>=0) return location.origin+location.pathname+'?hc_page=Notifications';
+    return location.origin+location.pathname+'?hc_page='+encodeURIComponent(clean||'Notifications');
+  }
+  function routeFromQuery(){
+    try{
+      var params=new URLSearchParams(location.search), dest=params.get('hc_page');
+      if(!dest)return;
+      params.delete('hc_page');
+      history.replaceState({},'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash);
+      if(typeof state!=='undefined'&&typeof render==='function'){
+        var known=['Home','Profile','Messages','Notifications','Groups','Events','Jobs','Marketplace','Settings','Discover','Creators','Saved','Memories','AI Lab','AI Space','Premium','ADMINhub','Customer Inbox'];
+        var match=known.find(function(p){return p.toLowerCase()===dest.toLowerCase();});
+        state.page=match||'Notifications';
+        if(state.page!=='Messages')state.currentConversationId=null;
+        render();
+        if(state.page==='Messages'&&typeof loadConversations==='function')loadConversations();
+      }
+    }catch(e){console.warn('Notification destination could not be opened',e);}
+  }
+  function showNativeNotification(n){
+    if(!n||!('Notification' in window)||Notification.permission!=='granted')return;
+    if(document.visibilityState==='visible')return;
+    var title=String(n.title||'Hell Camp').slice(0,120);
+    var body=String(n.body||'You have a new update.').slice(0,240);
+    var target=safeTarget(n.target_url);
+    navigator.serviceWorker&&navigator.serviceWorker.ready.then(function(reg){
+      if(reg&&reg.showNotification){
+        return reg.showNotification(title,{body:body,icon:'./icons/icon.svg',badge:'./icons/icon.svg',tag:'hc-'+String(n.id||Date.now()),renotify:false,data:{url:target}});
+      }
+      new Notification(title,{body:body,tag:'hc-'+String(n.id||Date.now())});
+    }).catch(function(err){console.warn('System notification failed',err);});
+  }
+  async function enablePhoneNotifications(){
+    var status=document.getElementById('hcPushStatus');
+    function say(t){if(status)status.textContent=t;}
+    if(!('Notification' in window)){say('This browser does not support phone notifications. Try installing Hell Camp from a supported browser.');return;}
+    if(!('serviceWorker' in navigator)){say('This browser does not support background notification handling.');return;}
+    try{
+      var permission=Notification.permission;
+      if(permission!=='granted')permission=await Notification.requestPermission();
+      if(permission!=='granted'){say('Permission was not granted. Enable notifications in your phone browser or app settings.');return;}
+      await navigator.serviceWorker.register('./sw.js');
+      var reg=await navigator.serviceWorker.ready;
+      if(reg.showNotification)await reg.showNotification('Hell Camp notifications enabled',{body:'You can receive supported Hell Camp alerts on this device.',icon:'./icons/icon.svg',data:{url:safeTarget('Notifications')}});
+      var pref=document.getElementById('pref_push_notifications');if(pref)pref.checked=true;
+      say('Phone notifications are enabled on this device. Background delivery still depends on push-service setup and your phone/browser support.');
+    }catch(e){say('Could not enable notifications: '+String(e&&e.message||e));}
+  }
+  function installSettingsControl(){
+    var pref=document.getElementById('pref_push_notifications');
+    if(!pref||document.getElementById('hcEnablePhoneNotifications'))return;
+    var host=pref.closest('.card')||pref.parentElement;
+    if(!host)return;
+    var wrap=document.createElement('div');wrap.style.cssText='margin:10px 0 14px';
+    var btn=document.createElement('button');btn.type='button';btn.className='btn primary';btn.id='hcEnablePhoneNotifications';btn.textContent='Enable phone notifications';
+    var status=document.createElement('p');status.id='hcPushStatus';status.className='muted tiny';status.setAttribute('role','status');status.style.margin='8px 0';
+    btn.addEventListener('click',enablePhoneNotifications);wrap.appendChild(btn);wrap.appendChild(status);host.insertBefore(wrap,host.firstChild);
+    if('Notification' in window&&Notification.permission==='granted'){btn.textContent='Test phone notification';status.textContent='Phone notification permission is already allowed on this device.';}
+  }
+  function setupRealtime(){
+    if(hcNotificationSetup||!window.supabaseClient||!window.authUser)return;
+    hcNotificationSetup=true;
+    try{
+      if(hcChannel){supabaseClient.removeChannel(hcChannel);hcChannel=null;}
+      hcChannel=supabaseClient.channel('hc-phone-notifications-'+authUser.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+authUser.id},function(payload){
+        var n=payload&&payload.new;if(!n||hcSeen.has(n.id))return;hcSeen.add(n.id);
+        if(n.is_read)return;
+        showNativeNotification(n);
+        try{if(typeof refreshUnreadNotificationDot==='function')refreshUnreadNotificationDot();}catch(e){}
+      }).subscribe();
+    }catch(e){hcNotificationSetup=false;console.warn('Live phone notification listener unavailable',e);}
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest&&e.target.closest('#hcEnablePhoneNotifications');if(b){e.preventDefault();enablePhoneNotifications();return;}
+    var card=e.target&&e.target.closest&&e.target.closest('#notificationsList article');
+    if(card&&!e.target.closest('button')){
+      var title=card.querySelector('b');var text=title&&title.textContent||'';
+      if(typeof state!=='undefined'&&text){var target=card.getAttribute('data-target-url');if(target){state.page=target;render();}}
+    }
+  });
+  var obs=new MutationObserver(function(){installSettingsControl();});
+  function boot(){routeFromQuery();installSettingsControl();obs.observe(document.body,{childList:true,subtree:true});if(window.supabaseClient&&window.authUser)setupRealtime();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+  if(window.supabaseClient&&supabaseClient.auth){supabaseClient.auth.onAuthStateChange(function(){hcNotificationSetup=false;setupRealtime();});}
+  var timer=setInterval(function(){if(window.authUser&&window.supabaseClient)setupRealtime();installSettingsControl();},5000);
+  window.addEventListener('beforeunload',function(){clearInterval(timer);if(hcChannel&&window.supabaseClient)supabaseClient.removeChannel(hcChannel);});
+})();
+</script>
 </body></html>
 
 <!-- deploy refresh 2026-10-24 -->

@@ -1786,9 +1786,17 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
       if(permission!=='granted'){say('Permission was not granted. Enable notifications in your phone browser or app settings.');return;}
       await navigator.serviceWorker.register('./sw.js');
       var reg=await navigator.serviceWorker.ready;
-      if(reg.showNotification)await reg.showNotification('Hell Camp notifications enabled',{body:'You can receive supported Hell Camp alerts on this device.',icon:'./icons/icon.svg',data:{url:safeTarget('Notifications')}});
+      if(!window.supabaseClient||!window.authUser){say('Sign in to connect this phone securely to Hell Camp notifications.');return;}
+      if(!reg.pushManager){say('This browser does not support Web Push subscriptions. Try installing Hell Camp from a supported browser.');return;}
+      var keyResult=await window.supabaseClient.functions.invoke('hellcamp-push',{body:{action:'public-key'}});
+      if(keyResult.error||!keyResult.data||!keyResult.data.publicKey){say((keyResult.data&&keyResult.data.error)||'Secure push keys are not configured on the server yet.');return;}
+      function decodeVapidKey(value){var base=String(value).replace(/-/g,'+').replace(/_/g,'/');while(base.length%4)base+='=';var raw=atob(base),out=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;}
+      var subscription=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:decodeVapidKey(keyResult.data.publicKey)});
+      var saveResult=await window.supabaseClient.functions.invoke('hellcamp-push',{body:{action:'register',subscription:subscription.toJSON()}});
+      if(saveResult.error||!saveResult.data||!saveResult.data.ok){say((saveResult.data&&saveResult.data.error)||'Could not save this device subscription securely.');return;}
+      if(reg.showNotification)await reg.showNotification('Hell Camp notifications enabled',{body:'This device is registered for supported Hell Camp push alerts.',icon:'./icons/icon.svg',badge:'./icons/icon.svg',data:{url:safeTarget('Notifications')}});
       var pref=document.getElementById('pref_push_notifications');if(pref)pref.checked=true;
-      say('Phone notifications are enabled on this device. Background delivery still depends on push-service setup and your phone/browser support.');
+      say('This device is subscribed and saved securely. Background delivery activates after the server push keys and notification sender are configured.');
     }catch(e){say('Could not enable notifications: '+String(e&&e.message||e));}
   }
   function installSettingsControl(){

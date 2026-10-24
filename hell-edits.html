@@ -113,4 +113,31 @@ async function loadAdmin(){if(!isAdmin)return;const {count:users}=await db.from(
 $('refreshAdmin').onclick=loadAdmin;
 async function heartbeat(){if(!user)return;await db.from('hell_edit_activity').upsert({user_id:user.id,last_seen_at:new Date().toISOString(),current_page:'HELL EDITS'});setTimeout(heartbeat,120000)}
 init().catch(e=>msg(e.message,'error'));
-</script></body></html>
+</script><style id="hc-hell-edits-workspace-layout">
+#editorView.hc-layout-vertical{display:block}
+#editorView.hc-layout-vertical .workspace{display:flex;flex-direction:column;gap:14px}
+#editorView.hc-layout-vertical .workspace>.stage{order:0;min-height:clamp(280px,48vh,680px)}
+#editorView.hc-layout-vertical .workspace>aside{order:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#editorView.hc-layout-vertical .workspace>aside>.card{margin:0!important;min-width:0}
+#editorView.hc-layout-vertical>.tools-panel{margin-top:14px}
+#editorView.hc-layout-horizontal{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:14px;align-items:start}
+#editorView.hc-layout-horizontal>.section-title{grid-column:1/-1}
+#editorView.hc-layout-horizontal>.workspace{grid-column:1;grid-row:2;display:flex;flex-direction:column;min-width:0}
+#editorView.hc-layout-horizontal>.tools-panel{grid-column:2;grid-row:2;min-width:0;margin:0;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+#editorView.hc-layout-horizontal .workspace>aside{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.hc-editor-layout-switch{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 14px;padding:9px 10px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.hc-editor-layout-switch span{font-size:12px;font-weight:800;margin-right:auto}
+.hc-editor-layout-switch button[aria-pressed=true]{background:linear-gradient(120deg,#7c3aed,#c026d3);color:#fff;border-color:transparent}
+@media(max-width:760px){#editorView.hc-layout-horizontal{display:block}#editorView.hc-layout-horizontal>.workspace{display:flex;flex-direction:column}#editorView.hc-layout-horizontal>.tools-panel{position:static;max-height:none;margin-top:14px}#editorView.hc-layout-horizontal .workspace>aside,#editorView.hc-layout-vertical .workspace>aside{grid-template-columns:minmax(0,1fr)}#editorView.hc-layout-vertical .workspace>.stage,#editorView.hc-layout-horizontal .workspace>.stage{min-height:260px}}
+</style>
+<script id="hc-hell-edits-layout-switch">
+(function(){
+function setup(){var editor=document.getElementById('editorView');if(!editor||editor.dataset.layoutReady)return;editor.dataset.layoutReady='1';editor.classList.add('hc-layout-vertical');
+var bar=document.createElement('div');bar.className='hc-editor-layout-switch';bar.innerHTML='<span>Workspace layout</span><button type="button" class="btn" data-layout="vertical" aria-pressed="true">↕ Vertical</button><button type="button" class="btn" data-layout="horizontal" aria-pressed="false">↔ Horizontal</button>';
+var title=editor.querySelector('.section-title');if(title)title.insertAdjacentElement('afterend',bar);
+bar.addEventListener('click',function(e){var b=e.target.closest('button[data-layout]');if(!b)return;var mode=b.dataset.layout;editor.classList.toggle('hc-layout-vertical',mode==='vertical');editor.classList.toggle('hc-layout-horizontal',mode==='horizontal');bar.querySelectorAll('button[data-layout]').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))})});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
+</body></html>

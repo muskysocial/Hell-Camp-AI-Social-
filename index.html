@@ -998,18 +998,14 @@ async function handlePaystackCallback(){var url=new URL(window.location.href),pa
 if(supabaseClient){var hcAuthEventVersion=0,hcProfileLoadVersion=0;supabaseClient.auth.onAuthStateChange(function(event,session){var eventVersion=++hcAuthEventVersion,profileVersion=++hcProfileLoadVersion,nextUser=session&&session.user||null;if(event==='SIGNED_OUT'){authUser=null;authProfile=null;render();return;}if(!nextUser){if(authUser)return;authProfile=null;render();return;}authUser=nextUser;setTimeout(function(){if(eventVersion!==hcAuthEventVersion||!authUser||authUser.id!==nextUser.id||profileVersion!==hcProfileLoadVersion)return;loadAuthProfile().then(function(){if(eventVersion!==hcAuthEventVersion||!authUser||authUser.id!==nextUser.id||profileVersion!==hcProfileLoadVersion)return;state.name=(authProfile&&authProfile.display_name)||nextUser.email.split('@')[0];return syncMemberDirectory().then(function(){if(eventVersion!==hcAuthEventVersion||!authUser||authUser.id!==nextUser.id||profileVersion!==hcProfileLoadVersion)return;heartbeatPresence();render();handlePaystackCallback();});}).catch(function(err){console.warn('Could not load account profile:',err);if(eventVersion===hcAuthEventVersion&&authUser&&authUser.id===nextUser.id)render();});},0);});var hcInitEventVersion=hcAuthEventVersion;supabaseClient.auth.getSession().then(function(result){if(result.error)throw result.error;if(hcAuthEventVersion!==hcInitEventVersion)return;var session=result.data.session,nextUser=session&&session.user||null;if(!nextUser){if(!authUser){authProfile=null;render();}return;}authUser=nextUser;var profileVersion=++hcProfileLoadVersion;return loadAuthProfile().then(function(){if(hcAuthEventVersion!==hcInitEventVersion||!authUser||authUser.id!==nextUser.id||profileVersion!==hcProfileLoadVersion)return;state.name=(authProfile&&authProfile.display_name)||nextUser.email.split('@')[0];return syncMemberDirectory().then(function(){if(hcAuthEventVersion===hcInitEventVersion&&authUser&&authUser.id===nextUser.id&&profileVersion===hcProfileLoadVersion)heartbeatPresence();});});}).catch(function(err){console.warn('Could not restore saved login:',err);if(!authUser){authNotice='Could not restore your session. Please refresh and try again.';authNoticeType='error';}}).finally(function(){render();handlePaystackCallback();});}else{render();}
 var hcGroqHistory=[];
 function hcSpeakText(text,button){
- if(!('speechSynthesis' in window)||!window.SpeechSynthesisUtterance){var st=document.getElementById('hcGroqStatus');if(st)st.textContent='Speech is not supported by this browser. Try Chrome or Safari.';return}
- window.speechSynthesis.cancel();
- var utterance=new SpeechSynthesisUtterance(String(text||'').trim());
- var voices=window.speechSynthesis.getVoices()||[];
- var selected=voices.find(function(v){return /^en(-|$)/i.test(v.lang)&&(/natural|neural|enhanced|premium/i.test(v.name))})||voices.find(function(v){return /^en(-|$)/i.test(v.lang)})||voices[0];
- if(selected)utterance.voice=selected;
- utterance.rate=.96;utterance.pitch=1;
- var st=document.getElementById('hcGroqStatus');
- utterance.onstart=function(){if(st)st.textContent='Speaking with '+(selected?selected.name:'your device voice')+' · free browser speech';if(button)button.textContent='■ Stop speaking'};
- utterance.onend=function(){if(st)st.textContent='Powered by Groq · free device voice available';if(button){button.dataset.speaking='false';button.textContent='🔊 Speak'}};
- utterance.onerror=function(){if(st)st.textContent='Could not play speech. Try the AI Voice tool to choose another installed voice.';if(button){button.dataset.speaking='false';button.textContent='🔊 Speak'}};
- window.speechSynthesis.speak(utterance);
+ var st=document.getElementById('hcGroqStatus'),clean=String(text||'').trim();
+ if(!clean)return;
+ if(button)button.disabled=true;
+ fetch('https://api.tts.ai/v1/tts/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'kokoro',text:clean.slice(0,500),voice:'af_bella',format:'mp3',language:'en',speed:0.96})})
+ .then(function(r){return r.json().then(function(d){if(!r.ok)throw new Error(d.error||d.message||'Neural voice service unavailable');return d})})
+ .then(function(d){if(!d.uuid)throw new Error('No audio job returned');var tries=0;function poll(){tries++;fetch('https://api.tts.ai/v1/speech/results/?uuid='+encodeURIComponent(d.uuid)).then(function(r){return r.json()}).then(function(res){if(res.status==='completed'&&res.result_url){var a=new Audio(res.result_url);a.play().then(function(){if(st)st.textContent='Playing natural neural voice · free allowance may apply'}).catch(function(){if(st)st.textContent='Tap the audio controls to play the generated voice'});return}if(res.status==='failed')throw new Error(res.error||'Speech generation failed');if(tries<40)setTimeout(poll,1500);else throw new Error('Voice generation timed out')}).catch(function(err){if(st)st.textContent=err.message})}poll()})
+ .catch(function(err){if(st)st.textContent=err.message+' · Try the AI Voice Generator for voice selection'})
+ .finally(function(){if(button){button.disabled=false;button.dataset.speaking='false';button.textContent='🔊 Speak'}});
 }
 document.addEventListener('click',function(e){
  var button=e.target&&e.target.closest?e.target.closest('[data-hc-speak]'):null;
@@ -1304,73 +1300,78 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
  <section class="hc-voice-panel">
   <div class="row spread"><span style="font-size:12px;font-weight:900;letter-spacing:.12em;color:#c084fc">HELL CAMP · FREE DEVICE VOICE</span><button class="btn" type="button" id="hcVoiceClose" aria-label="Close voice generator">✕</button></div>
   <h2 id="hcVoiceTitle">AI Voice Generator</h2>
-  <p>Turn your text into speech using the voice engine built into your phone or browser. No OpenAI TTS API calls or voice-generation credits are needed.</p>
+  <p>Generate natural neural speech using a hosted Kokoro voice engine, with multiple voice choices. The free service has usage limits and requires an internet connection.</p>
   <label for="hcVoiceText">Text to speak</label>
   <textarea id="hcVoiceText" maxlength="4000" placeholder="Type or paste what you want Hell Camp to say…"></textarea>
-  <div class="hc-voice-meta"><span>Free browser speech · quality varies by device</span><span id="hcVoiceCount">0 / 4,000</span></div>
+  <div class="hc-voice-meta"><span>Natural neural voices · free daily allowance</span><span id="hcVoiceCount">0 / 4,000</span></div>
   <label for="hcVoiceChoice">Voice</label>
   <select id="hcVoiceChoice" aria-label="Installed device voice"><option value="">Loading voices…</option></select>
   <div class="hc-voice-buttons"><button class="btn primary" type="button" id="hcVoiceGenerate">▶ Generate & play</button><button class="btn" type="button" id="hcVoiceStop">■ Stop</button></div>
   <div id="hcVoiceStatus" role="status" aria-live="polite">Sign in to Hell Camp before generating speech.</div>
   <audio id="hcVoiceAudio" controls playsinline></audio>
-  <p style="font-size:11px;margin-bottom:0">Voice audio is created locally by your browser or device. Available voices and how natural they sound depend on your device and installed voice packs.</p>
+  <p style="font-size:11px;margin-bottom:0">Uses a third-party neural speech service. The free allowance is limited, and text is sent to that service to generate audio.</p>
  </section>
 </div>
 <script id="hc-openai-voice-runtime">
 (function(){
  'use strict';
- var modal=document.getElementById('hcOpenAiVoiceModal');
- var textBox=document.getElementById('hcVoiceText');
- var voice=document.getElementById('hcVoiceChoice');
- var status=document.getElementById('hcVoiceStatus');
- var generate=document.getElementById('hcVoiceGenerate');
- var stopButton=document.getElementById('hcVoiceStop');
- var synth=window.speechSynthesis;
- var availableVoices=[];
+ var modal=document.getElementById('hcOpenAiVoiceModal'),textBox=document.getElementById('hcVoiceText'),voice=document.getElementById('hcVoiceChoice'),status=document.getElementById('hcVoiceStatus'),generate=document.getElementById('hcVoiceGenerate'),stopButton=document.getElementById('hcVoiceStop');
+ var audio=new Audio(),cancelled=false,activeObjectUrl=null,voiceList=[];
  function setStatus(s){if(status)status.textContent=s}
- function stop(){if(synth)synth.cancel();setStatus('Playback stopped.')}
- function open(){if(!modal)return;modal.classList.add('hc-voice-open');refreshVoices();setStatus('Ready. Choose an installed voice and tap Generate & play.');setTimeout(function(){if(textBox)textBox.focus()},50)}
- function close(){if(modal)modal.classList.remove('hc-voice-open');if(synth)synth.cancel()}
- function refreshVoices(){
+ function release(){if(activeObjectUrl){URL.revokeObjectURL(activeObjectUrl);activeObjectUrl=null}}
+ function stop(){cancelled=true;audio.pause();audio.removeAttribute('src');audio.load();release();setStatus('Playback stopped.')}
+ async function loadVoices(){
   if(!voice)return;
-  if(!synth||!synth.getVoices){voice.innerHTML='<option value="">Speech is not supported by this browser</option>';return}
-  availableVoices=synth.getVoices()||[];
-  var previous=voice.value;
-  voice.innerHTML='';
-  if(!availableVoices.length){var opt=document.createElement('option');opt.value='';opt.textContent='Default device voice';voice.appendChild(opt);return}
-  availableVoices.forEach(function(v,i){var opt=document.createElement('option');opt.value=String(i);opt.textContent=v.name+' · '+v.lang+(v.default?' · default':'');voice.appendChild(opt)});
-  var english=availableVoices.findIndex(function(v){return /^en(-|$)/i.test(v.lang)});
-  voice.value=previous!==''&&availableVoices[Number(previous)]?previous:String(english>=0?english:0);
+  voice.innerHTML='<option value="">Loading natural voices…</option>';
+  try{
+   var r=await fetch('https://api.tts.ai/v1/voices/?model=kokoro&language=en');
+   if(!r.ok)throw new Error('Voice list unavailable');
+   var data=await r.json();voiceList=Array.isArray(data.voices)?data.voices:[];
+   voice.innerHTML='';
+   if(!voiceList.length)throw new Error('No voices returned');
+   voiceList.forEach(function(v){var o=document.createElement('option');o.value=v.id;o.textContent=(v.name||v.id)+' · '+(v.gender||'voice');voice.appendChild(o)});
+   var preferred=voiceList.find(function(v){return /bella/i.test(v.id+' '+v.name)})||voiceList[0];voice.value=preferred.id;
+  }catch(err){voice.innerHTML='<option value="af_bella">Bella · female</option><option value="am_adam">Adam · male</option><option value="af_heart">Heart · female</option><option value="am_michael">Michael · male</option>';setStatus('Using available voice choices. If generation fails, the free voice service may be unavailable.')}
  }
- document.addEventListener('click',function(e){
-  var b=e.target&&e.target.closest?e.target.closest('[data-action="openAiTool"][data-tool="AI Voice"],[data-tool="AI Voice"]'):null;
-  if(!b)return;
-  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();open();
- },true);
+ function open(){if(!modal)return;modal.classList.add('hc-voice-open');cancelled=false;loadVoices();setStatus('Choose a natural neural voice, enter text, then generate. Free service has daily limits.');setTimeout(function(){if(textBox)textBox.focus()},50)}
+ function close(){if(modal)modal.classList.remove('hc-voice-open');stop()}
+ document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('[data-action="openAiTool"][data-tool="AI Voice"],[data-tool="AI Voice"]'):null;if(!b)return;e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();open()},true);
  document.getElementById('hcVoiceClose').addEventListener('click',close);
  stopButton.addEventListener('click',stop);
  modal.addEventListener('click',function(e){if(e.target===modal)close()});
  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&modal.classList.contains('hc-voice-open'))close()});
  textBox.addEventListener('input',function(){document.getElementById('hcVoiceCount').textContent=textBox.value.length.toLocaleString()+' / 4,000'});
- if(synth&&synth.addEventListener)synth.addEventListener('voiceschanged',refreshVoices);
- else if(synth)synth.onvoiceschanged=refreshVoices;
- refreshVoices();
- generate.addEventListener('click',function(){
-  var text=(textBox.value||'').trim();
+ generate.addEventListener('click',async function(){
+  var text=(textBox.value||'').trim(),selected=voice.value;
   if(!text){setStatus('Enter the text you want the AI voice to speak.');textBox.focus();return}
-  if(text.length>4000){setStatus('Please keep the text under 4,000 characters.');return}
-  if(!synth||!window.SpeechSynthesisUtterance){setStatus('Speech is not supported here. Try opening Hell Camp in Chrome or Safari.');return}
-  synth.cancel();
-  var utterance=new SpeechSynthesisUtterance(text);
-  var chosen=availableVoices[Number(voice.value)];
-  if(chosen)utterance.voice=chosen;
-  utterance.rate=0.96;utterance.pitch=1;
-  utterance.onstart=function(){setStatus('Speaking with '+(chosen?chosen.name:'your device default voice')+'. This uses no paid TTS API.')};
-  utterance.onend=function(){setStatus('Playback finished.')};
-  utterance.onerror=function(event){if(event.error!=='canceled'&&event.error!=='interrupted')setStatus('Could not play this voice. Try another installed voice or reload the page.')};
-  try{synth.speak(utterance)}catch(err){setStatus('Your device could not start speech. Try another voice or browser.')}
+  if(text.length>500){setStatus('The free neural voice endpoint allows up to 500 characters per request. Please shorten the text.');return}
+  cancelled=false;generate.disabled=true;generate.textContent='Generating natural voice…';stopButton.disabled=false;setStatus('Generating natural neural speech. This can take a few seconds…');
+  try{
+   var r=await fetch('https://api.tts.ai/v1/tts/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'kokoro',text:text,voice:selected||'af_bella',format:'mp3',language:'en',speed:0.96})});
+   var data=await r.json().catch(function(){return {}});
+   if(!r.ok)throw new Error(data.error||data.message||('Voice service returned '+r.status));
+   var uuid=data.uuid;
+   if(!uuid&&data.result_url){playUrl(data.result_url);return}
+   if(!uuid)throw new Error(data.message||'Voice service did not return a generation job.');
+   for(var i=0;i<40;i++){
+    if(cancelled)throw new Error('Generation cancelled.');
+    await new Promise(function(resolve){setTimeout(resolve,1500)});
+    var pr=await fetch('https://api.tts.ai/v1/speech/results/?uuid='+encodeURIComponent(uuid));
+    var result=await pr.json().catch(function(){return {}});
+    if(!pr.ok)throw new Error(result.error||result.message||'Could not check generated audio.');
+    if(result.status==='completed'&&result.result_url){playUrl(result.result_url);return}
+    if(result.status==='failed')throw new Error(result.error||'Voice generation failed. Try another voice.');
+    setStatus('Creating natural speech… '+(i+1)+' / 40');
+   }
+   throw new Error('The voice service is taking too long. Please try again.');
+  }catch(err){if(!cancelled)setStatus((err&&err.message?err.message:'Voice generation failed.')+' Free neural voice access may have daily or rate limits.')}
+  finally{generate.disabled=false;generate.textContent='▶ Generate & play'}
  });
- window.addEventListener('beforeunload',function(){if(synth)synth.cancel()});
+ function playUrl(url){release();audio.src=url;audio.load();audio.play().then(function(){setStatus('Playing natural neural voice: '+(voice.options[voice.selectedIndex]?voice.options[voice.selectedIndex].text:voice.value))}).catch(function(){setStatus('Audio is ready. Tap Play in the audio player.')});if(!document.getElementById('hcVoiceAudio')){audio.controls=true;audio.id='hcVoiceAudio';audio.style.cssText='display:block;width:100%;margin-top:14px';generate.parentNode.parentNode.appendChild(audio)}}
+ audio.addEventListener('ended',function(){setStatus('Playback finished.')});
+ document.getElementById('hcVoiceStop').addEventListener('click',function(){cancelled=true});
+ window.addEventListener('beforeunload',function(){audio.pause();release()});
+ loadVoices();
 })();
 </script>
 </body></html>

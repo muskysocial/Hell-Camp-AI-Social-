@@ -1777,8 +1777,8 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
     if(hcNotificationSetup||!window.supabaseClient||!window.authUser)return;
     hcNotificationSetup=true;
     try{
-      if(hcChannel){supabaseClient.removeChannel(hcChannel);hcChannel=null;}
-      hcChannel=supabaseClient.channel('hc-phone-notifications-'+authUser.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+authUser.id},function(payload){
+      if(hcChannel){window.supabaseClient.removeChannel(hcChannel);hcChannel=null;}
+      hcChannel=window.supabaseClient.channel('hc-phone-notifications-'+authUser.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'recipient_id=eq.'+authUser.id},function(payload){
         var n=payload&&payload.new;if(!n||hcSeen.has(n.id))return;hcSeen.add(n.id);
         if(n.is_read)return;
         showNativeNotification(n);
@@ -1797,9 +1797,9 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   var obs=new MutationObserver(function(){installSettingsControl();});
   function boot(){routeFromQuery();installSettingsControl();obs.observe(document.body,{childList:true,subtree:true});if(window.supabaseClient&&window.authUser)setupRealtime();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  if(window.supabaseClient&&supabaseClient.auth){supabaseClient.auth.onAuthStateChange(function(){hcNotificationSetup=false;setupRealtime();});}
+  if(window.supabaseClient&&window.supabaseClient.auth){window.supabaseClient.auth.onAuthStateChange(function(){hcNotificationSetup=false;setupRealtime();});}
   var timer=setInterval(function(){if(window.authUser&&window.supabaseClient)setupRealtime();installSettingsControl();},5000);
-  window.addEventListener('beforeunload',function(){clearInterval(timer);if(hcChannel&&window.supabaseClient)supabaseClient.removeChannel(hcChannel);});
+  window.addEventListener('beforeunload',function(){clearInterval(timer);if(hcChannel&&window.supabaseClient)window.supabaseClient.removeChannel(hcChannel);});
 })();
 </script>
 </body></html>

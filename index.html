@@ -1589,7 +1589,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
    if(!data.audioBase64)throw new Error(data.error||'The voice service returned no audio.');
    var raw=atob(data.audioBase64),bytes=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
    var url=URL.createObjectURL(new Blob([bytes],{type:data.mimeType||'audio/mpeg'}));
-   release();activeObjectUrl=url;playUrl(url);
+   playUrl(url);activeObjectUrl=url;
    setStatus('Voice generated successfully · 1,400 coins deducted · '+Number(data.coin_balance||0).toLocaleString('en-US')+' coins remaining.');
   }catch(err){if(!cancelled)setStatus(err&&err.message?err.message:'Voice generation failed. Please try again.')}
   finally{generate.disabled=false;generate.textContent='▶ Generate & play'}

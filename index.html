@@ -1925,24 +1925,22 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
 <script id="hc-sitewide-activity-popup-script">
 (function(){
  var toast=null,hideTimer=null,nextTimer=null,index=0;
- var demoRows=null;
  function escText(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
- function makeDemoRows(){
-  var first=['Ada','Adebayo','Aisha','Amaka','Amarachi','Anita','Ayomide','Blessing','Chiamaka','Chidinma','Chika','Chisom','Daniel','David','Ebuka','Emeka','Esther','Favour','Faith','Hadiza','Ifeanyi','Ifeoma','Ibrahim','Joy','Kelechi','Kemi','Mariam','Michael','Ngozi','Nnamdi','Obinna','Olamide','Oluwaseun','Onyeka','Praise','Samuel','Somto','Tobi','Uche','Zainab'];
-  var last=['Adeyemi','Afolabi','Agu','Ahmed','Akinyemi','Anyanwu','Bello','Chukwu','Danjuma','Eze','Ezeani','Ibrahim','Ifeanyi','James','Johnson','Lawal','Mohammed','Nwosu','Okafor','Okeke','Okoro','Olawale','Onyema','Usman','Yakubu'];
-  var acts=[{text:'completed a sample photo edit',amount:0},{text:'tried a demo creator template',amount:0},{text:'made a sample marketplace purchase',amount:2500},{text:'tested a demo AI design',amount:0},{text:'made a sample wallet top-up',amount:5000},{text:'completed a sample background edit',amount:0},{text:'tried a demo video edit',amount:0},{text:'bought a sample social media design',amount:1800},{text:'explored the Hell Camp marketplace',amount:0},{text:'tested a sample portrait enhancement',amount:0}];
-  var out=[];for(var i=0;i<1000;i++){var name=first[i%first.length]+' '+last[Math.floor(i/first.length)%last.length],a=acts[i%acts.length];out.push({name:name,text:a.text,amount:a.amount,currency:'NGN',country:'Nigeria',demo:true,avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed='+encodeURIComponent(name)});}return out;
+ function getRows(){
+  var rows=window.hcCommunityActivityRows;
+  if(!Array.isArray(rows))return [];
+  return rows.filter(function(e){return e&&e.demo!==true&&e.isDemo!==true&&e.sample!==true;});
  }
- function getRows(){var live=window.hcCommunityActivityRows;if(Array.isArray(live)&&live.length)return live;if(!demoRows)demoRows=makeDemoRows();return demoRows;}
  function ensureToast(){if(toast&&document.body.contains(toast))return;toast=document.createElement('div');toast.className='hc-site-activity-pop';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');document.body.appendChild(toast);}
  function showOne(){
-  ensureToast();var rows=getRows();if(!rows.length)return;var e=rows[index%rows.length]||{};index++;
-  var name=String(e.name||'Hell Camp member'),isDemo=!!e.demo||rows===demoRows;
+  ensureToast();var rows=getRows();
+  if(!rows.length){toast.classList.remove('is-visible');if(nextTimer)clearTimeout(nextTimer);nextTimer=setTimeout(showOne,8500);return;}
+  var e=rows[index%rows.length]||{};index++;
+  var name=String(e.name||'Hell Camp member');
   var avatar=(typeof e.avatar==='string'&&/^https:\/\//i.test(e.avatar))?e.avatar:'https://api.dicebear.com/9.x/avataaars/svg?seed='+encodeURIComponent(name);
-  var amount='';if(Number(e.amount)>0&&e.currency)amount='<span class="hc-site-activity-amount">'+(isDemo?'DEMO ':'')+escText(e.currency==='NGN'?'₦':e.currency+' ')+Number(e.amount).toLocaleString('en-NG',{maximumFractionDigits:2})+'</span>';
-  var label=isDemo?'DEMO SAMPLE':'LIVE ACTIVITY';
-  var detail=isDemo?'Nigeria · simulated example only':escText(String(e.country||'Member'))+' · '+(typeof hcRelativeTime==='function'?escText(hcRelativeTime(e.at)):'recently');
-  toast.innerHTML='<img src="'+escText(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer"><div class="hc-site-activity-copy"><span class="hc-site-activity-tag">'+label+'</span><div><strong>'+escText(name)+'</strong> '+escText(String(e.text||'used Hell Camp'))+'</div><small>'+detail+'</small></div>'+amount;
+  var amount='';if(Number(e.amount)>0&&e.currency)amount='<span class="hc-site-activity-amount">'+escText(e.currency==='NGN'?'₦':e.currency+' ')+Number(e.amount).toLocaleString('en-NG',{maximumFractionDigits:2})+'</span>';
+  var detail=escText(String(e.country||'Member'))+' · '+(typeof hcRelativeTime==='function'?escText(hcRelativeTime(e.at)):'recently');
+  toast.innerHTML='<img src="'+escText(avatar)+'" alt="" loading="lazy" referrerpolicy="no-referrer"><div class="hc-site-activity-copy"><div><strong>'+escText(name)+'</strong> '+escText(String(e.text||'used Hell Camp'))+'</div><small>'+detail+'</small></div>'+amount;
   toast.classList.add('is-visible');if(hideTimer)clearTimeout(hideTimer);hideTimer=setTimeout(function(){if(toast)toast.classList.remove('is-visible');},4300);
   if(nextTimer)clearTimeout(nextTimer);nextTimer=setTimeout(showOne,8500);
  }

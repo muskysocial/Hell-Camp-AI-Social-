@@ -1556,8 +1556,12 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
  });
  document.addEventListener('click',function(e){var p=e.target&&e.target.closest?e.target.closest('[data-page="Dashboard"]'):null;if(p)setTimeout(loadList,250)});
 
- var audienceCache={users:[],guests:[]};
+ var audienceCache={users:[],guests:[],visitors:[],online:[],activities:[],blocks:[],online_count:0,offline_count:0};
+ var activeToolTab='all',lastTrackedPage='',trackBusy=false,lastHeartbeat=0,localToolBlocks=[];
+ var toolChoices=[['ai-lab','AI Lab'],['face-swap','Face Swap'],['face-fusion','Face Fusion'],['voice','AI Voice'],['jobs','Jobs'],['marketplace','Marketplace'],['chat','AI Chat'],['hell-edits','HELL EDITS'],['other','Other tools']];
  function fmtAudienceDate(v){if(!v)return 'Never';try{return new Date(v).toLocaleString()}catch(e){return String(v)}}
+ function toolSelectHtml(){return '<select class="field" data-hc-block-tool>'+toolChoices.map(function(t){return '<option value="'+t[0]+'">'+t[1]+'</option>'}).join('')+'</select>'}
+ function blockControls(id,isGuest,blocks){var blocked=(blocks||[]).map(function(b){return b.tool_key});return '<div class="hc-tool-actions">'+toolSelectHtml()+'<button class="btn primary" data-hc-block-user="'+escapeHtml(id)+'" data-guest="'+(isGuest?'1':'0')+'">Block tool</button>'+ (blocked.length?'<button class="btn" data-hc-unblock-user="'+escapeHtml(id)+'" data-guest="'+(isGuest?'1':'0')+'">Allow selected tool</button>':'')+'</div><p class="muted tiny">Select a tool, then block it or allow it again.</p>'}
  function renderAudience(){
   var usersHost=el('hcAudienceUsers'),guestsHost=el('hcAudienceGuests'),stats=el('hcAudienceStats'),status=el('hcAudienceStatus');
   if(!usersHost||!guestsHost)return;
@@ -1566,35 +1570,59 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   var guests=audienceCache.guests.filter(function(g){return [g.visitor_id,g.last_page,g.visit_count].join(' ').toLowerCase().includes(q)});
   if(stats)stats.innerHTML='<div class="card"><b>Registered users</b><h2>'+audienceCache.users.length+'</h2></div><div class="card"><b>Guest browsers tracked</b><h2>'+audienceCache.guests.length+'</h2></div>';
   var uc=el('hcAudienceUserCount'),gc=el('hcAudienceGuestCount');if(uc)uc.textContent='('+users.length+')';if(gc)gc.textContent='('+guests.length+')';
-  usersHost.innerHTML=users.length?users.map(function(u){return '<article class="card" style="padding:12px;margin-top:8px"><div class="row spread" style="align-items:flex-start;gap:10px"><div style="min-width:0;overflow-wrap:anywhere"><b>'+escapeHtml(u.name||'Member')+'</b><div>'+escapeHtml(u.email||'No email')+'</div><div class="muted tiny">'+escapeHtml(u.role||'client')+(u.country?' · '+escapeHtml(u.country):'')+'</div></div><span class="badge">'+(u.email_confirmed?'Email confirmed':'Unconfirmed')+'</span></div><p class="muted tiny">Joined: '+escapeHtml(fmtAudienceDate(u.created_at))+'<br>Last sign-in: '+escapeHtml(fmtAudienceDate(u.last_sign_in_at))+'</p></article>'}).join(''):'<p class="muted tiny">No registered users match this search.</p>';
-  guestsHost.innerHTML=guests.length?guests.map(function(g){return '<article class="card" style="padding:12px;margin-top:8px"><b>Guest · '+escapeHtml(String(g.visitor_id||'').slice(0,8))+'</b><p class="muted tiny">Last page: '+escapeHtml(g.last_page||'Unknown')+' · Visits recorded: '+escapeHtml(g.visit_count||1)+'</p><p class="muted tiny">First seen: '+escapeHtml(fmtAudienceDate(g.first_seen))+'<br>Last seen: '+escapeHtml(fmtAudienceDate(g.last_seen))+'</p></article>'}).join(''):'<p class="muted tiny">No guest visits match this search yet. Guest tracking begins as visitors browse after this update.</p>';
+  usersHost.innerHTML=users.length?users.map(function(u){var ub=audienceCache.blocks.filter(function(b){return b.user_id===u.id});return '<article class="card hc-presence-user" style="padding:12px;margin-top:8px"><div class="row spread" style="align-items:flex-start;gap:10px"><div style="min-width:0;overflow-wrap:anywhere"><b>'+escapeHtml(u.name||'Member')+'</b><div>'+escapeHtml(u.email||'No email')+'</div><div class="muted tiny">'+escapeHtml(u.role||'client')+(u.country?' · '+escapeHtml(u.country):'')+'</div></div><span class="badge">'+(u.email_confirmed?'Email confirmed':'Unconfirmed')+'</span></div><p class="muted tiny">Joined: '+escapeHtml(fmtAudienceDate(u.created_at))+' · Last sign-in: '+escapeHtml(fmtAudienceDate(u.last_sign_in_at))+'</p>'+(ub.length?'<p class="tiny" style="color:#f87171">Restricted tools: '+ub.map(function(b){return escapeHtml(b.tool_key)}).join(', ')+'</p>':'')+blockControls(u.id,false,ub)+'</article>'}).join(''):'<p class="muted tiny">No registered users match this search.</p>';
+  guestsHost.innerHTML=guests.length?guests.map(function(g){var gb=audienceCache.blocks.filter(function(b){return b.visitor_id===g.visitor_id});return '<article class="card hc-presence-user" style="padding:12px;margin-top:8px"><b>Guest · '+escapeHtml(String(g.visitor_id||'').slice(0,8))+'</b><p class="muted tiny">Last page: '+escapeHtml(g.last_page||'Unknown')+' · Visits recorded: '+escapeHtml(g.visit_count||1)+'</p><p class="muted tiny">First seen: '+escapeHtml(fmtAudienceDate(g.first_seen))+' · Last seen: '+escapeHtml(fmtAudienceDate(g.last_seen))+'</p>'+(gb.length?'<p class="tiny" style="color:#f87171">Restricted tools: '+gb.map(function(b){return escapeHtml(b.tool_key)}).join(', ')+'</p>':'')+blockControls(g.visitor_id,true,gb)+'</article>'}).join(''):'<p class="muted tiny">No guest visits match this search yet. Guest tracking begins as visitors browse after this update.</p>';
   if(status)status.textContent='Last refreshed: '+new Date().toLocaleTimeString();
  }
  async function loadAudience(){
   if(!el('hcAdminAudience')||!isOwner())return;
-  var status=el('hcAudienceStatus');if(status)status.textContent='Loading registered users and guest visits…';
-  try{var r=await client().functions.invoke('site-audience',{body:{action:'list'}});if(r.error)throw new Error((r.data&&r.data.error)||r.error.message||'Could not load audience');if(r.data&&r.data.error)throw new Error(r.data.error);audienceCache={users:r.data.users||[],guests:r.data.guests||[]};renderAudience();}
+  var status=el('hcAudienceStatus');if(status)status.textContent='Loading users, guests, presence and tool restrictions…';
+  try{var r=await client().functions.invoke('site-audience',{body:{action:'list'}});if(r.error)throw new Error((r.data&&r.data.error)||r.error.message||'Could not load audience');if(r.data&&r.data.error)throw new Error(r.data.error);audienceCache=Object.assign(audienceCache,r.data||{});audienceCache.users=r.data.users||[];audienceCache.guests=(r.data.guests||[]).filter(function(g){return !g.user_id});audienceCache.blocks=r.data.blocks||[];audienceCache.activities=r.data.activities||[];renderAudience();renderSiteActivity();}
   catch(err){if(status)status.textContent=err.message||'Could not load the audience list.'}
  }
- document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#hcAudienceRefresh'):null;if(b){e.preventDefault();loadAudience()}});
+ function renderSiteActivity(){
+  var stats=el('hcPresenceStats'),host=el('hcSiteActivityEvents'),status=el('hcSiteActivityStatus');if(!host||!stats)return;
+  stats.innerHTML='<div class="card"><b>Online now</b><h2 class="hc-status-online">'+Number(audienceCache.online_count||0)+'</h2></div><div class="card"><b>Offline</b><h2>'+Number(audienceCache.offline_count||0)+'</h2></div><div class="card"><b>Registered accounts</b><h2>'+audienceCache.users.length+'</h2></div><div class="card"><b>Guest browsers</b><h2>'+audienceCache.guests.length+'</h2></div>';
+  var rows=audienceCache.activities.filter(function(a){return activeToolTab==='all'||(activeToolTab==='other'?!toolChoices.some(function(t){return t[0]===a.tool_key}):a.tool_key===activeToolTab)});
+  host.innerHTML=rows.length?rows.map(function(a){var who=audienceCache.users.find(function(u){return u.id===a.user_id});var label=who?(who.name+' · '+who.email):('Guest '+String(a.visitor_id||'').slice(0,8));return '<article class="card" style="padding:12px;margin-top:8px"><div class="row spread"><b>'+escapeHtml(a.tool_key)+'</b><span class="muted tiny">'+escapeHtml(fmtAudienceDate(a.created_at))+'</span></div><div>'+escapeHtml(label)+'</div><div class="muted tiny">Opened from: '+escapeHtml(a.page||'Unknown page')+'</div></article>'}).join(''):'<p class="muted tiny">No recorded activity for this tool yet. Activity tracking starts as visitors use the updated app.</p>';
+  if(status)status.textContent='Presence updated '+new Date().toLocaleTimeString()+'. Online threshold: last 2 minutes.';
+ }
+ async function changeToolBlock(action,id,isGuest,tool,reason){
+  var body={action:action,tool_key:tool,reason:reason||'Access restricted by Hell Camp administrator'};
+  if(isGuest)body.visitor_id=id;else body.user_id=id;
+  var r=await client().functions.invoke('site-audience',{body:body});if(r.error)throw new Error((r.data&&r.data.error)||r.error.message||'Could not update tool access');if(r.data&&r.data.error)throw new Error(r.data.error);
+  await loadAudience();
+ }
+ document.addEventListener('click',async function(e){
+  var b=e.target&&e.target.closest?e.target.closest('#hcAudienceRefresh,#hcSiteActivityRefresh'):null;if(b){e.preventDefault();await loadAudience();return}
+  var tab=e.target&&e.target.closest?e.target.closest('[data-hc-tool-tab]'):null;if(tab){activeToolTab=tab.getAttribute('data-hc-tool-tab');document.querySelectorAll('[data-hc-tool-tab]').forEach(function(x){x.classList.toggle('active',x===tab)});renderSiteActivity();return}
+  var panel=e.target&&e.target.closest?e.target.closest('[data-hc-open-panel]'):null;if(panel){e.preventDefault();var key=panel.getAttribute('data-hc-open-panel');document.querySelectorAll('[data-hc-panel]').forEach(function(p){p.hidden=p.getAttribute('data-hc-panel')!==key});var target=document.querySelector('[data-hc-panel="'+key+'"]');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});if(key==='audience'||key==='activity')loadAudience();if(key==='jobs')loadList();return}
+  var block=e.target&&e.target.closest?e.target.closest('[data-hc-block-user]'):null;
+  var unblock=e.target&&e.target.closest?e.target.closest('[data-hc-unblock-user]'):null;
+  if(block||unblock){e.preventDefault();if(!isOwner()){alert('Administrator access required.');return}var btn=block||unblock,id=btn.getAttribute(block?'data-hc-block-user':'data-hc-unblock-user'),guest=btn.getAttribute('data-guest')==='1',card=btn.closest('article'),select=card&&card.querySelector('[data-hc-block-tool]'),tool=select&&select.value;if(!tool){alert('Choose a tool first.');return}btn.disabled=true;try{await changeToolBlock(block?'block':'unblock',id,guest,tool)}catch(err){alert(err.message||'Could not update access.')}finally{btn.disabled=false}return}
+ });
  document.addEventListener('input',function(e){if(e.target&&e.target.id==='hcAudienceSearch')renderAudience()});
  window.loadHellCampAudience=loadAudience;
- // A random browser ID lets the owner count guest visits without collecting IP addresses or device fingerprints.
- var lastTrackedPage='',trackBusy=false;
+ function inferTool(page){var p=String(page||'').toLowerCase();if(/face.?fusion/.test(p))return 'face-fusion';if(/face.?swap|head.?swap/.test(p))return 'face-swap';if(/voice|tts/.test(p))return 'voice';if(/job/.test(p))return 'jobs';if(/market/.test(p))return 'marketplace';if(/chat|assistant/.test(p))return 'chat';if(/ai lab|lab/.test(p))return 'ai-lab';if(/hell edits/.test(p))return 'hell-edits';return 'other'}
+ function isBlocked(tool){return localToolBlocks.some(function(b){return b.tool_key===tool})}
+ function applyBlocks(blocks){localToolBlocks=Array.isArray(blocks)?blocks:[];try{localStorage.setItem('hc_tool_blocks',JSON.stringify(localToolBlocks))}catch(_){}}
+ try{applyBlocks(JSON.parse(localStorage.getItem('hc_tool_blocks')||'[]'))}catch(_){}
  async function trackPage(){
-  var page=String((typeof state!=='undefined'&&state.page)||'Home').slice(0,80);
-  if(!page||page===lastTrackedPage||trackBusy)return;
-  lastTrackedPage=page;trackBusy=true;
+  var page=String((typeof state!=='undefined'&&state.page)||'Home').slice(0,80),changed=page!==lastTrackedPage,now=Date.now();
+  if(!page||trackBusy||(!changed&&now-lastHeartbeat<28000))return;
+  lastTrackedPage=page;lastHeartbeat=now;trackBusy=true;
   try{
-   var id='';
-   try{id=localStorage.getItem('hc_guest_visitor_id')||'';if(!/^[0-9a-f-]{36}$/i.test(id)){id=crypto.randomUUID();localStorage.setItem('hc_guest_visitor_id',id)}}catch(_){id=crypto.randomUUID?crypto.randomUUID():''}
+   var id='';try{id=localStorage.getItem('hc_guest_visitor_id')||'';if(!/^[0-9a-f-]{36}$/i.test(id)){id=crypto.randomUUID();localStorage.setItem('hc_guest_visitor_id',id)}}catch(_){id=crypto.randomUUID?crypto.randomUUID():''}
    if(!/^[0-9a-f-]{36}$/i.test(id))return;
-   await client().functions.invoke('site-audience',{body:{action:'track',visitor_id:id,page:page}});
-  }catch(err){lastTrackedPage='';}
+   var result=await client().functions.invoke('site-audience',{body:{action:'track',visitor_id:id,page:page,tool_key:changed?inferTool(page):''}});
+   if(result&&result.data&&Array.isArray(result.data.blocked_tools)){applyBlocks(result.data.blocked_tools);if(isBlocked(inferTool(page))){var v=el('view');if(v)v.innerHTML='<div class="card"><h2>Tool access restricted</h2><p class="muted">The administrator has restricted access to this tool for this account or browser.</p></div>'}}
+  }catch(err){}
   finally{trackBusy=false}
  }
- window.hcTrackCurrentPage=trackPage;
- setTimeout(trackPage,1200);
+ document.addEventListener('click',function(e){var nav=e.target&&e.target.closest?e.target.closest('[data-page]'):null;if(nav){var key=inferTool(nav.getAttribute('data-page'));if(isBlocked(key)){e.preventDefault();e.stopImmediatePropagation();alert('Access to this tool is currently restricted.');return}setTimeout(trackPage,450)}});
+ document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*="hell-edits.html"]'):null;if(a&&isBlocked('hell-edits')){e.preventDefault();alert('Access to HELL EDITS is currently restricted.')}});
+ document.addEventListener('submit',function(e){var key=inferTool((typeof state!=='undefined'&&state.page)||'');if(isBlocked(key)){e.preventDefault();e.stopImmediatePropagation();alert('Access to this tool is currently restricted.')}},true);
+ setTimeout(trackPage,1200);setInterval(trackPage,30000);
  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-page]'))setTimeout(trackPage,450)});
  try{var view=document.getElementById('view');if(view&&window.MutationObserver){var observer=new MutationObserver(function(){setTimeout(trackPage,250)});observer.observe(view,{childList:true,subtree:true})}}catch(_){}
 

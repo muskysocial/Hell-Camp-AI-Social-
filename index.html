@@ -2164,6 +2164,10 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
  document.addEventListener('click',function(e){
   var card=e.target.closest('.hc-ai-tools-grid .hc-ai-tool');if(!card||card.matches('a')||card.classList.contains('hc-ai-tool-hell-edits'))return;
   var name=card.getAttribute('data-tool');if(!name||!defs[name])return;
+  // Preserve the original, already-integrated handlers for live tools.
+  // Capturing and stopping these clicks was preventing Groq and provider actions from ever running.
+  var action=card.getAttribute('data-action')||'';
+  if(['openGroqChat','openHeadSwap','openFaceSwap','openHelldevelHeadSwap','openVideoFaceSwap','openFaceFusion','openAiVoice','openVoiceRoom'].indexOf(action)!==-1)return;
   e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();createRoom(name);
  },true);
 })();

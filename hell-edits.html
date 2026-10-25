@@ -247,7 +247,7 @@ function hcShowDoc(){['libraryView','editorView','adminView'].forEach(id=>byId(i
 function hcQueueAutosave(){clearTimeout(hcDocTimer);hcDocTimer=setTimeout(()=>{try{sessionStorage.setItem('hc-doc-draft',JSON.stringify({name:hcDocName,html:byId('hcDocPaper').innerHTML}));hcStatus('Draft saved on this device. Use Save project to sync across devices.');}catch{}},600);}
 async function hcImportDoc(e){const f=e.target.files&&e.target.files[0];if(!f)return;try{const ext=f.name.split('.').pop().toLowerCase();let html;if(ext==='docx'){if(!window.mammoth)throw new Error('Word import library did not load.');const r=await mammoth.convertToHtml({arrayBuffer:await f.arrayBuffer()});html=r.value;if(r.messages&&r.messages.length)hcStatus('Imported with notes: advanced Word formatting may not be preserved.');}else if(ext==='html'||ext==='htm'){const d=new DOMParser().parseFromString(await f.text(),'text/html');html=d.body.innerHTML;}else html='<p>'+hcEsc(await f.text()).replace(/\r?\n/g,'<br>')+'</p>';byId('hcDocPaper').innerHTML=html||'<p></p>';hcDocName=hcSafeName(f.name.replace(/\.[^.]+$/,''));byId('hcDocName').value=hcDocName;hcDocDirty=true;hcStatus('Imported '+f.name+'. Review layout before exporting.');}catch(err){hcStatus('Import failed: '+(err.message||err),true);}finally{e.target.value='';}}
 function hcDocHtml(){return '<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px}img{max-width:100%}h1,h2,h3{page-break-after:avoid}[data-page-break]{page-break-before:always}</style></head><body>'+byId('hcDocPaper').innerHTML+'</body></html>';}
-<script id="hc-design-projects">
+
 (function(){
 const byId=id=>document.getElementById(id);
 function status(t){if(typeof msg==='function')msg(t,'');}
@@ -294,7 +294,6 @@ async function loadDesigns(){
 }
 document.addEventListener('DOMContentLoaded',()=>{addControls();const nav=byId('mainNav');if(nav){const observer=new MutationObserver(()=>addControls());observer.observe(nav,{childList:true,subtree:true});}});
 })();
-</script>
 
 </body></html>';}
 function hcDownload(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);}

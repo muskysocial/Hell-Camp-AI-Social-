@@ -107,45 +107,45 @@ input,textarea,.field{font-size:16px!important}
 @keyframes hot-card-pulse{0%,100%{box-shadow:0 0 12px rgba(255,72,0,.16),inset 0 0 18px rgba(255,80,0,.1)}50%{box-shadow:0 0 24px rgba(255,72,0,.34),inset 0 0 25px rgba(255,80,0,.2)}}
 @media(prefers-reduced-motion:reduce){.home-tool-tile,.home-tool-tile:before,.home-tool-tile:after{animation:none}}
 </style><style id="hell-camp-purple-glass-nav">
-/* Restore the full-width bottom navigation panel; do not shrink it into a floating pill. */
+/* Floating bottom navigation inspired by the supplied Center FAB reference */
 @media(max-width:760px){
  html body nav.mobile{
-  display:flex!important;
-  visibility:visible!important;
-  opacity:1!important;
-  position:fixed!important;
-  left:0!important;
-  right:0!important;
-  bottom:0!important;
-  width:100%!important;
-  max-width:none!important;
-  min-width:0!important;
-  margin:0!important;
-  transform:none!important;
-  box-sizing:border-box!important;
-  justify-content:space-around!important;
-  align-items:stretch!important;
-  padding:8px 4px calc(8px + env(safe-area-inset-bottom))!important;
-  background:linear-gradient(135deg,rgba(248,239,255,.96),rgba(207,173,255,.94) 48%,rgba(232,213,255,.96))!important;
-  background-color:rgba(205,170,255,.94)!important;
-  border:1px solid rgba(255,255,255,.72)!important;
-  border-bottom:0!important;
-  border-radius:18px 18px 0 0!important;
-  box-shadow:0 -5px 24px rgba(143,75,255,.22),inset 0 1px 0 rgba(255,255,255,.7)!important;
-  backdrop-filter:blur(26px) saturate(180%)!important;
-  -webkit-backdrop-filter:blur(26px) saturate(180%)!important;
-  z-index:9999!important;
+  display:flex!important;visibility:visible!important;opacity:1!important;
+  position:fixed!important;left:50%!important;right:auto!important;bottom:12px!important;
+  width:calc(100% - 32px)!important;max-width:520px!important;min-width:0!important;
+  margin:0!important;transform:translateX(-50%)!important;box-sizing:border-box!important;
+  height:78px!important;padding:7px 8px calc(7px + env(safe-area-inset-bottom))!important;
+  justify-content:space-around!important;align-items:center!important;gap:2px!important;
+  background:rgba(255,255,255,.97)!important;background-image:none!important;
+  border:1px solid rgba(20,20,30,.08)!important;border-radius:28px!important;
+  box-shadow:0 8px 28px rgba(18,18,35,.20),0 2px 5px rgba(18,18,35,.08)!important;
+  backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+  z-index:9999!important;overflow:visible!important;
  }
  html body nav.mobile button{
-  flex:1 1 0!important;
-  min-width:0!important;
-  color:#69458f!important;
-  background:transparent!important;
+  flex:1 1 0!important;min-width:0!important;height:62px!important;padding:5px 2px!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+  gap:3px!important;border:0!important;border-radius:18px!important;
+  color:#4b4b55!important;background:transparent!important;font-size:11px!important;
+  line-height:1.1!important;font-weight:600!important;white-space:nowrap!important;
  }
- html body nav.mobile button b{color:#8750c7!important;text-shadow:0 0 12px rgba(164,106,255,.35)!important}
- html body nav.mobile button.active,html body nav.mobile button.active b{color:#641bb7!important;text-shadow:0 0 14px rgba(157,91,255,.55)!important}
- html body nav.mobile button:nth-child(3){background:linear-gradient(135deg,#e0c5ff,#a76aff 55%,#7e3bd1)!important;color:#fff!important;border-radius:14px!important;box-shadow:0 0 0 3px rgba(231,213,255,.45),0 4px 16px rgba(135,65,235,.38),inset 0 1px 0 rgba(255,255,255,.8)!important}
- html body nav.mobile button:nth-child(3) b{color:#fff!important;text-shadow:0 0 12px rgba(255,255,255,.8)!important}
+ html body nav.mobile button b{
+  display:block!important;font-size:23px!important;line-height:1!important;
+  color:#252530!important;text-shadow:none!important;font-weight:500!important;
+ }
+ html body nav.mobile button.active,html body nav.mobile button.active b{
+  color:#5a36e8!important;text-shadow:none!important;
+ }
+ html body nav.mobile button:nth-child(3){
+  flex:0 0 64px!important;width:64px!important;height:64px!important;min-width:64px!important;
+  margin-top:-22px!important;padding:0!important;border-radius:50%!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  background:linear-gradient(145deg,#7257f5,#4c2be0)!important;color:#fff!important;
+  box-shadow:0 5px 14px rgba(91,61,230,.34),0 0 0 7px rgba(255,255,255,.97)!important;
+ }
+ html body nav.mobile button:nth-child(3) b{
+  color:#fff!important;font-size:38px!important;line-height:1!important;font-weight:400!important;text-shadow:none!important;
+ }
 }
 @media(min-width:761px){html body nav.mobile{display:none!important}}
 </style>

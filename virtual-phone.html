@@ -116,7 +116,7 @@ async function save(){readState();if(!client||!currentUser){status('Not synced',
 async function load(){if(!client){status('Offline','Supabase client did not load.',false);return;}const {data,error}=await client.auth.getSession();if(error||!data||!data.session){status('Sign in required','Sign into Hell Camp in this browser first, then return to your virtual phone.',false);return;}currentUser=data.session.user;$('greeting').textContent='Hello, '+((currentUser.email||'Hell Camp member').split('@')[0])+' 👋';const {data:row,error:loadError}=await client.from('virtual_phones').select('state').eq('user_id',currentUser.id).maybeSingle();if(loadError){status('Cloud sync needs setup','The virtual-phone database migration must be applied before sync can start.',false);return;}if(row&&row.state)state={...defaults,...row.state};applyState();status('Cloud sync active','Your phone state was restored for this account.',true);}
 $('backBtn').addEventListener('click',()=>{if($('remoteView').classList.contains('active')){$('remoteFrame').src='about:blank';$('remoteView').classList.remove('active');return;}location.href='./index.html';});
 $('browseForm').addEventListener('submit',e=>{e.preventDefault();launchUsBrowser($('urlInput').value);});
-async function launchUsBrowser(targetUrl){
+async async function launchUsBrowser(targetUrl){
  const statusEl=$('browserStatus'),button=$('startUsBrowser');
  button.disabled=true;button.textContent='Starting remote session…';statusEl.textContent='Checking your Hell Camp login and remote browser provider…';
  try{
@@ -140,7 +140,7 @@ async function launchUsBrowser(targetUrl){
   $('remoteFrame').src=data.liveViewUrl;
   $('remoteFrame').style.display='block';$('browserPlaceholder').style.display='none';
   $('remoteTitle').textContent=parsed.hostname+' · remote browser';
-  statusEl.textContent='Browsing '+parsed.hostname+' inside Hell Camp. Provider IP country is not guaranteed.';
+  statusEl.textContent='Real website opened: '+parsed.hostname+'. Sign in directly on the website. Hell Camp does not receive the website password.';
   $('gatewayNotice').textContent='The remote browser is embedded in this page. Its public IP country depends on the provider and is not guaranteed to be US-based.';
  }catch(err){$('browserPlaceholder').style.display='grid';$('browserPlaceholder').innerHTML='<div class="preview-icon">⚠️</div><strong>Browser could not start</strong><small></small>';$('browserPlaceholder').querySelector('small').textContent=err.message||'Could not start the remote browser.';statusEl.textContent=err.message||'Could not start the remote browser.';}
  finally{button.disabled=false;button.textContent='Start remote browser session';}
@@ -177,8 +177,10 @@ function openDemo(name,icon,color,tag,title,description,items){
 function closeDemo(){$('demoApp').classList.remove('open');}
 document.querySelectorAll('[data-us-url]').forEach(link=>link.addEventListener('click',event=>{
  event.preventDefault();event.stopPropagation();
- const data=demoApps[link.dataset.usUrl]||{name:'Browser',icon:'◉',color:'#3578df',tag:'PHONE BROWSER',title:'Website preview',text:'Demo mode is enabled. This screen does not connect to an external website.',items:['Browser home','Bookmarks','History']};
- openDemo(data.name,data.icon,data.color,data.tag,data.title,data.text,data.items);
+ const target=link.dataset.usUrl;
+ $('urlInput').value=target;
+ closeDemo();
+ launchUsBrowser(target);
 }));
 document.querySelectorAll('.app[href="#settings"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();openDemo('Settings','⚙','#687487','PHONE SETTINGS','Make it yours','Demo phone settings and appearance.', ['Wallpaper: Purple night','Sounds and haptics','Privacy and security']);}));
 document.querySelectorAll('.app[href="#notes"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();openDemo('Notes','▤','#e7b643','PHONE NOTES','Quick note','A sample notes screen inside your demo phone.', ['Shopping list','Ideas','Personal note']);}));

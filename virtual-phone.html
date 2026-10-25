@@ -54,9 +54,24 @@ main{width:100%;height:calc(100dvh - 54px - env(safe-area-inset-top));margin:0;p
 .remote-view .view-actions{flex:0 0 auto}
 #remoteView:not(.active){display:none!important}
 @media(min-width:780px){.device{position:relative;top:auto}.screen{max-width:520px;margin:0 auto;border-left:1px solid #272033;border-right:1px solid #272033}.remote-view.active{max-width:520px;left:50%;transform:translateX(-50%);border-left:1px solid #333}}
+\n
+/* Demo-first iPhone: all app taps stay in the local phone mockup. */
+#demoApp{display:none;position:absolute;inset:0;z-index:8;background:#f7f7fb;color:#171720;padding:calc(22px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));overflow:auto}
+#demoApp.open{display:block}
+.demo-head{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.demo-back{border:0;border-radius:12px;background:#e9e7f1;color:#171720;padding:10px 13px;font-weight:700}
+.demo-brand{font-size:22px;font-weight:850;letter-spacing:-.5px}
+.demo-card{background:white;border:1px solid #e8e6ef;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 18px #2010440b}
+.demo-muted{color:#777486;font-size:13px}
+.demo-pill{display:inline-block;border-radius:999px;background:#eee5ff;color:#6530b7;padding:5px 10px;font-size:11px;font-weight:750}
+.demo-input{width:100%;border:1px solid #dedbe8;border-radius:12px;padding:12px;margin:7px 0;color:#171720;background:#fff}
+.demo-button{width:100%;border:0;border-radius:12px;background:#7d45e8;color:#fff;padding:12px;font-weight:800;margin-top:8px}
+.demo-bottom{position:sticky;bottom:0;background:#ffffffed;padding:12px 0 0;display:flex;justify-content:space-around;border-top:1px solid #e7e4ed;margin-top:18px}
+.demo-bottom span{font-size:12px;color:#615d70}
+@media(min-width:780px){#demoApp{max-width:520px;left:50%;transform:translateX(-50%);width:100%}}
 \n</style></head>
 <body>
-<header class="topbar"><button class="back" id="backBtn" type="button">← Back</button><div class="brand">Hell <span>Phone</span></div><div class="status" id="syncStatus">Checking account…</div></header>
+<header class="topbar"><button class="back" id="backBtn" type="button">← Back</button><div class="brand">Hell <span>Phone</span></div><div class="status" id="syncStatus">Demo phone ready</div></header>
 <main>
 <section class="hero"><div class="heroicon">✦</div><div><h1>Your private virtual iPhone</h1><p>Personal phone space, saved to your Hell Camp account.</p></div></section>
 <div class="phone-wrap">
@@ -134,13 +149,44 @@ $('closeRemote').addEventListener('click',()=>{$('remoteFrame').src='about:blank
 $('reloadRemote').addEventListener('click',()=>{if($('remoteFrame').src&&$('remoteFrame').src!=='about:blank')$('remoteFrame').src=$('remoteFrame').src;});
 $('fullscreenRemote').addEventListener('click',()=>{const f=$('remoteFrame');if(f.requestFullscreen)f.requestFullscreen().catch(()=>{});else status('Full screen unavailable','Your browser does not support full screen for this view.',false);});
 $('startUsBrowser').addEventListener('click',()=>launchUsBrowser());
-document.querySelectorAll('[data-us-url]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();$('urlInput').value=link.dataset.usUrl;launchUsBrowser(link.dataset.usUrl)}));
+
+const demoApps={
+ 'https://web.whatsapp.com/':{name:'WhatsApp',icon:'☎',color:'#20c96b',tag:'MESSAGES',title:'Stay connected',text:'Your chats will appear here in the full app.',items:['Personal chats','Family group','Work updates']},
+ 'https://www.facebook.com/':{name:'Facebook',icon:'f',color:'#1877f2',tag:'SOCIAL FEED',title:'What’s happening?',text:'Your friends’ updates would appear in this feed.',items:['A new photo from a friend','Community updates','People you may know']},
+ 'https://www.instagram.com/':{name:'Instagram',icon:'◎',color:'#e94c94',tag:'PHOTO SHARING',title:'Capture the moment',text:'Photos, stories and reels would appear here.',items:['Stories','Explore photos','Reels']},
+ 'https://www.tiktok.com/':{name:'TikTok',icon:'♪',color:'#161616',tag:'SHORT VIDEOS',title:'For you',text:'A demo video feed lives here.',items:['Trending clips','Music and creators','Following']},
+ 'https://x.com/':{name:'X',icon:'𝕏',color:'#111111',tag:'LIVE UPDATES',title:'What’s happening',text:'Posts and trending topics would appear here.',items:['For you','Following','Trending topics']},
+ 'https://duckduckgo.com/':{name:'Browser',icon:'◉',color:'#3578df',tag:'WEB BROWSER',title:'Search the web',text:'This is a visual phone demo. External websites are not loaded in demo mode.',items:['Search the web','Saved pages','Recent searches']}
+};
+function openDemo(name,icon,color,tag,title,description,items){
+ const app=$('demoApp');app.innerHTML='';
+ const head=document.createElement('div');head.className='demo-head';
+ const back=document.createElement('button');back.className='demo-back';back.textContent='‹ Home';back.addEventListener('click',closeDemo);
+ const brand=document.createElement('div');brand.className='demo-brand';brand.textContent=name;
+ head.append(back,brand);app.append(head);
+ const hero=document.createElement('div');hero.className='demo-card';
+ const logo=document.createElement('div');logo.style.cssText='width:58px;height:58px;border-radius:18px;display:grid;place-items:center;color:white;font-size:32px;font-weight:800;background:'+color;logo.textContent=icon;
+ const pill=document.createElement('span');pill.className='demo-pill';pill.textContent=tag;
+ const h=document.createElement('h2');h.textContent=title;h.style.cssText='font-size:25px;line-height:1.15;margin:16px 0 8px';
+ const p=document.createElement('p');p.className='demo-muted';p.textContent=description;
+ hero.append(logo,pill,h,p);app.append(hero);
+ items.forEach((item,i)=>{const card=document.createElement('div');card.className='demo-card';const t=document.createElement('strong');t.textContent=item;const sub=document.createElement('p');sub.className='demo-muted';sub.textContent=i===0?'Welcome to your '+name+' demo.':'Sample screen · Demo content only';card.append(t,sub);app.append(card)});
+ const foot=document.createElement('div');foot.className='demo-bottom';['Home','Search','Activity','Profile'].forEach(t=>{const s=document.createElement('span');s.textContent=t;foot.append(s)});app.append(foot);
+ app.classList.add('open');
+}
+function closeDemo(){$('demoApp').classList.remove('open');}
+document.querySelectorAll('[data-us-url]').forEach(link=>link.addEventListener('click',event=>{
+ event.preventDefault();event.stopPropagation();
+ const data=demoApps[link.dataset.usUrl]||{name:'Browser',icon:'◉',color:'#3578df',tag:'PHONE BROWSER',title:'Website preview',text:'Demo mode is enabled. This screen does not connect to an external website.',items:['Browser home','Bookmarks','History']};
+ openDemo(data.name,data.icon,data.color,data.tag,data.title,data.text,data.items);
+}));
+
 
 $('saveBtn').addEventListener('click',save);
 $('resetBtn').addEventListener('click',()=>{if(!confirm('Reset this phone layout and settings? Your saved note will also be cleared.'))return;state={...defaults};applyState();save();});
 ['wallpaper','reducedMotion','phoneNote'].forEach(id=>$(id).addEventListener(id==='phoneNote'?'input':'change',()=>{readState();clearTimeout(saveTimer);saveTimer=setTimeout(save,900)}));
 document.querySelectorAll('[data-url]').forEach(b=>b.addEventListener('click',()=>launchUsBrowser(b.dataset.url)));
 function tick(){const d=new Date();$('clock').textContent=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}
-tick();setInterval(tick,30000);load();
+tick();setInterval(tick,30000);status('Demo phone ready','The iPhone demo works without account sync.',true);\nPromise.race([load().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,3500))]).finally(()=>{if($('syncStatus').textContent==='Checking account…')status('Demo phone ready','Account sync is unavailable; the demo phone still works.',true);});
 })();
 </script></body></html>

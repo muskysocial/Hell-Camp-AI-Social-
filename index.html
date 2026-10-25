@@ -338,7 +338,52 @@ body:has(.hc-home-feed) .mobile button.active,body:has(.hc-home-feed) .mobile bu
 .hc-community-activity{width:min(100%,440px);padding:14px;border:1px solid #d8e5ed;border-radius:18px;background:linear-gradient(145deg,#fff,#f4f9ff);color:#173747;box-shadow:0 8px 24px #102a3a0a}.hc-community-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}.hc-community-head b{font-size:14px}.hc-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px #22c55e22;margin-right:6px}
 .hc-community-event{display:flex;align-items:center;gap:10px;min-height:52px;animation:hcActivityIn .35s ease both}.hc-community-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:none;background:#e6ddff;color:#4f2d8b;display:grid;place-items:center;font-weight:900;border:1px solid #d7c9ff}.hc-community-copy{min-width:0;flex:1;font-size:12px;line-height:1.4}.hc-community-copy b{font-size:13px;color:#152d41}.hc-community-copy small{display:block;color:#6b7d8d;margin-top:2px}.hc-community-amount{font-weight:850;color:#087d61;white-space:nowrap;font-size:12px}.hc-community-empty{font-size:12px;color:#6b7d8d;line-height:1.5;padding:8px 0}.hc-community-foot{font-size:10px;color:#8293a1;margin-top:9px;border-top:1px solid #e6edf2;padding-top:8px}.hc-opt-in{display:flex;align-items:flex-start;gap:9px;color:#385565;font-size:12px;line-height:1.45;margin:5px 0 13px}.hc-opt-in input{margin-top:3px;flex:none}
 @keyframes hcActivityIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@media(max-width:560px){.hc-login-bonus{padding:15px}.hc-login-bonus h2{font-size:19px}.hc-community-activity{padding:12px}.hc-community-amount{font-size:11px}}
-</style></head>
+</style><style id="hc-center-fab-nav-final">
+/* Center-FAB navigation: match the supplied white floating dock reference. */
+@media(max-width:760px){
+ html body nav.mobile.hc-center-fab-nav{
+  display:flex!important;visibility:visible!important;opacity:1!important;
+  position:fixed!important;left:50%!important;right:auto!important;bottom:12px!important;
+  width:calc(100% - 28px)!important;max-width:520px!important;min-width:0!important;
+  height:82px!important;min-height:82px!important;margin:0!important;padding:7px 10px calc(7px + env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;box-sizing:border-box!important;
+  flex-direction:row!important;justify-content:space-around!important;align-items:center!important;gap:2px!important;
+  background:#fff!important;background-image:none!important;border:1px solid rgba(28,31,44,.07)!important;
+  border-radius:28px!important;box-shadow:0 9px 30px rgba(25,25,40,.18),0 2px 7px rgba(25,25,40,.06)!important;
+  backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;overflow:visible!important;z-index:99999!important;
+ }
+ html body nav.mobile.hc-center-fab-nav button{
+  display:flex!important;flex:1 1 0!important;min-width:0!important;max-width:none!important;height:64px!important;min-height:64px!important;
+  margin:0!important;padding:5px 2px!important;transform:none!important;border:0!important;border-radius:18px!important;
+  background:transparent!important;box-shadow:none!important;color:#272833!important;
+  flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:4px!important;
+  font-family:inherit!important;font-size:11px!important;font-weight:600!important;line-height:1.1!important;white-space:nowrap!important;
+ }
+ html body nav.mobile.hc-center-fab-nav button span{display:block!important;font-size:11px!important;line-height:1.1!important;color:inherit!important}
+ html body nav.mobile.hc-center-fab-nav button b{
+  display:block!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;transform:none!important;
+  color:#242631!important;font-size:25px!important;font-weight:500!important;line-height:1!important;text-shadow:none!important;
+ }
+ html body nav.mobile.hc-center-fab-nav button.active,
+ html body nav.mobile.hc-center-fab-nav button.active b{color:#5435e8!important}
+ html body nav.mobile.hc-center-fab-nav button:nth-child(3){
+  flex:0 0 66px!important;width:66px!important;min-width:66px!important;max-width:66px!important;height:66px!important;min-height:66px!important;
+  margin-top:-23px!important;padding:0!important;border:0!important;border-radius:50%!important;
+  background:linear-gradient(145deg,#7056f4,#4e2be0)!important;color:#fff!important;
+  box-shadow:0 5px 15px rgba(83,54,226,.35),0 0 0 7px #fff!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+ }
+ html body nav.mobile.hc-center-fab-nav button:nth-child(3) b{
+  display:block!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;
+  background:transparent!important;color:#fff!important;font-size:39px!important;font-weight:400!important;line-height:1!important;
+  text-shadow:none!important;box-shadow:none!important;border:0!important;
+ }
+ .main{padding-bottom:125px!important}
+}
+@media(min-width:761px){html body nav.mobile.hc-center-fab-nav{display:none!important}}
+</style>
+</head>
 <body>
 <div id="hcBootSplash" role="status" aria-live="polite" aria-label="Loading Hell Camp">
  <div class="hc-splash-inner">
@@ -368,7 +413,7 @@ body:has(.hc-home-feed) .mobile button.active,body:has(.hc-home-feed) .mobile bu
  setTimeout(finish,10000);
 })();
 </script>
-<div class="app"><aside><div class="brand">HELL <span>CAMP</span></div><button class="nav active" data-page="Home">🏠　Home feed</button><button class="nav" data-page="Discover">✨　Discover</button><button class="nav" data-page="Profile">👤　My profile</button><button class="nav" data-page="Premium">💎　Premium</button><button class="nav" data-page="Groups">👥　Groups & Events</button><button class="nav" data-page="Jobs">💼　Jobs</button><button class="nav" data-page="Creator Studio">🎬　Creator Studio</button><button class="nav" data-page="Settings">⚙️　Settings & Privacy</button><button class="nav" data-page="Dashboard">▦　Dashboard</button><div class="foot"><button class="nav" data-page="ADMINhub">🛡️　ADMINhub</button><button class="nav" data-page="Help & Support">❔　Help & Support</button></div></aside><main class="main"><header class="top"><button class="hc-back-button" id="hcGoBack" aria-label="Go back" title="Go back">←</button><button class="menu-trigger" id="openMenu" aria-label="Open menu">⋯</button><div class="brand-mobile">Hell<span>Camp</span></div><input id="search" class="search" placeholder="⌕ Search"><button class="btn hc-notification-button" data-page="Notifications" aria-label="Notifications">♧<span id="hcNotificationDot" class="hc-notification-dot" hidden></span></button><button class="btn hc-top-message-button" data-page="Messages" aria-label="Messages" title="Messages">✉<span id="hcTopMessageDot" class="hc-notification-dot" hidden></span></button><button class="btn" data-page="Profile" aria-label="Profile">●</button></header><div id="view"></div></main></div><nav class="mobile"><button data-page="Home"><b>⌂</b>Home</button><button data-page="Jobs"><b>💼</b>Jobs</button><button data-page="Create Post"><b>＋</b></button><button data-page="AI Space"><b>✧</b>AI Lab</button><button data-page="Profile"><b>♙</b>Profile</button></nav>
+<div class="app"><aside><div class="brand">HELL <span>CAMP</span></div><button class="nav active" data-page="Home">🏠　Home feed</button><button class="nav" data-page="Discover">✨　Discover</button><button class="nav" data-page="Profile">👤　My profile</button><button class="nav" data-page="Premium">💎　Premium</button><button class="nav" data-page="Groups">👥　Groups & Events</button><button class="nav" data-page="Jobs">💼　Jobs</button><button class="nav" data-page="Creator Studio">🎬　Creator Studio</button><button class="nav" data-page="Settings">⚙️　Settings & Privacy</button><button class="nav" data-page="Dashboard">▦　Dashboard</button><div class="foot"><button class="nav" data-page="ADMINhub">🛡️　ADMINhub</button><button class="nav" data-page="Help & Support">❔　Help & Support</button></div></aside><main class="main"><header class="top"><button class="hc-back-button" id="hcGoBack" aria-label="Go back" title="Go back">←</button><button class="menu-trigger" id="openMenu" aria-label="Open menu">⋯</button><div class="brand-mobile">Hell<span>Camp</span></div><input id="search" class="search" placeholder="⌕ Search"><button class="btn hc-notification-button" data-page="Notifications" aria-label="Notifications">♧<span id="hcNotificationDot" class="hc-notification-dot" hidden></span></button><button class="btn hc-top-message-button" data-page="Messages" aria-label="Messages" title="Messages">✉<span id="hcTopMessageDot" class="hc-notification-dot" hidden></span></button><button class="btn" data-page="Profile" aria-label="Profile">●</button></header><div id="view"></div></main></div><nav class="mobile hc-center-fab-nav" aria-label="Main navigation"><button type="button" data-page="Home" aria-label="Home"><b>⌂</b><span>Home</span></button><button type="button" data-page="Discover" aria-label="Explore"><b>⌕</b><span>Explore</span></button><button type="button" data-page="Create Post" aria-label="Create post" title="Create post"><b>＋</b></button><button type="button" data-page="Messages" aria-label="Inbox"><b>▢</b><span>Inbox</span></button><button type="button" data-page="Profile" aria-label="Profile"><b>♙</b><span>Profile</span></button></nav>
 <div class="menu-overlay" id="menuOverlay"><div class="menu-drawer"><div class="drawer-head"><div class="brand-mobile">Hell<span>Camp</span></div><button class="drawer-close" id="closeMenu">×</button></div><div class="drawer-profile"><span class="avatar">H</span><div><b>Hell Camp member</b><div class="muted tiny">@hellcamp</div></div></div><button class="drawer-item" data-page="Home"><span>⌂</span>Home feed</button><button class="drawer-item" data-page="Discover"><span>◎</span>Discover</button><button class="drawer-item" data-page="Trending"><span>🔥</span>Trending posts</button><button class="drawer-item" data-page="Creators"><span>🎨</span>Creators</button><button class="drawer-item" data-page="Profile"><span>♙</span>My Profile</button><button class="drawer-item" data-page="Groups"><span>♧</span>Groups & Events</button><button class="drawer-item" data-page="Saved"><span>♧</span>Saved</button><button class="drawer-item" data-page="Memories"><span>◷</span>Memories</button><button class="drawer-item" data-page="Settings"><span>⚙</span>Settings & Privacy</button><div class="drawer-section">Tools & Services</div><button class="drawer-item" data-page="HeadSwap"><span>✧</span>HeadSwap · 5 credits</button><button class="drawer-item" data-page="Educational Design Studio"><span>▧</span>Educational Design Studio</button><button class="drawer-item" data-page="Library"><span>▤</span>Community Library</button><button class="drawer-item" data-page="Account Listings"><span>▣</span>Account Listings</button><button class="drawer-item" data-page="Ask 4 Aza"><span>✦</span>Ask 4 Aza</button><button class="drawer-item" data-page="Jobs"><span>▦</span>Jobs</button><button class="drawer-item" data-page="Dating Directory"><span>♡</span>Dating Directory</button><button class="drawer-item" data-page="Premium"><span>♢</span>Pro Plans · Gold / Diamond / Platinum</button><button class="drawer-item" data-page="Notifications"><span>♧</span>Notifications<span id="hcNotificationDrawerDot" class="hc-notification-dot hc-notification-drawer-dot" hidden></span></button><button class="drawer-item" data-page="Dashboard"><span>▦</span>Dashboard</button><button class="drawer-item" data-page="ADMINhub"><span>⛨</span>ADMINhub</button><div class="drawer-section">More</div><button class="drawer-item" data-page="Creator Studio"><span>▣</span>Creator Studio</button><button class="drawer-item" data-page="Ad Center"><span>◈</span>Ad Center</button><button class="drawer-item" data-page="Help & Support"><span>?</span>Help & Support</button><div class="drawer-section">Account</div><button class="drawer-item" data-auth-action="signout" id="drawerSignOut" style="display:none"><span>↪</span>Sign out</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script id="hc-notification-compat-shim">

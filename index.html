@@ -2029,4 +2029,36 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 <script id="hc-ai-lab-room-search">
 (function(){function setup(){var input=document.getElementById('hcAiRoomSearch'),count=document.getElementById('hcAiRoomCount');if(!input||input.dataset.ready)return;input.dataset.ready='1';function filter(){var q=input.value.trim().toLocaleLowerCase(),cards=Array.from(document.querySelectorAll('.hc-ai-tools-grid .hc-ai-tool'));var shown=0;cards.forEach(function(card){var match=!q||card.textContent.toLocaleLowerCase().includes(q);card.hidden=!match;if(match)shown++});if(count)count.textContent=shown+' room'+(shown===1?'':'s')}input.addEventListener('input',filter);filter()}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();var observer=new MutationObserver(function(){setup()});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){observer.observe(document.body,{childList:true,subtree:true})});else observer.observe(document.body,{childList:true,subtree:true})})();
 </script>
+
+<style id="hc-ai-room-reference-design">
+/* Hell Camp AI room design system — based on the user's purple result-screen reference */
+.hc-ai-space{color:#f7f3ff}
+.hc-ai-space .hc-ai-hero{background:radial-gradient(ellipse at 50% 0%,#38206c 0%,#17102d 52%,#090817 100%);border:1px solid rgba(159,99,255,.34);box-shadow:0 18px 48px rgba(29,8,67,.36)}
+.hc-ai-room-search{background:rgba(17,12,37,.9)!important;border:1px solid rgba(154,94,255,.35)!important;border-radius:20px!important}
+.hc-ai-room-search label{color:#f1e8ff!important}
+.hc-ai-room-search input{background:#0d0a1e!important;color:#fff!important;border:1px solid #493078!important;border-radius:14px!important;min-height:46px}
+.hc-ai-tools-grid .hc-ai-tool{background:linear-gradient(145deg,rgba(94,45,190,.30),rgba(22,14,48,.94))!important;border:1px solid rgba(155,103,255,.48)!important;border-radius:22px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 10px 28px rgba(82,34,174,.18)!important;color:#fbf8ff!important;min-height:90px}
+.hc-ai-tools-grid .hc-ai-tool:hover{border-color:#b99aff!important;background:linear-gradient(145deg,rgba(111,54,220,.42),rgba(24,15,52,.98))!important;box-shadow:0 0 25px rgba(126,61,255,.2)!important}
+.hc-ai-tools-grid .hc-ai-tool-icon{background:linear-gradient(145deg,#682de0,#35106f)!important;border:1px solid rgba(205,177,255,.38)!important;color:white!important;box-shadow:0 0 18px rgba(119,48,255,.24)}
+.hc-ai-tools-grid .hc-ai-tool-info b{color:#fff!important}
+.hc-ai-tools-grid .hc-ai-tool-info small{color:#c9bbeb!important}
+.hc-ai-tools-grid .hc-ai-tool-arrow{color:#c4a4ff!important}
+.hc-ai-note{color:#bcb0d8!important}
+/* Bring existing photo upload / preview panels into the reference palette */
+.hc-ai-space .hc-pink-photo-card,.hc-ai-space .hc-groq-chat-card{background:linear-gradient(160deg,rgba(36,23,70,.98),rgba(12,10,29,.98))!important;border:1px solid rgba(145,91,255,.48)!important;border-radius:24px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(4,2,15,.32)!important;color:#f8f4ff!important}
+.hc-ai-space .hc-pink-photo-label{color:#f2e9ff!important}
+.hc-ai-space .hc-pink-photo-label small,.hc-ai-space .hc-pink-photo-preview small{color:#c7b9e8!important}
+.hc-ai-space .hc-pink-photo-preview{background:#100b25!important;border:1px dashed rgba(166,119,255,.68)!important;border-radius:20px!important;color:#f6efff!important}
+.hc-ai-space .hc-pink-file{background:#120d28!important;border:1px solid rgba(151,103,255,.5)!important;border-radius:14px!important;color:#f6efff!important}
+.hc-ai-space input:not([type="checkbox"]):not([type="radio"]),.hc-ai-space textarea,.hc-ai-space select{color:#fff}
+.hc-ai-space textarea,.hc-ai-space input[type="text"],.hc-ai-space input[type="search"],.hc-ai-space input[type="url"]{background:#100b24;border:1px solid #493078;border-radius:14px}
+.hc-ai-space .btn.primary,.hc-ai-space button.btn.primary{background:linear-gradient(105deg,#5425e8,#8a2bfa)!important;color:#fff!important;border:1px solid rgba(218,196,255,.24)!important;border-radius:14px!important;box-shadow:0 8px 24px rgba(108,43,255,.3)!important;min-height:48px}
+.hc-ai-space .btn.primary:hover,.hc-ai-space button.btn.primary:hover{filter:brightness(1.12)}
+.hc-ai-space .hc-groq-bubble{background:#251747!important;border:1px solid rgba(151,103,255,.26)!important;color:#f7f2ff!important;border-radius:18px!important}
+.hc-ai-space .muted{color:#c3b8dc}
+@media(min-width:760px){.hc-ai-space{max-width:1180px;margin-inline:auto}.hc-ai-tools-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.hc-ai-tools-grid .hc-ai-tool{padding:17px;min-height:104px}}
+@media(min-width:1180px){.hc-ai-tools-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:420px){.hc-ai-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hc-ai-tools-grid .hc-ai-tool{padding:11px 9px;gap:9px;border-radius:18px!important;min-height:82px}.hc-ai-tools-grid .hc-ai-tool-icon{width:36px;height:36px;font-size:19px}.hc-ai-tools-grid .hc-ai-tool-info b{font-size:12px}.hc-ai-tools-grid .hc-ai-tool-info small{font-size:10px}}
+</style>
+
 </body></html>

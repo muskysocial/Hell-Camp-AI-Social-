@@ -246,7 +246,57 @@ function hcShowView(view){byId('docView').classList.add('hidden');if(typeof show
 function hcShowDoc(){['libraryView','editorView','adminView'].forEach(id=>byId(id)?.classList.add('hidden'));byId('docView').classList.remove('hidden');document.querySelectorAll('#mainNav [data-view]').forEach(x=>x.classList.toggle('active',x.dataset.view==='doc'));if(user)hcLoadProjects();}
 function hcQueueAutosave(){clearTimeout(hcDocTimer);hcDocTimer=setTimeout(()=>{try{sessionStorage.setItem('hc-doc-draft',JSON.stringify({name:hcDocName,html:byId('hcDocPaper').innerHTML}));hcStatus('Draft saved on this device. Use Save project to sync across devices.');}catch{}},600);}
 async function hcImportDoc(e){const f=e.target.files&&e.target.files[0];if(!f)return;try{const ext=f.name.split('.').pop().toLowerCase();let html;if(ext==='docx'){if(!window.mammoth)throw new Error('Word import library did not load.');const r=await mammoth.convertToHtml({arrayBuffer:await f.arrayBuffer()});html=r.value;if(r.messages&&r.messages.length)hcStatus('Imported with notes: advanced Word formatting may not be preserved.');}else if(ext==='html'||ext==='htm'){const d=new DOMParser().parseFromString(await f.text(),'text/html');html=d.body.innerHTML;}else html='<p>'+hcEsc(await f.text()).replace(/\r?\n/g,'<br>')+'</p>';byId('hcDocPaper').innerHTML=html||'<p></p>';hcDocName=hcSafeName(f.name.replace(/\.[^.]+$/,''));byId('hcDocName').value=hcDocName;hcDocDirty=true;hcStatus('Imported '+f.name+'. Review layout before exporting.');}catch(err){hcStatus('Import failed: '+(err.message||err),true);}finally{e.target.value='';}}
-function hcDocHtml(){return '<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px}img{max-width:100%}h1,h2,h3{page-break-after:avoid}[data-page-break]{page-break-before:always}</style></head><body>'+byId('hcDocPaper').innerHTML+'</body></html>';}
+function hcDocHtml(){return '<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px}img{max-width:100%}h1,h2,h3{page-break-after:avoid}[data-page-break]{page-break-before:always}</style></head><body>'+byId('hcDocPaper').innerHTML+'
+<script id="hc-design-projects">
+(function(){
+const byId=id=>document.getElementById(id);
+function status(t){if(typeof msg==='function')msg(t,'');}
+function addControls(){
+ const actions=byId('editorView')?.querySelector('.section-title .actions');
+ if(actions&&!byId('hcSaveDesignBtn')){const b=document.createElement('button');b.className='btn';b.id='hcSaveDesignBtn';b.textContent='Save project';actions.insertBefore(b,actions.firstChild);b.onclick=saveDesign;}
+ const side=byId('editorView')?.querySelector('.workspace aside');
+ if(side&&!byId('hcDesignProjectsCard')){const card=document.createElement('div');card.className='card';card.id='hcDesignProjectsCard';card.innerHTML='<h3>Saved designs</h3><div id="hcDesignProjects" class="muted small">Sign in to view your saved designs.</div><button class="btn" id="hcRefreshDesigns" style="margin-top:8px;width:100%">Refresh designs</button>';side.appendChild(card);byId('hcRefreshDesigns').onclick=loadDesigns;}
+}
+async function saveDesign(){
+ if(!user)return status('Sign in to save designs to your Hell Camp account.');
+ if(!sourceBlob||!sourceKind)return status('Open a template, image or PDF before saving.');
+ const btn=byId('hcSaveDesignBtn');if(btn){btn.disabled=true;btn.textContent='Saving…';}
+ try{
+  const id=crypto.randomUUID(),base='projects/'+user.id+'/'+id,ext=sourceKind==='pdf'?'pdf':((sourceBlob.type||'image/png').includes('jpeg')?'jpg':(sourceBlob.type||'image/png').includes('webp')?'webp':'png');
+  const sourcePath=base+'-source.'+ext,metaPath=base+'.json';
+  const sourceType=sourceKind==='pdf'?'application/pdf':(sourceBlob.type||'image/png');
+  const up=await db.storage.from('hell-edits').upload(sourcePath,sourceBlob,{upsert:false,contentType:sourceType});if(up.error)throw up.error;
+  const payload={version:1,kind:'hell-edits-design',title:current?.title||'Untitled design',source_type:sourceKind,source_path:sourcePath,source_mime:sourceType,regions:JSON.parse(JSON.stringify(regions||[])),source_filter:sourceFilter||'none',saved_at:new Date().toISOString()};
+  const meta=await db.storage.from('hell-edits').upload(metaPath,new Blob([JSON.stringify(payload)],{type:'application/json'}),{upsert:false,contentType:'application/json'});if(meta.error)throw meta.error;
+  const row=await db.from('hell_edit_assets').insert({title:payload.title,asset_type:'design-project',storage_path:metaPath,is_published:false,created_by:user.id});if(row.error)throw row.error;
+  status('Design project saved. You can reopen it from Saved designs.');await loadDesigns();
+ }catch(e){status('Could not save design: '+(e.message||e)+'. Check your connection and storage permissions.');}
+ finally{if(btn){btn.disabled=false;btn.textContent='Save project';}}
+}
+async function loadDesigns(){
+ const box=byId('hcDesignProjects');if(!box)return;if(!user){box.textContent='Sign in to view saved designs.';return;}
+ box.textContent='Loading saved designs…';
+ const q=await db.from('hell_edit_assets').select('id,title,storage_path,created_at').eq('asset_type','design-project').eq('created_by',user.id).order('created_at',{ascending:false}).limit(30);
+ if(q.error){box.textContent='Could not load saved designs: '+q.error.message;return;}
+ if(!q.data?.length){box.textContent='No saved designs yet.';return;}
+ box.innerHTML=q.data.map(p=>'<button class="btn hc-open-design" data-id="'+String(p.id).replace(/"/g,'&quot;')+'" style="display:block;width:100%;text-align:left;margin:5px 0">'+String(p.title).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'<span style="display:block;font-size:11px;color:var(--muted)">'+new Date(p.created_at).toLocaleDateString()+'</span></button>').join('');
+ box.querySelectorAll('.hc-open-design').forEach(b=>b.onclick=async()=>{
+  const p=q.data.find(x=>x.id===b.dataset.id);if(!p)return;
+  try{
+   const signed=await db.storage.from('hell-edits').createSignedUrl(p.storage_path,300);if(signed.error)throw signed.error;
+   const response=await fetch(signed.data.signedUrl);if(!response.ok)throw new Error('Could not download project metadata.');
+   const data=await response.json(),source=await db.storage.from('hell-edits').createSignedUrl(data.source_path,300);if(source.error)throw source.error;
+   const fileResponse=await fetch(source.data.signedUrl);if(!fileResponse.ok)throw new Error('Could not download source document.');
+   sourceBlob=await fileResponse.blob();sourceUrl=URL.createObjectURL(sourceBlob);sourceKind=data.source_type;sourceFilter=data.source_filter||'none';regions=Array.isArray(data.regions)?data.regions:[];selectedRegion=-1;undoStack=[];current={id:null,title:data.title||p.title,is_local:true,source_type:sourceKind};byId('editorTitle').textContent=(data.title||p.title)+' · Saved project';
+   if(typeof showView==='function')showView('editor');await drawStage();if(typeof renderTools==='function')renderTools();if(typeof renderRegionEditor==='function')renderRegionEditor();status('Saved design opened. Save again after making changes to create a new saved version.');
+  }catch(e){status('Could not open saved design: '+(e.message||e));}
+ });
+}
+document.addEventListener('DOMContentLoaded',()=>{addControls();const nav=byId('mainNav');if(nav){const observer=new MutationObserver(()=>addControls());observer.observe(nav,{childList:true,subtree:true});}});
+})();
+</script>
+
+</body></html>';}
 function hcDownload(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500);}
 function hcExportDocx(){if(!window.htmlDocx)return hcStatus('DOCX export library did not load. Check your connection.',true);try{hcDownload(window.htmlDocx.asBlob(hcDocHtml()),hcSafeName(hcDocName)+'.docx');hcStatus('DOCX exported. Review pagination and formatting in your word processor.');}catch(e){hcStatus('DOCX export failed: '+e.message,true);}}
 async function hcExportPdf(){try{const pdf=await PDFLib.PDFDocument.create(),font=await pdf.embedFont(PDFLib.StandardFonts.Helvetica),lines=(byId('hcDocPaper').innerText||'').split('\n');let page=pdf.addPage([595.28,841.89]),y=790;for(const raw of lines){let line='';for(const word of raw.split(/\s+/)){const test=line?line+' '+word:word;if(font.widthOfTextAtSize(test,11)>495){page.drawText(line,{x:50,y,size:11,font});line=word;y-=16;if(y<55){page=pdf.addPage([595.28,841.89]);y=790;}}else line=test;}page.drawText(line,{x:50,y,size:11,font});y-=16;if(y<55){page=pdf.addPage([595.28,841.89]);y=790;}}hcDownload(new Blob([await pdf.save()],{type:'application/pdf'}),hcSafeName(hcDocName)+'.pdf');hcStatus('Readable text PDF exported. Use DOCX export for richer formatting.');}catch(e){hcStatus('PDF export failed: '+e.message,true);}}

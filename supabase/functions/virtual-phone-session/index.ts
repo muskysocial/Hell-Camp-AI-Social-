@@ -83,7 +83,8 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         projectId,
         timeout: 1800,
-        browserSettings: { recordSession: false, logSession: false, viewport: { width: 1280, height: 800 } },
+        keepAlive: true,
+        browserSettings: { recordSession: false, logSession: false, viewport: { width: 390, height: 844 } },
         userMetadata: { hellCampUserId: user.id, product: "hell-camp-virtual-phone" },
       }),
     });

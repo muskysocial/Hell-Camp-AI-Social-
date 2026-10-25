@@ -27,7 +27,34 @@ main{width:min(100%,960px);margin:auto;padding:18px 14px calc(34px + env(safe-ar
 @media(max-width:420px){.remote-view iframe{height:68dvh;min-height:360px}}
 @media(min-width:780px){.phone-wrap{grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:26px}.device{position:sticky;top:90px}.panel:first-child{margin-top:0}}
 @media(max-width:420px){main{padding:13px 8px 25px}.device{border-radius:34px;padding:7px}.screen{border-radius:27px;min-height:610px;padding:12px 9px}.appgrid{gap:16px 4px}.hero{padding:14px;border-radius:19px}.heroicon{width:48px;height:48px}}
-</style></head>
+
+/* Full-screen Hell Phone home screen; no dashboard/preview column. */
+body{min-height:100dvh;overflow:hidden;background:#08070e}
+.topbar{height:54px;padding:calc(7px + env(safe-area-inset-top)) 12px 7px}
+main{width:100%;height:calc(100dvh - 54px - env(safe-area-inset-top));margin:0;padding:0;overflow:hidden}
+.hero,.phone-wrap>div{display:none!important}
+.phone-wrap{display:block;height:100%;width:100%}
+.device{position:relative;width:100%;height:100%;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:#08070e;box-shadow:none}
+.screen{height:100%;min-height:0;border-radius:0;padding:22px max(18px,env(safe-area-inset-left)) calc(22px + env(safe-area-inset-bottom));overflow-y:auto}
+.island{width:112px;height:28px;margin:-10px auto 15px}
+.phone-status{margin-bottom:30px}
+.welcome{margin-bottom:30px}
+.welcome h2{font-size:clamp(27px,6vw,36px)}
+.appgrid{gap:clamp(20px,5vh,34px) 10px}
+.appicon{width:clamp(56px,16vw,72px);height:clamp(56px,16vw,72px);border-radius:21px;font-size:31px}
+.app{font-size:11px}
+.dock{margin-top:clamp(34px,7vh,60px);padding:12px 8px}
+.dock .appicon{width:clamp(50px,14vw,62px);height:clamp(50px,14vw,62px)}
+.sync-card{margin-top:22px}
+#syncStatus{font-size:10px}
+.remote-view.active{display:flex;position:fixed;z-index:20;inset:0;width:100vw;height:100dvh;margin:0;border:0;border-radius:0;flex-direction:column;background:#050508;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.remote-view-head{flex:0 0 auto;min-height:48px}
+.remote-view iframe{width:100%;height:auto;min-height:0;flex:1 1 auto}
+.remote-view .browser-placeholder{flex:1;min-height:0}
+.remote-view .view-actions{flex:0 0 auto}
+#remoteView:not(.active){display:none!important}
+@media(min-width:780px){.device{position:relative;top:auto}.screen{max-width:520px;margin:0 auto;border-left:1px solid #272033;border-right:1px solid #272033}.remote-view.active{max-width:520px;left:50%;transform:translateX(-50%);border-left:1px solid #333}}
+\n</style></head>
 <body>
 <header class="topbar"><button class="back" id="backBtn" type="button">← Back</button><div class="brand">Hell <span>Phone</span></div><div class="status" id="syncStatus">Checking account…</div></header>
 <main>
@@ -37,26 +64,26 @@ main{width:min(100%,960px);margin:auto;padding:18px 14px calc(34px + env(safe-ar
 <div class="island"></div><div class="phone-status"><span id="clock">9:41</span><span>▮▮▮　◉　▰</span></div>
 <div class="welcome"><small>HELL CAMP · PRIVATE DEVICE</small><h2 id="greeting">Hello there 👋</h2><p>Your phone. Your apps. Your space.</p></div>
 <div class="appgrid" id="appgrid">
-<a class="app" href="#browser" data-us-url="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><div class="appicon wa">☎</div>WhatsApp</a>
-<a class="app" href="#browser" data-us-url="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><div class="appicon fb">f</div>Facebook</a>
-<a class="app" href="#browser" data-us-url="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><div class="appicon ig">◎</div>Instagram</a>
-<a class="app" href="#browser" data-us-url="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer"><div class="appicon tt">♪</div>TikTok</a>
-<a class="app" href="#browser" data-us-url="https://x.com/" target="_blank" rel="noopener noreferrer"><div class="appicon xx">𝕏</div>X</a>
+<a class="app" href="#browser" data-us-url="https://web.whatsapp.com/"><div class="appicon wa">☎</div>WhatsApp</a>
+<a class="app" href="#browser" data-us-url="https://www.facebook.com/"><div class="appicon fb">f</div>Facebook</a>
+<a class="app" href="#browser" data-us-url="https://www.instagram.com/"><div class="appicon ig">◎</div>Instagram</a>
+<a class="app" href="#browser" data-us-url="https://www.tiktok.com/"><div class="appicon tt">♪</div>TikTok</a>
+<a class="app" href="#browser" data-us-url="https://x.com/"><div class="appicon xx">𝕏</div>X</a>
 <a class="app" href="#browser"><div class="appicon browser">◉</div>Browser</a>
 <a class="app" href="#files"><div class="appicon photos">✿</div>Photos</a>
 <a class="app" href="#files"><div class="appicon files">▰</div>Files</a>
 <a class="app" href="#settings"><div class="appicon settings">⚙</div>Settings</a>
 <a class="app" href="#notes"><div class="appicon notes">▤</div>Notes</a>
 </div>
-<div class="dock"><a class="app" href="#browser" data-us-url="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><div class="appicon wa">☎</div></a><a class="app" href="#browser" data-us-url="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><div class="appicon fb">f</div></a><a class="app" href="#browser"><div class="appicon browser">◉</div></a><a class="app" href="#browser" data-us-url="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><div class="appicon ig">◎</div></a></div>
+<div class="dock"><a class="app" href="#browser" data-us-url="https://web.whatsapp.com/"><div class="appicon wa">☎</div></a><a class="app" href="#browser" data-us-url="https://www.facebook.com/"><div class="appicon fb">f</div></a><a class="app" href="#browser"><div class="appicon browser">◉</div></a><a class="app" href="#browser" data-us-url="https://www.instagram.com/"><div class="appicon ig">◎</div></a></div>
 <div class="sync-card"><div class="sync-title"><i id="syncDot"></i><span id="syncTitle">Cloud sync not connected</span></div><p id="syncText">Phone settings will sync when the account database migration is installed.</p></div>
 </div></section>
 <div>
-<section class="panel" id="browser"><h3>🌐 Remote Browser</h3><p>Open social apps and websites in a separate cloud browser. Its IP is selected by the provider and may be from any country; a US IP is not guaranteed. You must be signed in to Hell Camp.</p><button class="primary" id="startUsBrowser" type="button" style="width:100%">Start remote browser session</button><div class="warn" id="gatewayNotice">This uses a remote browser without a paid location proxy. The browser may use an IP from any country. Do not rely on it for a US-only location.</div><p id="browserStatus" aria-live="polite" style="margin-top:10px">Remote browser session not started.</p><form class="browser-form" id="browseForm"><input id="urlInput" type="url" placeholder="https://example.com" autocomplete="url" required><button class="secondary" type="submit">Browse here</button></form>
+<section class="panel" id="browser"><h3>🌐 Remote Browser</h3><p>Open apps from your full-screen phone. Websites run in the phone app view when the remote browser provider supports it. Its IP is selected by the provider and may be from any country; a US IP is not guaranteed. You must be signed in to Hell Camp.</p><button class="primary" id="startUsBrowser" type="button" style="width:100%">Start remote browser session</button><div class="warn" id="gatewayNotice">This uses a remote browser without a paid location proxy. The browser may use an IP from any country. Do not rely on it for a US-only location.</div><p id="browserStatus" aria-live="polite" style="margin-top:10px">Remote browser session not started.</p><form class="browser-form" id="browseForm"><input id="urlInput" type="url" placeholder="https://example.com" autocomplete="url" required><button class="secondary" type="submit">Browse here</button></form>
 <div class="remote-view" id="remoteView"><div class="remote-view-head"><span id="remoteTitle">Hell Camp · Remote browser</span><button class="secondary" id="closeRemote" type="button">Close</button></div><div class="browser-placeholder" id="browserPlaceholder"><div class="preview-icon">🌐</div><strong>Your browser opens here</strong><small>When a session starts, the remote browser will appear inside Hell Camp instead of opening a separate tab.</small></div><iframe id="remoteFrame" title="Hell Camp remote browser" allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="no-referrer" style="display:none"></iframe><div class="view-actions"><button class="secondary" id="reloadRemote" type="button">Reload view</button><button class="secondary" id="fullscreenRemote" type="button">Full screen</button></div></div><div class="actions"><button class="secondary" id="saveBtn" type="button">Save phone settings</button><button class="secondary" id="resetBtn" type="button">Reset layout</button></div></section>
 <section class="panel" id="files"><h3>📁 Your phone space</h3><p>Personal notes and bookmarks can be saved to your account after cloud sync is connected. External social apps keep their own accounts and privacy settings.</p><label for="phoneNote">Private phone note</label><textarea id="phoneNote" rows="4" style="width:100%;margin-top:8px;background:#080811;border:1px solid #39354b;border-radius:12px;padding:11px;color:#fff;resize:vertical" placeholder="Write a note for your next visit…"></textarea></section>
 <section class="panel" id="settings"><h3>⚙️ Phone settings</h3><p>These settings belong to your Hell Camp account.</p><label for="wallpaper">Wallpaper style</label><select id="wallpaper" style="display:block;width:100%;margin:8px 0 12px;background:#080811;border:1px solid #39354b;border-radius:12px;padding:11px;color:#fff"><option value="purple">Purple night</option><option value="blue">Ocean blue</option><option value="rose">Rose glow</option></select><label><input id="reducedMotion" type="checkbox"> Reduce animations</label></section>
-<section class="panel" id="notes"><h3>🔖 Bookmarks</h3><p>Quick links open in a separate tab. Social logins are never shared between Hell Camp accounts.</p><div class="actions"><button class="secondary" data-url="https://web.whatsapp.com/">WhatsApp</button><button class="secondary" data-url="https://www.facebook.com/">Facebook</button><button class="secondary" data-url="https://www.instagram.com/">Instagram</button><button class="secondary" data-url="https://www.tiktok.com/">TikTok</button><button class="secondary" data-url="https://x.com/">X</button></div></section>
+<section class="panel" id="notes"><h3>🔖 Bookmarks</h3><p>Bookmarks open in your phone app view. Social logins are never shared between Hell Camp accounts.</p><div class="actions"><button class="secondary" data-url="https://web.whatsapp.com/">WhatsApp</button><button class="secondary" data-url="https://www.facebook.com/">Facebook</button><button class="secondary" data-url="https://www.instagram.com/">Instagram</button><button class="secondary" data-url="https://www.tiktok.com/">TikTok</button><button class="secondary" data-url="https://x.com/">X</button></div></section>
 </div></div>
 </main>
 <script>
@@ -66,28 +93,28 @@ const SUPABASE_KEY='sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS';
 const client=window.supabase&&window.supabase.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 const $=id=>document.getElementById(id);
 const defaults={wallpaper:'purple',reducedMotion:false,note:'',lastUrl:'',layoutVersion:1};
-let currentUser=null, state={...defaults}, saveTimer=null;
+let currentUser=null, state={...defaults}, saveTimer=null;\ndocument.body.appendChild($('remoteView'));
 function status(title,text,ok){$('syncTitle').textContent=title;$('syncText').textContent=text;$('syncDot').style.background=ok?'#49d995':'#f3bd59';$('syncStatus').textContent=ok?'Synced':'Offline';}
 function applyState(){document.querySelector('.screen').style.background=state.wallpaper==='blue'?'linear-gradient(155deg,#102b45,#10101d 54%,#0b2940)':state.wallpaper==='rose'?'linear-gradient(155deg,#3b172b,#10101d 54%,#32122b)':'linear-gradient(155deg,#191329,#10101d 54%,#1b1028)';$('phoneNote').value=state.note||'';$('urlInput').value=state.lastUrl||'';$('wallpaper').value=state.wallpaper||'purple';$('reducedMotion').checked=!!state.reducedMotion;document.body.style.scrollBehavior=state.reducedMotion?'auto':'smooth';}
 function readState(){state={...state,wallpaper:$('wallpaper').value,reducedMotion:$('reducedMotion').checked,note:$('phoneNote').value,lastUrl:$('urlInput').value};}
 async function save(){readState();if(!client||!currentUser){status('Not synced','Sign in to Hell Camp and apply the virtual-phone database migration to enable account sync.',false);return;}const {error}=await client.from('virtual_phones').upsert({user_id:currentUser.id,state:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){status('Cloud sync unavailable',error.message,false);return;}status('Cloud sync active','Your phone settings and note are saved to this Hell Camp account.',true);}
 async function load(){if(!client){status('Offline','Supabase client did not load.',false);return;}const {data,error}=await client.auth.getSession();if(error||!data||!data.session){status('Sign in required','Sign into Hell Camp in this browser first, then return to your virtual phone.',false);return;}currentUser=data.session.user;$('greeting').textContent='Hello, '+((currentUser.email||'Hell Camp member').split('@')[0])+' 👋';const {data:row,error:loadError}=await client.from('virtual_phones').select('state').eq('user_id',currentUser.id).maybeSingle();if(loadError){status('Cloud sync needs setup','The virtual-phone database migration must be applied before sync can start.',false);return;}if(row&&row.state)state={...defaults,...row.state};applyState();status('Cloud sync active','Your phone state was restored for this account.',true);}
-$('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='./index.html';});
+$('backBtn').addEventListener('click',()=>{if($('remoteView').classList.contains('active')){$('remoteFrame').src='about:blank';$('remoteView').classList.remove('active');return;}location.href='./index.html';});
 $('browseForm').addEventListener('submit',e=>{e.preventDefault();launchUsBrowser($('urlInput').value);});
 async function launchUsBrowser(targetUrl){
  const statusEl=$('browserStatus'),button=$('startUsBrowser');
  button.disabled=true;button.textContent='Starting remote session…';statusEl.textContent='Checking your Hell Camp login and remote browser provider…';
  try{
-  if(!client)throw new Error('Supabase is unavailable. Reload the page and sign into Hell Camp.');
+  if(!client)throw new Error('Supabase is unavailable. Return to Hell Camp, sign in, then reopen Hell Phone.');
   const {data:sessionData,error:sessionError}=await client.auth.getSession();
-  if(sessionError||!sessionData?.session?.access_token)throw new Error('Sign into Hell Camp in this browser first, then try again.');
+  if(sessionError||!sessionData?.session?.access_token)throw new Error('Your Hell Camp session is not available in this browser. Sign in again, then reopen Hell Phone.');
   let raw=(targetUrl||$('urlInput').value||'https://duckduckgo.com/').trim();
   if(!/^https?:\\/\\//i.test(raw))raw='https://'+raw;
   let parsed;try{parsed=new URL(raw)}catch(_){throw new Error('Enter a valid website address.')}
   if(!['http:','https:'].includes(parsed.protocol))throw new Error('Only public http and https websites are supported.');
   $('urlInput').value=parsed.href;
   $('remoteView').classList.add('active');$('remoteTitle').textContent='Loading '+parsed.hostname+'…';$('browserPlaceholder').style.display='grid';$('remoteFrame').style.display='none';
-  $('remoteView').scrollIntoView({behavior:'smooth',block:'start'});
+  
   const response=await fetch(SUPABASE_URL+'/functions/v1/virtual-phone-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+sessionData.session.access_token},

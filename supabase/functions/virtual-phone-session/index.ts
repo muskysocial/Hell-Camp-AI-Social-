@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
   if (!apiKey || !projectId) return json({
     configured: false, provider: "Browserbase", region: "us-west-2",
     requiredSecrets: ["BROWSERBASE_API_KEY", "BROWSERBASE_PROJECT_ID"],
-    message: "The secure US browser gateway is not connected yet. Add the Browserbase API key and project ID as Supabase Edge Function secrets. No browser session was started.",
+    message: "The remote browser gateway is not connected yet. Add the Browserbase API key and project ID as Supabase Edge Function secrets. No browser session was started.",
   }, 503);
   try {
     const createResponse = await fetch("https://api.browserbase.com/v1/sessions", {
@@ -91,13 +91,13 @@ Deno.serve(async (req: Request) => {
     const session = await createResponse.json().catch(() => ({}));
     if (!createResponse.ok || !session.id || !session.connectUrl) return json({ error: "The remote browser provider could not start a session.", providerStatus: createResponse.status, detail: String(session.message || session.error || session.detail || "").slice(0, 500) }, 502);
     const navigated = await navigateSession(session.connectUrl, targetUrl);
-    if (!navigated) return json({ error: "The US browser started, but could not open the requested page. Check provider session CDP access and retry." }, 502);
+    if (!navigated) return json({ error: "The remote browser started, but could not open the requested page. Check provider session CDP access and retry." }, 502);
     const debugResponse = await fetch(`https://api.browserbase.com/v1/sessions/${encodeURIComponent(session.id)}/debug`, { headers: { "X-BB-API-Key": apiKey } });
     const debug = await debugResponse.json().catch(() => ({}));
-    const liveViewUrl = debug.debuggerFullscreenUrl || debug.debuggerUrl;
+    const requestedPage = Array.isArray(debug.pages) ? debug.pages.find((page: Record<string, unknown>) => page.url === targetUrl) : null;\n    const liveViewUrl = (requestedPage && (requestedPage.debuggerFullscreenUrl || requestedPage.debuggerUrl)) || debug.debuggerFullscreenUrl || debug.debuggerUrl;
     if (!debugResponse.ok || !liveViewUrl) return json({ configured: true, sessionId: session.id, region: session.region || "provider-selected region", expiresAt: session.expiresAt || null, message: "The remote browser started, but the provider did not return a live-view link. Check Browserbase project permissions." }, 502);
     return json({ configured: true, sessionId: session.id, region: session.region || "provider-selected region", expiresAt: session.expiresAt || null, liveViewUrl, openedUrl: targetUrl, message: "A remote browser session was created without a location proxy. Its public IP and country are provider-dependent and are not guaranteed to be US-based." });
   } catch {
-    return json({ error: "Could not reach the US browser provider. Try again later." }, 502);
+    return json({ error: "Could not reach the remote browser provider. Try again later." }, 502);
   }
 });

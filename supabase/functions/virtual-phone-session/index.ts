@@ -94,7 +94,8 @@ Deno.serve(async (req: Request) => {
     if (!navigated) return json({ error: "The remote browser started, but could not open the requested page. Check provider session CDP access and retry." }, 502);
     const debugResponse = await fetch(`https://api.browserbase.com/v1/sessions/${encodeURIComponent(session.id)}/debug`, { headers: { "X-BB-API-Key": apiKey } });
     const debug = await debugResponse.json().catch(() => ({}));
-    const requestedPage = Array.isArray(debug.pages) ? debug.pages.find((page: Record<string, unknown>) => page.url === targetUrl) : null;\n    const liveViewUrl = (requestedPage && (requestedPage.debuggerFullscreenUrl || requestedPage.debuggerUrl)) || debug.debuggerFullscreenUrl || debug.debuggerUrl;
+    const requestedPage = Array.isArray(debug.pages) ? debug.pages.find((page: Record<string, unknown>) => page.url === targetUrl) : null;
+    const liveViewUrl = (requestedPage && (requestedPage.debuggerFullscreenUrl || requestedPage.debuggerUrl)) || debug.debuggerFullscreenUrl || debug.debuggerUrl;
     if (!debugResponse.ok || !liveViewUrl) return json({ configured: true, sessionId: session.id, region: session.region || "provider-selected region", expiresAt: session.expiresAt || null, message: "The remote browser started, but the provider did not return a live-view link. Check Browserbase project permissions." }, 502);
     return json({ configured: true, sessionId: session.id, region: session.region || "provider-selected region", expiresAt: session.expiresAt || null, liveViewUrl, openedUrl: targetUrl, message: "A remote browser session was created without a location proxy. Its public IP and country are provider-dependent and are not guaranteed to be US-based." });
   } catch {

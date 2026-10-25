@@ -2309,4 +2309,62 @@ observer.observe(document.documentElement,{childList:true,subtree:true});
 }
 @media(min-width:761px){html body nav.mobile.hc-center-fab-nav{display:none!important}}
 </style>
+
+<style id="hc-permanent-navigation-fix">
+/* Keep the Center FAB navigation mounted and visible across phone, tablet and desktop widths. */
+html body nav.mobile.hc-center-fab-nav{
+ display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ position:fixed!important;left:50%!important;right:auto!important;bottom:max(10px,env(safe-area-inset-bottom))!important;
+ width:min(520px,calc(100vw - 24px))!important;max-width:520px!important;min-width:0!important;
+ height:82px!important;min-height:82px!important;margin:0!important;padding:7px 10px!important;
+ transform:translateX(-50%)!important;box-sizing:border-box!important;
+ flex-direction:row!important;justify-content:space-around!important;align-items:center!important;gap:2px!important;
+ background:#fff!important;background-image:none!important;border:1px solid rgba(28,31,44,.08)!important;
+ border-radius:28px!important;box-shadow:0 9px 30px rgba(25,25,40,.18),0 2px 7px rgba(25,25,40,.06)!important;
+ backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;overflow:visible!important;z-index:2147483000!important;
+}
+html body nav.mobile.hc-center-fab-nav button{
+ display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;
+ flex:1 1 0!important;min-width:0!important;max-width:none!important;height:64px!important;min-height:64px!important;
+ margin:0!important;padding:5px 2px!important;border:0!important;border-radius:18px!important;background:transparent!important;
+ box-shadow:none!important;color:#272833!important;flex-direction:column!important;justify-content:center!important;
+ align-items:center!important;gap:4px!important;font-family:inherit!important;font-size:11px!important;font-weight:600!important;line-height:1.1!important;
+}
+html body nav.mobile.hc-center-fab-nav button span{display:block!important;font-size:11px!important;line-height:1.1!important;color:inherit!important}
+html body nav.mobile.hc-center-fab-nav button b{display:block!important;width:auto!important;height:auto!important;min-height:0!important;
+ margin:0!important;padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+ color:#242631!important;font-size:25px!important;font-weight:500!important;line-height:1!important;text-shadow:none!important}
+html body nav.mobile.hc-center-fab-nav button.active,html body nav.mobile.hc-center-fab-nav button.active b{color:#5435e8!important}
+html body nav.mobile.hc-center-fab-nav button:nth-child(3){
+ flex:0 0 66px!important;width:66px!important;min-width:66px!important;max-width:66px!important;height:66px!important;min-height:66px!important;
+ margin-top:-20px!important;padding:0!important;border:0!important;border-radius:50%!important;
+ background:linear-gradient(145deg,#7056f4,#4e2be0)!important;color:#fff!important;
+ box-shadow:0 5px 15px rgba(83,54,226,.35),0 0 0 7px #fff!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+}
+html body nav.mobile.hc-center-fab-nav button:nth-child(3) b{color:#fff!important;font-size:39px!important;font-weight:400!important}
+html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
+@media(min-width:761px){
+ html body nav.mobile.hc-center-fab-nav{bottom:18px!important}
+ html body .main{padding-bottom:135px!important}
+}
+@media(max-width:380px){
+ html body nav.mobile.hc-center-fab-nav{width:calc(100vw - 16px)!important;padding-left:5px!important;padding-right:5px!important;height:76px!important;min-height:76px!important}
+ html body nav.mobile.hc-center-fab-nav button:nth-child(3){flex-basis:58px!important;width:58px!important;min-width:58px!important;max-width:58px!important;height:58px!important;min-height:58px!important}
+}
+</style>
+<script id="hc-navigation-presence-guard">
+(function(){
+ function ensureHellCampNav(){
+  if(!document.body || document.querySelector('nav.hc-center-fab-nav')) return;
+  var nav=document.createElement('nav');
+  nav.className='mobile hc-center-fab-nav';
+  nav.setAttribute('aria-label','Main navigation');
+  nav.innerHTML='<button type="button" data-page="Home" aria-label="Home"><b>⌂</b><span>Home</span></button><button type="button" data-page="Discover" aria-label="Explore"><b>⌕</b><span>Explore</span></button><button type="button" data-page="Create Post" aria-label="Create post" title="Create post"><b>＋</b></button><button type="button" data-page="Messages" aria-label="Inbox"><b>▢</b><span>Inbox</span></button><button type="button" data-page="Profile" aria-label="Profile"><b>♙</b><span>Profile</span></button>';
+  document.body.appendChild(nav);
+ }
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ensureHellCampNav,{once:true}); else ensureHellCampNav();
+ new MutationObserver(ensureHellCampNav).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body></html>

@@ -451,4 +451,52 @@ document.addEventListener('DOMContentLoaded',()=>{hcEnsureUI();hcAddPdfControls(
  document.addEventListener('DOMContentLoaded',()=>{if(typeof isAdmin!=='undefined'&&isAdmin){hcEnsureSetup();}});
 })();
 </script>
+
+<script id="hc-admin-delete-catalog-design">
+(function(){
+ const hcDelEsc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ async function hcDeleteDesign(id){
+  if(!isAdmin||!user)return msg('Only the admin can delete catalog designs.','error');
+  const t=templates.find(x=>x.id===id);
+  if(!t)return msg('Design not found in the current catalog. Refresh and try again.','error');
+  const confirmed=window.confirm('PERMANENTLY DELETE “'+t.title+'”? This removes the catalog record and its stored template file. Customers will no longer be able to open it. This cannot be undone.');
+  if(!confirmed)return;
+  try{
+   const {data:row,error:readErr}=await db.from('hell_edit_templates').select('id,source_path,preview_path,created_by').eq('id',id).maybeSingle();
+   if(readErr)throw readErr;if(!row)throw new Error('Design is already deleted or unavailable.');
+   if(row.created_by&&row.created_by!==user.id)throw new Error('You can only delete designs owned by your admin account.');
+   const paths=[row.source_path,row.preview_path].filter(p=>p&& !String(p).startsWith('builtin/'));
+   if(paths.length){
+    const {error:storageErr}=await db.storage.from('hell-edits').remove(paths);
+    if(storageErr)throw new Error('Could not delete stored template file(s): '+storageErr.message);
+   }
+   const {error:deleteErr}=await db.from('hell_edit_templates').delete().eq('id',id);
+   if(deleteErr)throw new Error('Files were removed, but the catalog record could not be deleted: '+deleteErr.message);
+   templates=templates.filter(x=>x.id!==id);
+   if(typeof current!=='undefined'&&current?.id===id){current=null;if(typeof showView==='function')showView('library')}
+   renderTemplates();await loadAdmin();
+   msg('Design permanently deleted from the catalog.','success');
+  }catch(err){msg('Delete failed: '+err.message,'error')}
+ }
+ const oldLoad=loadAdmin;
+ loadAdmin=async function(){
+  await oldLoad();
+  if(!isAdmin)return;
+  document.querySelectorAll('#adminTemplates tr').forEach(tr=>{
+   const pub=tr.querySelector('.toggle-pub');if(!pub)return;
+   const id=pub.dataset.id;if(tr.querySelector('.hc-delete-design'))return;
+   const cell=pub.parentElement;
+   const b=document.createElement('button');b.type='button';b.className='btn hc-delete-design';b.textContent='Delete permanently';b.style.cssText='background:#991b1b;color:white;margin:4px';
+   b.onclick=()=>hcDeleteDesign(id);cell.appendChild(b);
+  });
+ };
+ const oldRender=renderTemplates;
+ renderTemplates=function(){oldRender();if(isAdmin){
+  const list=document.querySelectorAll('.template-card');
+  list.forEach(card=>{const open=card.querySelector('.open-template');if(!open||card.querySelector('.hc-delete-catalog'))return;
+   const b=document.createElement('button');b.type='button';b.className='btn hc-delete-catalog';b.textContent='Delete permanently';b.style.cssText='background:#991b1b;color:white;margin-top:8px;width:100%';b.onclick=()=>hcDeleteDesign(open.dataset.id);card.appendChild(b);
+  });
+ }};
+})();
+</script>
 </body></html>

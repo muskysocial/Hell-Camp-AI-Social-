@@ -29,18 +29,18 @@ main{width:min(100%,960px);margin:auto;padding:18px 14px calc(34px + env(safe-ar
 <div class="island"></div><div class="phone-status"><span id="clock">9:41</span><span>▮▮▮　◉　▰</span></div>
 <div class="welcome"><small>HELL CAMP · PRIVATE DEVICE</small><h2 id="greeting">Hello there 👋</h2><p>Your phone. Your apps. Your space.</p></div>
 <div class="appgrid" id="appgrid">
-<a class="app" href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><div class="appicon wa">☎</div>WhatsApp</a>
-<a class="app" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><div class="appicon fb">f</div>Facebook</a>
-<a class="app" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><div class="appicon ig">◎</div>Instagram</a>
-<a class="app" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer"><div class="appicon tt">♪</div>TikTok</a>
-<a class="app" href="https://x.com/" target="_blank" rel="noopener noreferrer"><div class="appicon xx">𝕏</div>X</a>
+<a class="app" href="#browser" data-us-url="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><div class="appicon wa">☎</div>WhatsApp</a>
+<a class="app" href="#browser" data-us-url="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><div class="appicon fb">f</div>Facebook</a>
+<a class="app" href="#browser" data-us-url="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><div class="appicon ig">◎</div>Instagram</a>
+<a class="app" href="#browser" data-us-url="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer"><div class="appicon tt">♪</div>TikTok</a>
+<a class="app" href="#browser" data-us-url="https://x.com/" target="_blank" rel="noopener noreferrer"><div class="appicon xx">𝕏</div>X</a>
 <a class="app" href="#browser"><div class="appicon browser">◉</div>Browser</a>
 <a class="app" href="#files"><div class="appicon photos">✿</div>Photos</a>
 <a class="app" href="#files"><div class="appicon files">▰</div>Files</a>
 <a class="app" href="#settings"><div class="appicon settings">⚙</div>Settings</a>
 <a class="app" href="#notes"><div class="appicon notes">▤</div>Notes</a>
 </div>
-<div class="dock"><a class="app" href="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><div class="appicon wa">☎</div></a><a class="app" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><div class="appicon fb">f</div></a><a class="app" href="#browser"><div class="appicon browser">◉</div></a><a class="app" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><div class="appicon ig">◎</div></a></div>
+<div class="dock"><a class="app" href="#browser" data-us-url="https://web.whatsapp.com/" target="_blank" rel="noopener noreferrer"><div class="appicon wa">☎</div></a><a class="app" href="#browser" data-us-url="https://www.facebook.com/" target="_blank" rel="noopener noreferrer"><div class="appicon fb">f</div></a><a class="app" href="#browser"><div class="appicon browser">◉</div></a><a class="app" href="#browser" data-us-url="https://www.instagram.com/" target="_blank" rel="noopener noreferrer"><div class="appicon ig">◎</div></a></div>
 <div class="sync-card"><div class="sync-title"><i id="syncDot"></i><span id="syncTitle">Cloud sync not connected</span></div><p id="syncText">Phone settings will sync when the account database migration is installed.</p></div>
 </div></section>
 <div>
@@ -64,8 +64,8 @@ function readState(){state={...state,wallpaper:$('wallpaper').value,reducedMotio
 async function save(){readState();if(!client||!currentUser){status('Not synced','Sign in to Hell Camp and apply the virtual-phone database migration to enable account sync.',false);return;}const {error}=await client.from('virtual_phones').upsert({user_id:currentUser.id,state:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error){status('Cloud sync unavailable',error.message,false);return;}status('Cloud sync active','Your phone settings and note are saved to this Hell Camp account.',true);}
 async function load(){if(!client){status('Offline','Supabase client did not load.',false);return;}const {data,error}=await client.auth.getSession();if(error||!data||!data.session){status('Sign in required','Sign into Hell Camp in this browser first, then return to your virtual phone.',false);return;}currentUser=data.session.user;$('greeting').textContent='Hello, '+((currentUser.email||'Hell Camp member').split('@')[0])+' 👋';const {data:row,error:loadError}=await client.from('virtual_phones').select('state').eq('user_id',currentUser.id).maybeSingle();if(loadError){status('Cloud sync needs setup','The virtual-phone database migration must be applied before sync can start.',false);return;}if(row&&row.state)state={...defaults,...row.state};applyState();status('Cloud sync active','Your phone state was restored for this account.',true);}
 $('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='./index.html';});
-$('browseForm').addEventListener('submit',e=>{e.preventDefault();let raw=$('urlInput').value.trim();if(!/^https?:\/\//i.test(raw))raw='https://'+raw;try{const u=new URL(raw);if(!['http:','https:'].includes(u.protocol))throw Error();window.open(u.href,'_blank','noopener,noreferrer');state.lastUrl=u.href;}catch(_){alert('Enter a valid http or https website address.')}});
-$('startUsBrowser').addEventListener('click',async()=>{
+$('browseForm').addEventListener('submit',e=>{e.preventDefault();launchUsBrowser($('urlInput').value);});
+async function launchUsBrowser(targetUrl){
  const statusEl=$('browserStatus'),button=$('startUsBrowser');
  const popup=window.open('about:blank','_blank');
  button.disabled=true;button.textContent='Starting secure session…';statusEl.textContent='Checking your Hell Camp login and US browser provider…';
@@ -73,19 +73,27 @@ $('startUsBrowser').addEventListener('click',async()=>{
   if(!client)throw new Error('Supabase is unavailable. Reload the page and sign into Hell Camp.');
   const {data:sessionData,error:sessionError}=await client.auth.getSession();
   if(sessionError||!sessionData?.session?.access_token)throw new Error('Sign into Hell Camp in this browser first, then try again.');
+  let raw=(targetUrl||$('urlInput').value||'https://duckduckgo.com/').trim();
+  if(!/^https?:\/\//i.test(raw))raw='https://'+raw;
+  let parsed;try{parsed=new URL(raw)}catch(_){throw new Error('Enter a valid website address.')}
+  if(!['http:','https:'].includes(parsed.protocol))throw new Error('Only public http and https websites are supported.');
+  $('urlInput').value=parsed.href;
   const response=await fetch(SUPABASE_URL+'/functions/v1/virtual-phone-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+sessionData.session.access_token},
-   body:JSON.stringify({})
+   body:JSON.stringify({url:parsed.href})
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok||!data.liveViewUrl)throw new Error(data.message||data.error||'US browser is not configured yet. Add the required provider secrets in Supabase, then retry.');
   if(popup)popup.location.href=data.liveViewUrl;else window.location.href=data.liveViewUrl;
-  statusEl.textContent='Remote browser started in '+(data.region||'US region')+'. Session expires: '+(data.expiresAt||'provider timeout')+'. Confirm the public IP inside the remote browser before relying on US location.';
-  $('gatewayNotice').textContent='A US-region remote session was created. This does not guarantee every website will accept the region; some sites may restrict remote browsers.';
+  statusEl.textContent='Remote browser opened '+parsed.hostname+' in '+(data.region||'US region')+'. Session expires: '+(data.expiresAt||'provider timeout')+'. Verify the IP inside the remote browser.';
+  $('gatewayNotice').textContent='The page was opened in a US-region remote browser session. Some websites may restrict remote browsing or require login again.';
  }catch(err){if(popup)popup.close();statusEl.textContent=err.message||'Could not start the remote browser.';}
  finally{button.disabled=false;button.textContent='Start US browser session';}
-});
+}
+$('startUsBrowser').addEventListener('click',()=>launchUsBrowser());
+document.querySelectorAll('[data-us-url]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();$('urlInput').value=link.dataset.usUrl;launchUsBrowser(link.dataset.usUrl)}));
+
 $('saveBtn').addEventListener('click',save);
 $('resetBtn').addEventListener('click',()=>{if(!confirm('Reset this phone layout and settings? Your saved note will also be cleared.'))return;state={...defaults};applyState();save();});
 ['wallpaper','reducedMotion','phoneNote'].forEach(id=>$(id).addEventListener(id==='phoneNote'?'input':'change',()=>{readState();clearTimeout(saveTimer);saveTimer=setTimeout(save,900)}));

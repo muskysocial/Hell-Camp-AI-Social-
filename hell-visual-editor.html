@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HELL CAMP · Visual Editor</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#100b18;--panel:#1d1428;--line:#49365d;--purple:#9b5cff;--text:#f8f3ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,sans-serif}
+header{position:sticky;top:0;z-index:9;background:#160f21;border-bottom:1px solid var(--line);padding:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.brand{font-size:17px;font-weight:900;margin-right:auto}.brand b{color:#c08bff}
+button,.btn{background:#2a1c3b;border:1px solid var(--line);color:var(--text);padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer}button.primary{background:linear-gradient(120deg,#7c3aed,#c026d3);border:0}button.active{outline:2px solid #c08bff}
+main{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:12px;padding:12px;min-height:calc(100dvh - 65px)}
+.preview{min-width:0;background:#292232;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.previewbar{padding:8px;display:flex;gap:7px;align-items:center;background:#1a1224;flex-wrap:wrap}.previewbar input{min-width:100px;flex:1}
+iframe{border:0;background:white;width:100%;height:calc(100dvh - 150px);min-height:520px}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;align-self:start;position:sticky;top:76px;max-height:calc(100dvh - 90px);overflow:auto}
+h2{font-size:17px;margin:0 0 10px}.muted{color:#c2b2d3;font-size:12px}.field{display:grid;gap:5px;margin:12px 0}.field label{font-weight:700;font-size:12px;color:#dfd0f0}input,select,textarea{width:100%;padding:9px;border-radius:9px;border:1px solid var(--line);background:#100b18;color:white;min-width:0}input[type=color]{height:42px;padding:3px}input[type=checkbox]{width:auto}.row{display:flex;gap:7px}.row>*{flex:1;min-width:0}.status{padding:9px;background:#120d1b;border:1px solid var(--line);border-radius:9px;margin:10px 0;overflow-wrap:anywhere}.danger{color:#ffb4b4}.hidden{display:none!important}
+@media(max-width:850px){main{grid-template-columns:1fr;padding:8px}aside{position:static;max-height:none;order:2}iframe{height:62dvh;min-height:420px}.brand{width:100%}}
+</style></head>
+<body>
+<header><div class="brand">HELL CAMP <b>VISUAL EDITOR</b></div><button id="selectMode" class="primary">Select / Move</button><button id="textMode">Edit Text</button><button id="save">Save Changes</button><button id="undo">Undo</button><button id="export">Export</button><button id="back">Back to Dashboard</button></header>
+<main>
+<section class="preview"><div class="previewbar"><span class="muted">Page</span><select id="page"><option value="./index.html">Home / App</option><option value="./hell-dashboard.html">Private Dashboard</option><option value="./hell-edits.html">HELL EDITS</option></select><button id="reload">Reload</button><span class="muted">Tap an item in the preview to select it.</span></div><iframe id="site" title="Hell Camp editable preview" src="./index.html"></iframe></section>
+<aside><h2>Selected item</h2><div class="muted">Choose an item inside the preview. Use these controls to edit it without touching code.</div><div id="selected" class="status">Nothing selected yet.</div>
+<div class="field"><label for="elementText">Text / label</label><textarea id="elementText" rows="3" placeholder="Select a text element first"></textarea><button id="applyText">Apply text</button></div>
+<div class="row"><div class="field"><label for="textColor">Text color</label><input id="textColor" type="color" value="#ffffff"></div><div class="field"><label for="fillColor">Background color</label><input id="fillColor" type="color" value="#7c3aed"></div></div>
+<div class="field"><label for="size">Text size (px)</label><input id="size" type="number" min="8" max="120" placeholder="Leave unchanged"></div>
+<div class="field"><label for="radius">Corner roundness (px)</label><input id="radius" type="number" min="0" max="100" placeholder="Leave unchanged"></div>
+<button id="applyStyle" class="primary">Apply colors & style</button>
+<div class="field"><label for="imageFile">Replace selected image</label><input id="imageFile" type="file" accept="image/*"><div class="muted">Image replacement is saved in this browser's editor data. Large images may use substantial storage.</div></div>
+<div class="field"><label><input id="moveToggle" type="checkbox" checked> Allow drag to move selected item</label></div>
+<button id="deleteStyle">Clear edits for selected item</button>
+<div class="status" id="status">Checking owner access…</div>
+<div class="muted">Changes are saved to this browser on this device. They are not yet shared across devices or other users. Export your edits as a backup. Editing the underlying app logic, login/security, or server data is not done by moving visual elements.</div>
+</aside></main>
+<script>
+(function(){
+const OWNER='kaptainarizonah@gmail.com';
+const sb=window.supabase.createClient('https://lwgbfnyjuxixduuehckp.supabase.co','sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS');
+const $=id=>document.getElementById(id);const frame=$('site');let selected=null,selectedKey='',mode='move',undoStack=[];
+let edits=readEdits();function readEdits(){try{return JSON.parse(localStorage.getItem('hellcamp_visual_edits_v1')||'{}')}catch(e){return {}}}
+function say(s){$('status').textContent=s}
+function pageKey(){try{return new URL(frame.contentWindow.location.href).pathname}catch(e){return '/index.html'}}
+function pathFor(el){let parts=[],n=el;while(n&&n.nodeType===1&&n!==frame.contentDocument.body){let p=n.tagName.toLowerCase();if(n.id){p+='#'+n.id;parts.unshift(p);break}let sib=n,idx=1;while((sib=sib.previousElementSibling)){if(sib.tagName===n.tagName)idx++}p+=':nth-of-type('+idx+')';parts.unshift(p);n=n.parentElement}return parts.join(' > ')}
+function keyFor(el){return pageKey()+'|'+pathFor(el)}
+function allEdits(){return edits}
+function applySaved(){try{const doc=frame.contentDocument;const prefix=pageKey()+'|';Object.keys(edits).filter(k=>k.startsWith(prefix)).forEach(k=>{let sel=k.slice(prefix.length);try{let el=doc.querySelector(sel);if(!el)return;const d=edits[k];if(d.text!==undefined)el.textContent=d.text;if(d.color)el.style.setProperty('color',d.color);if(d.background)el.style.setProperty('background-color',d.background);if(d.fontSize)el.style.setProperty('font-size',d.fontSize);if(d.radius)el.style.setProperty('border-radius',d.radius);if(d.transform)el.style.setProperty('transform',d.transform);if(d.image)el.setAttribute('src',d.image)}catch(e){}})}catch(e){}}
+function unselect(){if(selected){selected.style.outline=selected.dataset.hcOldOutline||'';selected.style.outlineOffset=selected.dataset.hcOldOffset||''}selected=null;selectedKey='';$('selected').textContent='Nothing selected yet.'}
+function pick(el){if(!el||el===frame.contentDocument.body||el===frame.contentDocument.documentElement)return;unselect();selected=el;selectedKey=keyFor(el);el.dataset.hcOldOutline=el.style.outline||'';el.dataset.hcOldOffset=el.style.outlineOffset||'';el.style.outline='3px solid #a855f7';el.style.outlineOffset='2px';$('selected').textContent=el.tagName.toLowerCase()+(el.id?'#'+el.id:'')+' · '+selectedKey;$('elementText').value=(el.children.length===0?el.textContent:'');$('textColor').value=toHex(getComputedStyle(el).color)||'#ffffff';$('fillColor').value=toHex(getComputedStyle(el).backgroundColor)||'#7c3aed';$('size').value=parseFloat(getComputedStyle(el).fontSize)||'';$('radius').value=parseFloat(getComputedStyle(el).borderRadius)||''}
+function toHex(c){if(!c)return null;if(c.startsWith('#'))return c;let m=c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);return m?'#'+[m[1],m[2],m[3]].map(x=>(+x).toString(16).padStart(2,'0')).join(''):null}
+function current(){if(!selected)return null;return edits[selectedKey]||(edits[selectedKey]={})}
+function save(){localStorage.setItem('hellcamp_visual_edits_v1',JSON.stringify(edits));say('Saved on this device.');}
+function inject(){try{const doc=frame.contentDocument;if(!doc)return;applySaved();doc.addEventListener('click',function(e){if(e.target.closest('[data-hc-editor-ui]'))return;if(mode==='text'&&e.target.children.length===0){e.preventDefault();e.stopPropagation();e.target.setAttribute('contenteditable','true');e.target.focus();pick(e.target);return}e.preventDefault();e.stopPropagation();pick(e.target)},true);
+let dragging=null,startX=0,startY=0,baseX=0,baseY=0;
+doc.addEventListener('pointerdown',e=>{if(!selected||!$('moveToggle').checked||mode!=='move'||e.target!==selected)return;dragging=selected;startX=e.clientX;startY=e.clientY;let tr=getComputedStyle(dragging).transform;let m=tr&&tr!=='none'?new DOMMatrix(tr):new DOMMatrix();baseX=m.m41;baseY=m.m42;try{dragging.setPointerCapture(e.pointerId)}catch(_){}},{capture:true});
+doc.addEventListener('pointermove',e=>{if(!dragging)return;let x=baseX+e.clientX-startX,y=baseY+e.clientY-startY;dragging.style.transform='translate('+x+'px,'+y+'px)';const d=current();if(d)d.transform=dragging.style.transform},{capture:true});
+doc.addEventListener('pointerup',()=>{if(dragging){save();dragging=null}},{capture:true});
+doc.addEventListener('input',e=>{if(e.target.isContentEditable&&selected===e.target){const d=current();if(d)d.text=e.target.textContent}},{capture:true});
+}catch(e){say('Preview loaded but could not attach editor: '+e.message)}}
+async function guard(){try{const {data:{session}}=await sb.auth.getSession();if(!session||String(session.user.email||'').toLowerCase()!==OWNER){document.body.innerHTML='<main style="padding:24px;color:white;font:16px system-ui"><h1>Owner access required</h1><p>Sign in to Hell Camp using the owner account to open the visual editor.</p><button onclick="location.href=\'./index.html\'">Return to Hell Camp</button></main>';return false}say('Owner verified: '+session.user.email);return true}catch(e){say('Could not verify sign-in. Please sign in to Hell Camp first.');return false}}
+$('selectMode').onclick=()=>{mode='move';$('selectMode').classList.add('active');$('textMode').classList.remove('active')};$('textMode').onclick=()=>{mode='text';$('textMode').classList.add('active');$('selectMode').classList.remove('active');say('Tap a text item in the preview to edit it.')};
+$('applyText').onclick=()=>{if(!selected)return say('Select an item in the preview first.');let d=current();d.text=$('elementText').value;selected.textContent=d.text;save()};
+$('applyStyle').onclick=()=>{if(!selected)return say('Select an item in the preview first.');let d=current();d.color=$('textColor').value;d.background=$('fillColor').value;selected.style.color=d.color;selected.style.backgroundColor=d.background;if($('size').value){d.fontSize=$('size').value+'px';selected.style.fontSize=d.fontSize}if($('radius').value!==''){d.radius=$('radius').value+'px';selected.style.borderRadius=d.radius}save()};
+$('imageFile').onchange=e=>{if(!selected)return say('Select an image in the preview first.');const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const d=current();d.image=rd.result;selected.setAttribute('src',d.image);save();say('Image replaced and saved in this browser.')};rd.readAsDataURL(f)};
+$('deleteStyle').onclick=()=>{if(!selected)return;delete edits[selectedKey];save();selected.removeAttribute('style');applySaved();say('Saved edit entry cleared. Some inline layout may need a reload.')};
+$('save').onclick=save;$('undo').onclick=()=>{if(!selected)return say('Select an item to undo its saved edit.');delete edits[selectedKey];save();frame.contentWindow.location.reload()};$('export').onclick=()=>{const blob=new Blob([JSON.stringify(edits,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hell-camp-visual-edits.json';a.click();URL.revokeObjectURL(a.href)};
+$('page').onchange=()=>{unselect();frame.src=$('page').value};$('reload').onclick=()=>frame.contentWindow.location.reload();$('back').onclick=()=>location.href='./hell-dashboard.html';frame.addEventListener('load',()=>{setTimeout(()=>{inject();say('Page ready. Select an item to edit. Changes save locally.')},300)});
+guard().then(ok=>{if(ok&&!frame.contentDocument)frame.src='./index.html'});
+})();
+</script></body></html>

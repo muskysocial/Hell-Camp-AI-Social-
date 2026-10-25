@@ -140,4 +140,60 @@ bar.addEventListener('click',function(e){var b=e.target.closest('button[data-lay
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
 </script>
+
+<style id="hc-full-workspace-v2">
+/* HELL EDITS: full studio workspace, responsive rather than requiring device rotation */
+#editorView.hc-layout-vertical,
+#editorView.hc-layout-horizontal{
+  display:grid!important;
+  grid-template-columns:minmax(210px,260px) minmax(0,1fr) minmax(230px,280px);
+  grid-template-rows:auto auto minmax(420px,1fr);
+  gap:12px;
+  align-items:start;
+}
+#editorView>.section-title{grid-column:1/-1;grid-row:1}
+#editorView>.hc-editor-layout-switch{grid-column:1/-1;grid-row:2;margin:0}
+#editorView>.tools-panel{grid-column:1;grid-row:3;min-width:0;margin:0;position:sticky;top:8px;max-height:calc(100dvh - 20px);overflow:auto}
+#editorView>.workspace{display:contents!important}
+#editorView .workspace>.stage{grid-column:2;grid-row:3;min-width:0;min-height:clamp(420px,68dvh,900px);padding:14px}
+#editorView .workspace>.stage .stage-inner{width:100%;min-width:0}
+#editorView .workspace>aside{grid-column:3;grid-row:3;display:flex;flex-direction:column;gap:10px;min-width:0}
+#editorView .workspace>aside>.card{margin:0!important;min-width:0}
+#editorView .tool-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none}
+#editorView .tool{min-height:58px;font-size:11px}
+#editorView .canvas-controls .field{min-width:0}
+#editorView .stage-inner img,#editorView .stage-inner canvas{max-width:100%;height:auto;object-fit:contain}
+@media(max-width:980px){
+ #editorView.hc-layout-vertical,#editorView.hc-layout-horizontal{grid-template-columns:minmax(190px,230px) minmax(0,1fr);grid-template-rows:auto auto minmax(320px,1fr) auto}
+ #editorView>.section-title,#editorView>.hc-editor-layout-switch{grid-column:1/-1}
+ #editorView>.tools-panel{grid-column:1;grid-row:3;position:static;max-height:none}
+ #editorView .workspace>.stage{grid-column:2;grid-row:3;min-height:48dvh}
+ #editorView .workspace>aside{grid-column:1/-1;grid-row:4;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:680px){
+ #editorView.hc-layout-vertical,#editorView.hc-layout-horizontal{display:flex!important;flex-direction:column;gap:10px}
+ #editorView>.section-title{order:0;width:100%}
+ #editorView>.hc-editor-layout-switch{order:1;width:100%}
+ #editorView .workspace>.stage{order:2;width:100%;min-height:42dvh;padding:7px}
+ #editorView>.tools-panel{order:3;width:100%;position:static;max-height:none;overflow:visible}
+ #editorView .workspace>aside{order:4;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #editorView .tool-grid{grid-template-columns:repeat(4,minmax(0,1fr));max-height:unset}
+ #editorView .tool{min-height:54px;font-size:11px}
+ #editorView .tools-panel{padding:9px}
+ #editorView .stage-inner{min-height:180px}
+}
+@media(max-width:390px){
+ #editorView .tool-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #editorView .workspace>aside{grid-template-columns:minmax(0,1fr)}
+}
+/* Landscape phone: canvas and compact tool tray stay visible together */
+@media(max-width:900px) and (orientation:landscape) and (max-height:520px){
+ #editorView.hc-layout-vertical,#editorView.hc-layout-horizontal{display:grid!important;grid-template-columns:minmax(150px,190px) minmax(0,1fr);grid-template-rows:auto auto minmax(220px,1fr) auto;gap:8px}
+ #editorView>.section-title,#editorView>.hc-editor-layout-switch{grid-column:1/-1}
+ #editorView .workspace>.stage{grid-column:2;grid-row:3;min-height:55dvh}
+ #editorView>.tools-panel{grid-column:1;grid-row:3;max-height:55dvh;overflow:auto}
+ #editorView .workspace>aside{grid-column:1/-1;grid-row:4;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ #editorView .tool-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+</style>
 </body></html>

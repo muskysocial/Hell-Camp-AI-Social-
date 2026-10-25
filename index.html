@@ -108,7 +108,15 @@ input,textarea,.field{font-size:16px!important}
 @media(prefers-reduced-motion:reduce){.home-tool-tile,.home-tool-tile:before,.home-tool-tile:after{animation:none}}
 </style><style id="hell-camp-purple-glass-nav">
 /* Final override: purple frosted-glass bottom navigation */
+@media(max-width:760px){
+ html body .app nav.mobile{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+ }
+}
 html body .app nav.mobile{
+ display:flex!important;
  position:fixed!important;
  left:50%!important;
  right:auto!important;

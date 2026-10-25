@@ -82,22 +82,20 @@ Deno.serve(async (req: Request) => {
       headers: { "Content-Type": "application/json", "X-BB-API-Key": apiKey },
       body: JSON.stringify({
         projectId,
-        region: "us-west-2",
         timeout: 1800,
-        proxies: [{ type: "browserbase", geolocation: { country: "US" } }],
         browserSettings: { recordSession: false, logSession: false, viewport: { width: 1280, height: 800 } },
         userMetadata: { hellCampUserId: user.id, product: "hell-camp-virtual-phone" },
       }),
     });
     const session = await createResponse.json().catch(() => ({}));
-    if (!createResponse.ok || !session.id || !session.connectUrl) return json({ error: "The US browser provider could not start a session.", providerStatus: createResponse.status }, 502);
+    if (!createResponse.ok || !session.id || !session.connectUrl) return json({ error: "The remote browser provider could not start a session.", providerStatus: createResponse.status, detail: String(session.message || session.error || session.detail || "").slice(0, 500) }, 502);
     const navigated = await navigateSession(session.connectUrl, targetUrl);
     if (!navigated) return json({ error: "The US browser started, but could not open the requested page. Check provider session CDP access and retry." }, 502);
     const debugResponse = await fetch(`https://api.browserbase.com/v1/sessions/${encodeURIComponent(session.id)}/debug`, { headers: { "X-BB-API-Key": apiKey } });
     const debug = await debugResponse.json().catch(() => ({}));
     const liveViewUrl = debug.debuggerFullscreenUrl || debug.debuggerUrl;
-    if (!debugResponse.ok || !liveViewUrl) return json({ configured: true, sessionId: session.id, region: session.region || "us-west-2", expiresAt: session.expiresAt || null, message: "The US browser session started, but the provider did not return a live-view link. Check Browserbase project permissions." }, 502);
-    return json({ configured: true, sessionId: session.id, region: session.region || "us-west-2", expiresAt: session.expiresAt || null, liveViewUrl, openedUrl: targetUrl, message: "A US-geolocated proxy session was created and the requested page was opened. Verify the public egress IP before relying on US location." });
+    if (!debugResponse.ok || !liveViewUrl) return json({ configured: true, sessionId: session.id, region: session.region || "provider-selected region", expiresAt: session.expiresAt || null, message: "The remote browser started, but the provider did not return a live-view link. Check Browserbase project permissions." }, 502);
+    return json({ configured: true, sessionId: session.id, region: session.region || "provider-selected region", expiresAt: session.expiresAt || null, liveViewUrl, openedUrl: targetUrl, message: "A remote browser session was created without a location proxy. Its public IP and country are provider-dependent and are not guaranteed to be US-based." });
   } catch {
     return json({ error: "Could not reach the US browser provider. Try again later." }, 502);
   }

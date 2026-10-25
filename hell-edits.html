@@ -318,4 +318,137 @@ document.addEventListener('DOMContentLoaded',()=>{hcEnsureUI();hcAddPdfControls(
 })();
 </script>
 
+
+<script id="hc-template-form-system">
+(function(){
+ const $hc=id=>document.getElementById(id);
+ const hcDefaultFields=[
+  {label:'Full name',key:'full_name',type:'text',required:true,regionIndex:0},
+  {label:'Upload photo',key:'photo',type:'photo',required:true,regionIndex:1},
+  {label:'Date of birth',key:'date_of_birth',type:'date',required:true,regionIndex:2},
+  {label:'Address',key:'address',type:'text',required:true,regionIndex:3},
+  {label:'Phone number',key:'phone_number',type:'text',required:true,regionIndex:4},
+  {label:'Amount',key:'amount',type:'text',required:true,regionIndex:5}
+ ];
+ let hcSetupTemplate=null, hcFields=[];
+ const hcEscape=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+ function hcSettings(t){return t&&t.settings&&typeof t.settings==='object'?t.settings:{}}
+ function hcRegions(t){return Array.isArray(t?.editable_regions)?t.editable_regions:[]}
+ function hcEnsureSetup(){
+  const admin=$hc('adminView');if(!admin||$hc('hcTemplateSetup'))return;
+  const panel=document.createElement('div');panel.id='hcTemplateSetup';panel.className='card';panel.style.marginTop='14px';panel.innerHTML='<div class="section-title"><div><h3>Customer form setup</h3><p class="muted small">Choose which information customers enter for each template. This panel is admin-only.</p></div><button class="btn" id="hcSetupClose">Close</button></div><div id="hcSetupBody"><p class="muted">Choose “Configure customer form” beside a template below.</p></div>';
+  const manager=$hc('adminTemplates')?.parentElement; if(manager)manager.parentElement.insertBefore(panel,manager.nextSibling);else admin.appendChild(panel);
+  $hc('hcSetupClose').onclick=()=>{panel.classList.add('hidden');hcSetupTemplate=null};
+ }
+ async function hcOpenSetup(id){
+  if(!isAdmin||!user)return msg('Admin access required.','error');
+  const {data,error}=await db.from('hell_edit_templates').select('*').eq('id',id).maybeSingle();
+  if(error||!data)return msg(error?.message||'Template not found.','error');
+  hcSetupTemplate=data;
+  const saved=hcSettings(data).customer_form||{};
+  hcFields=Array.isArray(saved.fields)?JSON.parse(JSON.stringify(saved.fields)):JSON.parse(JSON.stringify(hcDefaultFields));
+  hcEnsureSetup();$hc('hcTemplateSetup').classList.remove('hidden');hcRenderSetup();
+  $hc('hcTemplateSetup').scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ function hcRenderSetup(){
+  const regions=hcRegions(hcSetupTemplate);
+  const body=$hc('hcSetupBody');if(!body)return;
+  const regionOptions='<option value="-1">Do not place on design</option>'+regions.map((r,i)=>'<option value="'+i+'">Area '+(i+1)+' · '+hcEscape(r.label||r.value||r.kind||'Editable area')+'</option>').join('');
+  body.innerHTML='<div class="grid"><div><label>Template</label><input class="field" value="'+hcEscape(hcSetupTemplate.title)+'" disabled></div><div><label>Photo handling</label><select class="field" id="hcPhotoMode"><option value="keep">Keep uploaded background</option><option value="remove-bg">Remove background (requires a connected background-removal service)</option></select></div></div><div class="section-title" style="margin-top:14px"><h4>Customer input fields</h4><div class="actions"><button class="btn" id="hcAddField">+ Add field</button><button class="btn" id="hcDefaultFields">Use example fields</button></div></div><div id="hcFieldRows"></div><label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input type="checkbox" id="hcFormEnabled"> Show this form to customers before the editor</label><label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input type="checkbox" id="hcAutoPreview" checked> Generate the design preview automatically after form submission</label><button class="btn primary" id="hcSaveSetup">Save customer form settings</button><p class="muted small">For text fields, map an area that already exists in the template. For photos, map an image/logo area. If no area is mapped, the value is collected but is not printed onto the design.</p>';
+  $hc('hcPhotoMode').value=hcSettings(hcSetupTemplate).customer_form?.photoMode||'keep';
+  $hc('hcFormEnabled').checked=!!hcSettings(hcSetupTemplate).customer_form?.enabled;
+  $hc('hcAutoPreview').checked=hcSettings(hcSetupTemplate).customer_form?.autoPreview!==false;
+  function rows(){
+   $hc('hcFieldRows').innerHTML=hcFields.map((f,i)=>'<div class="card" style="margin:8px 0;padding:12px"><div class="grid"><div><label>Field label</label><input class="field" data-hc-label="'+i+'" value="'+hcEscape(f.label)+'" placeholder="e.g. Full name"></div><div><label>Input type</label><select class="field" data-hc-type="'+i+'"><option value="text">Text</option><option value="date">Date</option><option value="number">Amount / number</option><option value="photo">Photo upload</option><option value="textarea">Long text</option></select></div><div><label>Place answer in</label><select class="field" data-hc-region="'+i+'">'+regionOptions+'</select></div><div style="display:flex;align-items:end;gap:10px"><label><input type="checkbox" data-hc-required="'+i+'" '+(f.required?'checked':'')+'> Required</label><button class="btn" data-hc-remove="'+i+'">Remove</button></div></div></div>').join('');
+   hcFields.forEach((f,i)=>{const type=$hc('hcFieldRows').querySelector('[data-hc-type="'+i+'"]');const reg=$hc('hcFieldRows').querySelector('[data-hc-region="'+i+'"]');if(type)type.value=f.type||'text';if(reg)reg.value=String(Number.isInteger(f.regionIndex)?f.regionIndex:-1)});
+   $hc('hcFieldRows').querySelectorAll('[data-hc-label]').forEach(el=>el.onchange=()=>hcFields[+el.dataset.hcLabel].label=el.value.trim());
+   $hc('hcFieldRows').querySelectorAll('[data-hc-type]').forEach(el=>el.onchange=()=>hcFields[+el.dataset.hcType].type=el.value);
+   $hc('hcFieldRows').querySelectorAll('[data-hc-region]').forEach(el=>el.onchange=()=>hcFields[+el.dataset.hcRegion].regionIndex=Number(el.value));
+   $hc('hcFieldRows').querySelectorAll('[data-hc-required]').forEach(el=>el.onchange=()=>hcFields[+el.dataset.hcRequired].required=el.checked);
+   $hc('hcFieldRows').querySelectorAll('[data-hc-remove]').forEach(el=>el.onclick=()=>{hcFields.splice(+el.dataset.hcRemove,1);rows()});
+  }
+  rows();
+  $hc('hcAddField').onclick=()=>{hcFields.push({label:'New field',key:'field_'+Date.now(),type:'text',required:false,regionIndex:-1});rows()};
+  $hc('hcDefaultFields').onclick=()=>{hcFields=JSON.parse(JSON.stringify(hcDefaultFields));rows()};
+  $hc('hcSaveSetup').onclick=async()=>{
+   if(!isAdmin||!hcSetupTemplate)return msg('Admin access required.','error');
+   $hc('hcFieldRows').querySelectorAll('[data-hc-label]').forEach(el=>hcFields[+el.dataset.hcLabel].label=el.value.trim());
+   if(hcFields.some(f=>!f.label))return msg('Every field needs a label.','error');
+   hcFields=hcFields.map((f,i)=>({...f,key:String(f.key||f.label.toLowerCase().replace(/[^a-z0-9]+/g,'_')||('field_'+i)),regionIndex:Number.isInteger(f.regionIndex)?f.regionIndex:-1}));
+   const settings={...hcSettings(hcSetupTemplate),customer_form:{enabled:$hc('hcFormEnabled').checked,autoPreview:$hc('hcAutoPreview').checked,photoMode:$hc('hcPhotoMode').value,fields:hcFields}};
+   const {error}=await db.from('hell_edit_templates').update({settings}).eq('id',hcSetupTemplate.id);
+   if(error)return msg('Could not save form settings: '+error.message,'error');
+   hcSetupTemplate.settings=settings;
+   await loadTemplates();await loadAdmin();hcEnsureSetup();$hc('hcTemplateSetup').classList.remove('hidden');hcRenderSetup();
+   msg('Customer form settings saved for '+hcSetupTemplate.title+'.','success');
+  };
+ }
+ function hcEnsureCustomerView(){
+  if($hc('hcCustomerFormView'))return;
+  const shell=document.querySelector('.shell')||document.body;
+  const section=document.createElement('section');section.id='hcCustomerFormView';section.className='hidden';
+  section.innerHTML='<div class="section-title"><div><h2 id="hcCustomerTitle">Personalise your design</h2><p class="muted">Fill in the details requested by the template. HELL EDITS will place them in the configured areas.</p></div><button class="btn" id="hcCustomerCancel">← Back to templates</button></div><form id="hcCustomerForm" class="card"><div id="hcCustomerFields" class="grid"></div><button class="btn primary" type="submit">Generate design preview</button><p class="muted small">Check your details in the preview before downloading.</p></form>';
+  shell.appendChild(section);
+  $hc('hcCustomerCancel').onclick=()=>{section.classList.add('hidden');if(typeof showView==='function')showView('library')};
+ }
+ function hcShowCustomerForm(t){
+  hcEnsureCustomerView();
+  const cfg=hcSettings(t).customer_form;
+  const fields=cfg.fields||[];
+  $hc('hcCustomerTitle').textContent='Personalise: '+t.title;
+  $hc('hcCustomerFields').innerHTML=fields.map((f,i)=>{
+   const id='hc-customer-'+i, required=f.required?'required':'';
+   let input='';
+   if(f.type==='photo')input='<input class="field" id="'+id+'" name="'+hcEscape(f.key)+'" type="file" accept="image/*" '+required+'>';
+   else if(f.type==='date')input='<input class="field" id="'+id+'" name="'+hcEscape(f.key)+'" type="date" '+required+'>';
+   else if(f.type==='number')input='<input class="field" id="'+id+'" name="'+hcEscape(f.key)+'" type="number" step="any" '+required+'>';
+   else if(f.type==='textarea')input='<textarea class="field" id="'+id+'" name="'+hcEscape(f.key)+'" rows="3" '+required+'></textarea>';
+   else input='<input class="field" id="'+id+'" name="'+hcEscape(f.key)+'" type="text" '+required+'>';
+   return '<div><label for="'+id+'">'+hcEscape(f.label)+(f.required?' *':'')+'</label>'+input+'</div>';
+  }).join('');
+  $hc('libraryView')?.classList.add('hidden');$hc('editorView')?.classList.add('hidden');$hc('adminView')?.classList.add('hidden');$hc('docView')?.classList.add('hidden');$hc('hcCustomerFormView').classList.remove('hidden');
+  $hc('hcCustomerForm').onsubmit=async e=>{
+   e.preventDefault();const submit=e.submitter; if(submit){submit.disabled=true;submit.textContent='Generating…'}
+   try{
+    const values={};
+    for(let i=0;i<fields.length;i++){
+     const f=fields[i],el=$hc('hc-customer-'+i);
+     if(f.type==='photo'&&el.files?.[0])values[f.key]=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(el.files[0])});
+     else values[f.key]=el.value;
+    }
+    const originalOpen=window.hcOriginalOpenTemplate;
+    if(!originalOpen)throw new Error('Template editor is unavailable. Please reload and try again.');
+    $hc('hcCustomerFormView').classList.add('hidden');
+    await originalOpen(t.id);
+    for(const f of fields){
+     const value=values[f.key];const index=Number(f.regionIndex);
+     if(index<0||!regions[index]||value==null||value==='')continue;
+     const region=regions[index];
+     if(f.type==='photo'){region.kind='logo';region.value=value;region.label=f.label;region.fit='contain'}
+     else {region.kind='text';region.value=String(value);region.label=f.label}
+    }
+    if(typeof drawStage==='function')await drawStage();
+    if(typeof positionRegions==='function')positionRegions();
+    if(typeof showView==='function')showView('editor');
+    if(submit){submit.disabled=false;submit.textContent='Generate design preview'}
+    msg('Your personalised design is ready to preview. Download when it looks right.','success');
+   }catch(err){$hc('hcCustomerFormView').classList.remove('hidden');if(submit){submit.disabled=false;submit.textContent='Generate design preview'}msg('Could not generate design: '+err.message,'error')}
+  };
+ }
+ const hcLoadAdminOrig=typeof loadAdmin==='function'?loadAdmin:null;
+ if(hcLoadAdminOrig)loadAdmin=async function(){await hcLoadAdminOrig();if(!isAdmin)return;hcEnsureSetup();document.querySelectorAll('#adminTemplates .mark-open').forEach(b=>{if(b.dataset.hcConfigured)return;b.dataset.hcConfigured='1';const cfg=document.createElement('button');cfg.className='btn';cfg.textContent='Configure customer form';cfg.onclick=()=>hcOpenSetup(b.dataset.id);b.parentElement.appendChild(cfg)});};
+ const hcOpenOrig=typeof openTemplate==='function'?openTemplate:null;
+ if(hcOpenOrig){
+  window.hcOriginalOpenTemplate=hcOpenOrig;
+  openTemplate=async function(id){
+   const t=templates.find(x=>x.id===id);
+   if(t&&!isAdmin&&hcSettings(t).customer_form?.enabled&&Array.isArray(hcSettings(t).customer_form.fields)&&hcSettings(t).customer_form.fields.length){hcShowCustomerForm(t);return}
+   return hcOpenOrig(id);
+  };
+ }
+ const hcRenderTemplatesOrig=typeof renderTemplates==='function'?renderTemplates:null;
+ if(hcRenderTemplatesOrig)renderTemplates=function(){hcRenderTemplatesOrig();setTimeout(()=>{document.querySelectorAll('.open-template').forEach(b=>{const t=templates.find(x=>x.id===b.dataset.id);if(t&&hcSettings(t).customer_form?.enabled&&!isAdmin){b.textContent='Personalise design →'}})},0)};
+ document.addEventListener('DOMContentLoaded',()=>{if(typeof isAdmin!=='undefined'&&isAdmin){hcEnsureSetup();}});
+})();
+</script>
 </body></html>

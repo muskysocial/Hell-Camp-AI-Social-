@@ -17,6 +17,14 @@ main{width:min(100%,960px);margin:auto;padding:18px 14px calc(34px + env(safe-ar
 .sync-card{margin-top:17px;padding:12px;border:1px solid #ffffff1b;border-radius:17px;background:#ffffff09}.sync-title{display:flex;align-items:center;gap:8px;font-weight:750;font-size:12px}.sync-title i{width:8px;height:8px;border-radius:50%;background:#f3bd59}.sync-card p{font-size:11px;color:#b8b2c7;margin:6px 0 0}
 .panel{border:1px solid var(--line);background:#11111c;border-radius:20px;padding:16px;margin-top:16px}.panel h3{margin:0 0 6px;font-size:16px}.panel p{margin:0 0 12px;color:var(--muted);font-size:13px}.browser-form{display:flex;gap:8px}.browser-form input{min-width:0;flex:1;background:#080811;border:1px solid #39354b;border-radius:12px;padding:11px;color:#fff}.primary{border:0;border-radius:12px;padding:10px 14px;background:linear-gradient(135deg,#a15bff,#713ce4);font-weight:750}.secondary{border:1px solid var(--line);border-radius:11px;padding:9px 12px;background:#1a1928}.warn{margin-top:11px;padding:11px;border-radius:12px;background:#2b2112;border:1px solid #6a4c21;color:#f4d7a0;font-size:12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}
+.remote-view{display:none;margin-top:14px;border:1px solid #6d4ba4;border-radius:18px;overflow:hidden;background:#050508;box-shadow:0 14px 38px #0008}
+.remote-view.active{display:block}.remote-view-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:#171321;border-bottom:1px solid #ffffff18;font-size:12px}
+.remote-view iframe{display:block;width:100%;height:min(72dvh,720px);min-height:420px;border:0;background:#fff}
+.browser-placeholder{display:grid;place-items:center;gap:8px;text-align:center;padding:38px 18px;color:#bcb4cf;background:radial-gradient(circle at 50% 20%,#3a1d58,#090910 65%);min-height:300px}
+.browser-placeholder .preview-icon{font-size:48px;width:88px;height:88px;display:grid;place-items:center;border-radius:25px;background:linear-gradient(145deg,#a66aff,#402071);box-shadow:0 0 42px #9a55ff44}
+.browser-placeholder strong{color:#fff;font-size:16px}.browser-placeholder small{max-width:280px;font-size:12px}
+.remote-view .view-actions{display:flex;gap:8px;padding:10px;background:#12111b}.remote-view .view-actions button{flex:1}
+@media(max-width:420px){.remote-view iframe{height:68dvh;min-height:360px}}
 @media(min-width:780px){.phone-wrap{grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:26px}.device{position:sticky;top:90px}.panel:first-child{margin-top:0}}
 @media(max-width:420px){main{padding:13px 8px 25px}.device{border-radius:34px;padding:7px}.screen{border-radius:27px;min-height:610px;padding:12px 9px}.appgrid{gap:16px 4px}.hero{padding:14px;border-radius:19px}.heroicon{width:48px;height:48px}}
 </style></head>
@@ -44,7 +52,8 @@ main{width:min(100%,960px);margin:auto;padding:18px 14px calc(34px + env(safe-ar
 <div class="sync-card"><div class="sync-title"><i id="syncDot"></i><span id="syncTitle">Cloud sync not connected</span></div><p id="syncText">Phone settings will sync when the account database migration is installed.</p></div>
 </div></section>
 <div>
-<section class="panel" id="browser"><h3>🌐 Remote Browser</h3><p>Open social apps and websites in a separate cloud browser. Its IP is selected by the provider and may be from any country; a US IP is not guaranteed. You must be signed in to Hell Camp.</p><button class="primary" id="startUsBrowser" type="button" style="width:100%">Start remote browser session</button><div class="warn" id="gatewayNotice">This uses a remote browser without a paid location proxy. The browser may use an IP from any country. Do not rely on it for a US-only location.</div><p id="browserStatus" aria-live="polite" style="margin-top:10px">Remote browser session not started.</p><form class="browser-form" id="browseForm"><input id="urlInput" type="url" placeholder="https://example.com" autocomplete="url" required><button class="secondary" type="submit">Open link</button></form><div class="actions"><button class="secondary" id="saveBtn" type="button">Save phone settings</button><button class="secondary" id="resetBtn" type="button">Reset layout</button></div></section>
+<section class="panel" id="browser"><h3>🌐 Remote Browser</h3><p>Open social apps and websites in a separate cloud browser. Its IP is selected by the provider and may be from any country; a US IP is not guaranteed. You must be signed in to Hell Camp.</p><button class="primary" id="startUsBrowser" type="button" style="width:100%">Start remote browser session</button><div class="warn" id="gatewayNotice">This uses a remote browser without a paid location proxy. The browser may use an IP from any country. Do not rely on it for a US-only location.</div><p id="browserStatus" aria-live="polite" style="margin-top:10px">Remote browser session not started.</p><form class="browser-form" id="browseForm"><input id="urlInput" type="url" placeholder="https://example.com" autocomplete="url" required><button class="secondary" type="submit">Browse here</button></form>
+<div class="remote-view" id="remoteView"><div class="remote-view-head"><span id="remoteTitle">Hell Camp · Remote browser</span><button class="secondary" id="closeRemote" type="button">Close</button></div><div class="browser-placeholder" id="browserPlaceholder"><div class="preview-icon">🌐</div><strong>Your browser opens here</strong><small>When a session starts, the remote browser will appear inside Hell Camp instead of opening a separate tab.</small></div><iframe id="remoteFrame" title="Hell Camp remote browser" allow="clipboard-read; clipboard-write; fullscreen" referrerpolicy="no-referrer" style="display:none"></iframe><div class="view-actions"><button class="secondary" id="reloadRemote" type="button">Reload view</button><button class="secondary" id="fullscreenRemote" type="button">Full screen</button></div></div><div class="actions"><button class="secondary" id="saveBtn" type="button">Save phone settings</button><button class="secondary" id="resetBtn" type="button">Reset layout</button></div></section>
 <section class="panel" id="files"><h3>📁 Your phone space</h3><p>Personal notes and bookmarks can be saved to your account after cloud sync is connected. External social apps keep their own accounts and privacy settings.</p><label for="phoneNote">Private phone note</label><textarea id="phoneNote" rows="4" style="width:100%;margin-top:8px;background:#080811;border:1px solid #39354b;border-radius:12px;padding:11px;color:#fff;resize:vertical" placeholder="Write a note for your next visit…"></textarea></section>
 <section class="panel" id="settings"><h3>⚙️ Phone settings</h3><p>These settings belong to your Hell Camp account.</p><label for="wallpaper">Wallpaper style</label><select id="wallpaper" style="display:block;width:100%;margin:8px 0 12px;background:#080811;border:1px solid #39354b;border-radius:12px;padding:11px;color:#fff"><option value="purple">Purple night</option><option value="blue">Ocean blue</option><option value="rose">Rose glow</option></select><label><input id="reducedMotion" type="checkbox"> Reduce animations</label></section>
 <section class="panel" id="notes"><h3>🔖 Bookmarks</h3><p>Quick links open in a separate tab. Social logins are never shared between Hell Camp accounts.</p><div class="actions"><button class="secondary" data-url="https://web.whatsapp.com/">WhatsApp</button><button class="secondary" data-url="https://www.facebook.com/">Facebook</button><button class="secondary" data-url="https://www.instagram.com/">Instagram</button><button class="secondary" data-url="https://www.tiktok.com/">TikTok</button><button class="secondary" data-url="https://x.com/">X</button></div></section>
@@ -67,17 +76,18 @@ $('backBtn').addEventListener('click',()=>{if(history.length>1)history.back();el
 $('browseForm').addEventListener('submit',e=>{e.preventDefault();launchUsBrowser($('urlInput').value);});
 async function launchUsBrowser(targetUrl){
  const statusEl=$('browserStatus'),button=$('startUsBrowser');
- const popup=window.open('about:blank','_blank');
  button.disabled=true;button.textContent='Starting remote session…';statusEl.textContent='Checking your Hell Camp login and remote browser provider…';
  try{
   if(!client)throw new Error('Supabase is unavailable. Reload the page and sign into Hell Camp.');
   const {data:sessionData,error:sessionError}=await client.auth.getSession();
   if(sessionError||!sessionData?.session?.access_token)throw new Error('Sign into Hell Camp in this browser first, then try again.');
   let raw=(targetUrl||$('urlInput').value||'https://duckduckgo.com/').trim();
-  if(!/^https?:\/\//i.test(raw))raw='https://'+raw;
+  if(!/^https?:\\/\\//i.test(raw))raw='https://'+raw;
   let parsed;try{parsed=new URL(raw)}catch(_){throw new Error('Enter a valid website address.')}
   if(!['http:','https:'].includes(parsed.protocol))throw new Error('Only public http and https websites are supported.');
   $('urlInput').value=parsed.href;
+  $('remoteView').classList.add('active');$('remoteTitle').textContent='Loading '+parsed.hostname+'…';$('browserPlaceholder').style.display='grid';$('remoteFrame').style.display='none';
+  $('remoteView').scrollIntoView({behavior:'smooth',block:'start'});
   const response=await fetch(SUPABASE_URL+'/functions/v1/virtual-phone-session',{
    method:'POST',
    headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+sessionData.session.access_token},
@@ -85,19 +95,24 @@ async function launchUsBrowser(targetUrl){
   });
   const data=await response.json().catch(()=>({}));
   if(!response.ok||!data.liveViewUrl){const detail=data.detail?(' Details: '+data.detail):'';const provider=data.providerStatus?(' (Browserbase HTTP '+data.providerStatus+')'):'';const msg=(data.error||data.message||'Remote browser session failed.')+provider+detail;$('gatewayNotice').textContent='Gateway test failed: '+msg;throw new Error(msg);}
-  if(popup)popup.location.href=data.liveViewUrl;else window.location.href=data.liveViewUrl;
-  statusEl.textContent='Remote browser opened '+parsed.hostname+'. Provider region: '+(data.region||'not reported')+'. Session expires: '+(data.expiresAt||'provider timeout')+'. Its public IP country is not guaranteed.';
-  $('gatewayNotice').textContent='Remote browser session opened without a location proxy. Its public IP country depends on the provider and is not guaranteed to be US-based. Some websites may restrict remote browsing or require login again.';
- }catch(err){if(popup)popup.close();statusEl.textContent=err.message||'Could not start the remote browser.';}
+  $('remoteFrame').src=data.liveViewUrl;
+  $('remoteFrame').style.display='block';$('browserPlaceholder').style.display='none';
+  $('remoteTitle').textContent=parsed.hostname+' · remote browser';
+  statusEl.textContent='Browsing '+parsed.hostname+' inside Hell Camp. Provider IP country is not guaranteed.';
+  $('gatewayNotice').textContent='The remote browser is embedded in this page. Its public IP country depends on the provider and is not guaranteed to be US-based.';
+ }catch(err){$('browserPlaceholder').style.display='grid';$('browserPlaceholder').innerHTML='<div class="preview-icon">⚠️</div><strong>Browser could not start</strong><small></small>';$('browserPlaceholder').querySelector('small').textContent=err.message||'Could not start the remote browser.';statusEl.textContent=err.message||'Could not start the remote browser.';}
  finally{button.disabled=false;button.textContent='Start remote browser session';}
 }
+$('closeRemote').addEventListener('click',()=>{$('remoteFrame').src='about:blank';$('remoteView').classList.remove('active');});
+$('reloadRemote').addEventListener('click',()=>{if($('remoteFrame').src&&$('remoteFrame').src!=='about:blank')$('remoteFrame').src=$('remoteFrame').src;});
+$('fullscreenRemote').addEventListener('click',()=>{const f=$('remoteFrame');if(f.requestFullscreen)f.requestFullscreen().catch(()=>{});else status('Full screen unavailable','Your browser does not support full screen for this view.',false);});
 $('startUsBrowser').addEventListener('click',()=>launchUsBrowser());
 document.querySelectorAll('[data-us-url]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();$('urlInput').value=link.dataset.usUrl;launchUsBrowser(link.dataset.usUrl)}));
 
 $('saveBtn').addEventListener('click',save);
 $('resetBtn').addEventListener('click',()=>{if(!confirm('Reset this phone layout and settings? Your saved note will also be cleared.'))return;state={...defaults};applyState();save();});
 ['wallpaper','reducedMotion','phoneNote'].forEach(id=>$(id).addEventListener(id==='phoneNote'?'input':'change',()=>{readState();clearTimeout(saveTimer);saveTimer=setTimeout(save,900)}));
-document.querySelectorAll('[data-url]').forEach(b=>b.addEventListener('click',()=>window.open(b.dataset.url,'_blank','noopener,noreferrer')));
+document.querySelectorAll('[data-url]').forEach(b=>b.addEventListener('click',()=>launchUsBrowser(b.dataset.url)));
 function tick(){const d=new Date();$('clock').textContent=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});}
 tick();setInterval(tick,30000);load();
 })();

@@ -2061,4 +2061,112 @@ pre,code{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:420px){.hc-ai-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hc-ai-tools-grid .hc-ai-tool{padding:11px 9px;gap:9px;border-radius:18px!important;min-height:82px}.hc-ai-tools-grid .hc-ai-tool-icon{width:36px;height:36px;font-size:19px}.hc-ai-tools-grid .hc-ai-tool-info b{font-size:12px}.hc-ai-tools-grid .hc-ai-tool-info small{font-size:10px}}
 </style>
 
+
+<style id="hc-dedicated-ai-rooms">
+.hc-ai-space .hc-ai-hero h1{font-size:clamp(30px,5vw,44px)!important;font-weight:950!important;letter-spacing:-.035em}
+.hc-ai-space>h2,.hc-ai-space .hc-ai-room-hint{font-weight:850!important}
+.hc-ai-tools-grid .hc-ai-tool{border-width:2px!important;min-height:108px!important;padding:16px!important}
+.hc-ai-tools-grid .hc-ai-tool-info b{font-size:15px!important;font-weight:950!important;line-height:1.2}
+.hc-ai-tools-grid .hc-ai-tool-info small{font-size:12px!important;font-weight:650!important;line-height:1.35}
+.hc-ai-tools-grid .hc-ai-tool-info em{display:block!important;margin-top:3px;font-size:10px!important;font-weight:800!important;color:#d7c5ff!important}
+.hc-ai-room-page{max-width:1050px;margin:0 auto;padding:clamp(12px,3vw,28px);color:#fbf8ff;background:radial-gradient(ellipse at 50% 0%,#251346 0%,#100b22 44%,#080713 100%);border:1px solid #4b2a7c;border-radius:28px;min-height:70vh;box-sizing:border-box}
+.hc-ai-room-top{display:flex;align-items:center;gap:14px;padding:6px 0 20px;border-bottom:1px solid #4b3472}
+.hc-ai-room-back{flex:none;border:1px solid #8051d4;background:#21123e;color:#fff;border-radius:14px;padding:12px 15px;font-weight:900;font-size:14px;cursor:pointer}
+.hc-ai-room-mark{display:grid;place-items:center;width:52px;height:52px;flex:none;border-radius:18px;background:linear-gradient(145deg,#8c4dff,#4b17bd);box-shadow:0 0 28px #7c3aed55;font-size:28px}
+.hc-ai-room-title{font-size:clamp(24px,4vw,36px);line-height:1.1;font-weight:950;letter-spacing:-.03em;margin:0}
+.hc-ai-room-subtitle{margin:6px 0 0;color:#c7b7e9;font-size:14px;font-weight:600}
+.hc-ai-room-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-top:20px}
+.hc-ai-room-panel{min-width:0;padding:clamp(14px,3vw,22px);border:1px solid #56368a;border-radius:24px;background:linear-gradient(150deg,rgba(43,26,77,.9),rgba(15,11,32,.97));box-shadow:inset 0 1px 0 #ffffff0d,0 15px 38px #0003}
+.hc-ai-room-panel h3{font-size:17px;font-weight:950;margin:0 0 12px}
+.hc-ai-room-panel p{color:#c8bce0;line-height:1.55}
+.hc-ai-room-field{display:block;width:100%;box-sizing:border-box;margin:8px 0 14px;padding:13px 14px;min-height:48px;border:1px solid #63439a;border-radius:14px;background:#0d091d;color:#fff;font:inherit}
+.hc-ai-room-field::placeholder{color:#9f90bb}
+.hc-ai-room-upload{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;padding:14px;text-align:center;border:1px dashed #9a70ee;border-radius:20px;background:#120c27;color:#f6efff;cursor:pointer}
+.hc-ai-room-upload b{font-weight:900}.hc-ai-room-upload small{color:#c0b0e2}
+.hc-ai-room-upload input{max-width:100%;font-size:12px}
+.hc-ai-room-preview{display:block;max-width:100%;max-height:360px;margin:10px auto 0;border-radius:18px;object-fit:contain}
+.hc-ai-room-primary{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:12px;border:1px solid #b79aff;border-radius:15px;background:linear-gradient(105deg,#5325e8,#8d2df7);box-shadow:0 8px 24px #6d28d944;color:#fff;font-size:15px;font-weight:950;cursor:pointer}
+.hc-ai-room-secondary{border:1px solid #7554a8;background:#21153b;color:#fff;border-radius:13px;padding:11px 14px;font-weight:850;cursor:pointer}
+.hc-ai-room-status{padding:13px 14px;border-radius:14px;background:#100b23;border:1px solid #54387f;color:#ded1fa;line-height:1.45}
+.hc-ai-room-result{min-height:230px;display:grid;place-items:center;text-align:center;border:1px dashed #7654a7;border-radius:20px;background:#0b0818;color:#c6b6e6;padding:14px}
+.hc-ai-room-result strong{display:block;color:#fff;font-size:16px;margin-bottom:6px}
+.hc-ai-room-chat{display:flex;flex-direction:column;gap:10px;min-height:240px;max-height:48vh;overflow:auto;padding:14px;border-radius:18px;background:#0c081a;border:1px solid #49316e}
+.hc-ai-room-bubble{max-width:88%;padding:12px 14px;border-radius:16px;background:#241541;color:#f8f3ff;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.hc-ai-room-bubble.user{align-self:flex-end;background:linear-gradient(120deg,#5728ca,#7626c7)}
+.hc-ai-room-page[hidden]{display:none!important}
+@media(min-width:760px){.hc-ai-room-workspace.hc-ai-room-two-col{grid-template-columns:repeat(2,minmax(0,1fr))}.hc-ai-room-page{margin-top:10px}}
+@media(max-width:420px){.hc-ai-room-top{align-items:flex-start;gap:10px}.hc-ai-room-back{padding:10px;font-size:12px}.hc-ai-room-mark{width:44px;height:44px;border-radius:15px}.hc-ai-room-panel{border-radius:19px}.hc-ai-room-upload{min-height:130px}}
+</style>
+<script id="hc-dedicated-ai-rooms-script">
+(function(){
+ var room=null,previousDisplay='',previewUrls=[];
+ var defs={
+ 'AI Chat':{icon:'✦',desc:'Your private AI conversation room.',kind:'chat',fields:['Ask Hell Camp AI anything…']},
+ 'AI Voice':{icon:'🎙️',desc:'Prepare text and choose a voice for narration.',kind:'voice'},
+ 'Head Swap':{icon:'🪄',desc:'Choose the photo to edit and the replacement reference. Review the result below.',kind:'swap'},
+ 'Face Swap':{icon:'👤',desc:'Upload a target photo and a reference face, then review the output.',kind:'swap'},
+ 'Helldevel HeadSwap':{icon:'✨',desc:'Dedicated workspace for the Helldevel head-swap engine.',kind:'swap'},
+ 'Video Face Swap':{icon:'🎞️',desc:'Prepare a source face and a short video for face replacement.',kind:'video'},
+ 'Face Fusion':{icon:'🧬',desc:'Set up two reference faces and review a fusion result.',kind:'twoimages'},
+ 'AI Video':{icon:'🎬',desc:'Describe the clip you want to create and add reference media.',kind:'promptmedia'},
+ 'AI Image Generator':{icon:'🖼️',desc:'Describe your image and set the visual direction.',kind:'prompt'},
+ 'AI Photo Enhancer':{icon:'✨',desc:'Upload an image to prepare an enhancement job.',kind:'image'},
+ 'Background Remover':{icon:'✂️',desc:'Upload an image and prepare a clean background-removal result.',kind:'image'},
+ 'AI Music Generator':{icon:'🎵',desc:'Describe the sound, mood, and style you want to create.',kind:'prompt'},
+ 'AI Writer':{icon:'✍️',desc:'Choose a writing task and describe what you need.',kind:'writer'},
+ 'AI Story Maker':{icon:'📖',desc:'Build a story idea into a structured creative brief.',kind:'writer'},
+ 'AI Code Assistant':{icon:'💻',desc:'Describe a coding task or paste the code you want help with.',kind:'code'},
+ 'AI Translator':{icon:'🌍',desc:'Enter text and choose the language you need.',kind:'translate'},
+ 'AI Tutor':{icon:'🎓',desc:'Set a topic and level for a learning session.',kind:'tutor'},
+ 'Educational Design Studio':{icon:'📚',desc:'Plan a lesson, worksheet, or learning resource.',kind:'writer'},
+ 'AI Podcast Studio':{icon:'🎧',desc:'Plan an episode, outline, or podcast script.',kind:'writer'},
+ 'AI Avatar Maker':{icon:'🧑‍🚀',desc:'Describe the avatar style and appearance you want.',kind:'prompt'},
+ 'AI Logo Maker':{icon:'🔰',desc:'Describe your brand and the logo direction.',kind:'prompt'},
+ 'AI Resume Builder':{icon:'📄',desc:'Prepare your experience and target role for a CV draft.',kind:'writer'},
+ 'Speech to Text':{icon:'🗣️',desc:'Prepare an audio file for transcription.',kind:'audio'},
+ 'Text to Speech':{icon:'🔊',desc:'Write the words you want spoken and select a voice style.',kind:'voice'},
+ 'AI Portrait Studio':{icon:'📸',desc:'Set a portrait concept and upload a reference image.',kind:'promptmedia'},
+ 'Social Media Assistant':{icon:'📱',desc:'Prepare captions, content ideas, and a posting brief.',kind:'writer'},
+ 'AI Design Studio':{icon:'🎨',desc:'Describe a design concept and add reference images.',kind:'promptmedia'}
+ };
+ function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+ function field(label,placeholder,area){return '<label style="display:block;font-size:13px;font-weight:900;color:#f1e8ff">'+label+(area?'<textarea class="hc-ai-room-field" data-room-input placeholder="'+esc(placeholder||'')+'" rows="5"></textarea>':'<input class="hc-ai-room-field" data-room-input placeholder="'+esc(placeholder||'')+'">')+'</label>'}
+ function upload(label,key,accept){return '<label class="hc-ai-room-upload"><span style="font-size:30px">＋</span><b>'+label+'</b><small>Choose a file from your device</small><input type="file" data-room-file="'+key+'" accept="'+accept+'"><img class="hc-ai-room-preview" data-room-preview="'+key+'" hidden alt="'+label+' preview"></label>'}
+ function createRoom(name){
+  var d=defs[name];if(!d)return;
+  if(room)room.remove();
+  var lab=document.querySelector('.hc-ai-space');if(!lab)return;
+  previousDisplay=lab.style.display;lab.style.display='none';
+  room=document.createElement('section');room.className='hc-ai-room-page';room.id='hcDedicatedAiRoom';room.setAttribute('aria-label',name+' room');
+  var left='',right='',work='',status='This room is ready for your inputs. Generation requires the corresponding AI service to be configured.';
+  if(d.kind==='swap'||d.kind==='twoimages'){
+   left=upload(d.kind==='twoimages'?'First face / reference':'Photo to edit','a','image/*');
+   right=upload(d.kind==='twoimages'?'Second face / reference':'Replacement face','b','image/*');
+   work='<div class="hc-ai-room-workspace hc-ai-room-two-col"><section class="hc-ai-room-panel"><h3>01 · Source images</h3><p>Choose clear images. Your selected previews will appear here.</p>'+left+'</section><section class="hc-ai-room-panel"><h3>02 · Reference image</h3><p>Choose the replacement/reference photo.</p>'+right+'</section><section class="hc-ai-room-panel" style="grid-column:1/-1"><h3>03 · Result preview</h3><div class="hc-ai-room-result" data-room-result><div><strong>Your result will appear here</strong>After the processing service returns an image, it will be shown in this space.</div></div><div class="hc-ai-room-status" style="margin-top:12px" data-room-status>'+status+'</div><p style="font-size:12px">Use photos you have permission to edit. No result is fabricated while processing is unavailable.</p></section></div>';
+  } else if(d.kind==='video'){
+   work='<div class="hc-ai-room-workspace hc-ai-room-two-col"><section class="hc-ai-room-panel"><h3>01 · Reference face</h3>'+upload('Choose face photo','a','image/*')+'</section><section class="hc-ai-room-panel"><h3>02 · Source video</h3>'+upload('Choose a video','b','video/*')+'</section><section class="hc-ai-room-panel" style="grid-column:1/-1"><h3>03 · Video result</h3><div class="hc-ai-room-result" data-room-result><div><strong>Result preview</strong>Your processed video will appear here when the video service is connected.</div></div><div class="hc-ai-room-status" data-room-status>'+status+'</div></section></div>';
+  } else if(d.kind==='image'||d.kind==='audio'){
+   work='<div class="hc-ai-room-workspace hc-ai-room-two-col"><section class="hc-ai-room-panel"><h3>01 · Upload</h3>'+upload(d.kind==='audio'?'Choose an audio file':'Choose an image','a',d.kind==='audio'?'audio/*':'image/*')+'</section><section class="hc-ai-room-panel"><h3>02 · Output</h3><div class="hc-ai-room-result" data-room-result><div><strong>Your output appears here</strong>The result area is ready for the connected service.</div></div><div class="hc-ai-room-status" data-room-status>'+status+'</div></section></div>';
+  } else if(d.kind==='chat'){
+   work='<section class="hc-ai-room-panel"><h3>Conversation</h3><div class="hc-ai-room-chat" data-room-chat><div class="hc-ai-room-bubble">Welcome to Hell Camp AI Chat. Ask a question to begin.</div></div><form data-room-chat-form>'+field('Your message','Ask a question…',false)+'<button class="hc-ai-room-primary" type="submit">Send message</button></form><div class="hc-ai-room-status" style="margin-top:12px">Chat service connection is not confirmed in this room yet. Messages will not be presented as AI replies unless the service returns them.</div></section>';
+  } else {
+   var placeholder=d.kind==='voice'?'Type the words you want spoken…':d.kind==='translate'?'Enter text to translate…':d.kind==='code'?'Describe the code task or paste code…':d.kind==='tutor'?'What topic do you want to learn?':'Describe exactly what you want to create…';
+   work='<div class="hc-ai-room-workspace hc-ai-room-two-col"><section class="hc-ai-room-panel"><h3>01 · Your brief</h3>'+field(d.kind==='voice'?'Text to speak':d.kind==='translate'?'Text to translate':d.kind==='code'?'Coding task':'Prompt / instructions',placeholder,true)+(d.kind==='voice'?'<label style="display:block;font-weight:900">Voice style<select class="hc-ai-room-field"><option>Natural</option><option>Warm</option><option>Bright</option><option>Calm</option></select></label>':'')+(d.kind==='translate'?'<label style="display:block;font-weight:900">Target language<select class="hc-ai-room-field"><option>Choose language</option><option>English</option><option>Yoruba</option><option>Igbo</option><option>Hausa</option><option>French</option><option>Spanish</option></select></label>':'')+'<button class="hc-ai-room-primary" type="button" data-room-prepare>Prepare request</button></section><section class="hc-ai-room-panel"><h3>02 · Workspace output</h3><div class="hc-ai-room-result" data-room-result><div><strong>Output space</strong>Your generated content or response will appear here when the relevant service is connected.</div></div><div class="hc-ai-room-status" style="margin-top:12px" data-room-status>'+status+'</div></section></div>';
+  }
+  room.innerHTML='<header class="hc-ai-room-top"><button type="button" class="hc-ai-room-back" data-room-back>← AI Lab</button><div class="hc-ai-room-mark">'+d.icon+'</div><div style="min-width:0"><h1 class="hc-ai-room-title">'+esc(name)+'</h1><p class="hc-ai-room-subtitle">'+esc(d.desc)+'</p></div></header>'+work;
+  lab.insertAdjacentElement('afterend',room);
+  room.querySelector('[data-room-back]').addEventListener('click',function(){previewUrls.forEach(URL.revokeObjectURL);previewUrls=[];room.remove();room=null;lab.style.display=previousDisplay;});
+  room.querySelectorAll('input[type=file][data-room-file]').forEach(function(input){input.addEventListener('change',function(){var f=input.files&&input.files[0],img=room.querySelector('[data-room-preview="'+input.dataset.roomFile+'"]');if(!f||!img)return;if(!f.type.startsWith('image/'))return;var url=URL.createObjectURL(f);previewUrls.push(url);img.src=url;img.hidden=false;});});
+  var chatForm=room.querySelector('[data-room-chat-form]');if(chatForm)chatForm.addEventListener('submit',function(e){e.preventDefault();var input=chatForm.querySelector('[data-room-input]'),value=input.value.trim();if(!value)return;var bubble=document.createElement('div');bubble.className='hc-ai-room-bubble user';bubble.textContent=value;room.querySelector('[data-room-chat]').appendChild(bubble);input.value='';var st=room.querySelector('.hc-ai-room-status');st.textContent='Your message is displayed, but no AI response was received because the chat service is not connected to this room yet.';});
+  var prepare=room.querySelector('[data-room-prepare]');if(prepare)prepare.addEventListener('click',function(){var val=room.querySelector('[data-room-input]');if(!val||!val.value.trim()){val&&val.focus();return;}room.querySelector('[data-room-status]').textContent='Your brief is prepared locally. Generation has not been started because the provider connection for this room has not been verified.';});
+  room.scrollIntoView({behavior:'smooth',block:'start'});
+ }
+ document.addEventListener('click',function(e){
+  var card=e.target.closest('.hc-ai-tools-grid .hc-ai-tool');if(!card||card.matches('a')||card.classList.contains('hc-ai-tool-hell-edits'))return;
+  var name=card.getAttribute('data-tool');if(!name||!defs[name])return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();createRoom(name);
+ },true);
+})();
+</script>
+
 </body></html>

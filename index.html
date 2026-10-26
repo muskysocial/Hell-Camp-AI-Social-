@@ -2486,17 +2486,13 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
 
 
 <style id="hc-hell-edits-full-watermark">
-/* Strong centered preview watermark: deterrent only; screenshots cannot be technically disabled on normal web pages. */
-.hc-edit-template-art,
-.hc-edit-customer-source,
-#hcHellEditBeforeAfter > div:last-child{
+/* Apply the prominent watermark ONLY to the generated BEFORE and AFTER preview panels. */
+#hcHellEditBeforeAfter > div{
  position:relative!important;
- isolation:isolate;
+ isolation:isolate!important;
  overflow:hidden!important;
 }
-.hc-edit-template-art::before,
-.hc-edit-customer-source::before,
-#hcHellEditBeforeAfter > div:last-child::before{
+#hcHellEditBeforeAfter > div::before{
  content:"HELL EDITS FULL";
  position:absolute!important;
  z-index:20!important;
@@ -2505,25 +2501,19 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
  display:flex!important; align-items:center!important; justify-content:center!important;
  min-height:clamp(44px,9vw,92px)!important;
  padding:8px 4px!important;
- background:rgba(15,8,30,.72)!important;
- border-top:2px solid rgba(255,255,255,.78)!important;
- border-bottom:2px solid rgba(255,255,255,.78)!important;
+ background:rgba(15,8,30,.78)!important;
+ border-top:2px solid rgba(255,255,255,.86)!important;
+ border-bottom:2px solid rgba(255,255,255,.86)!important;
  color:#fff!important;
- font-size:clamp(21px,5vw,44px)!important;
+ font-size:clamp(19px,4.3vw,40px)!important;
  line-height:1.05!important;
  font-weight:1000!important;
- letter-spacing:clamp(1px,.5vw,5px)!important;
+ letter-spacing:clamp(1px,.45vw,4px)!important;
  text-align:center!important;
  text-shadow:0 2px 3px #000,0 0 8px #000!important;
  pointer-events:none!important;
  user-select:none!important; -webkit-user-select:none!important;
  white-space:normal!important;
-}
-.hc-edit-template-card .hc-edit-template-copy::after{
- content:"After buying your design, the image will come clean and natural.";
- display:block; margin-top:10px; padding:9px 10px;
- border-radius:10px; background:#f3e8ff; color:#5b21b6;
- font-size:11px; font-weight:800; line-height:1.4;
 }
 #hcHellEditBeforeAfter > div:last-child > p{
  font-size:11px!important; line-height:1.45!important;

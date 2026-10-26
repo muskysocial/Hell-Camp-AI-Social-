@@ -186,7 +186,12 @@
       if(typeof window.loadGrowthServices==='function') window.loadGrowthServices=loadServices;
       document.addEventListener('click',function(e){
         var b=e.target&&e.target.closest('[data-action="growthSelectService"]');
-        if(b){e.preventDefault();e.stopImmediatePropagation();chooseService(b.getAttribute('data-id'));}
+        if(b){
+          var requestedId=b.getAttribute('data-id');
+          var cached=(window.hcGrowthServicesCache||[]).some(function(s){return String(s.id)===String(requestedId);});
+          /* Do not swallow the legacy Growth Hub click handler if this script's cache is not ready. */
+          if(cached){e.preventDefault();e.stopImmediatePropagation();chooseService(requestedId);}
+        }
       },true);
       document.addEventListener('click',function(e){
         var b=e.target&&e.target.closest('[data-action="growthRefreshOrders"]');

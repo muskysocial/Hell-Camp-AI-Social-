@@ -137,6 +137,24 @@
     }catch(err){if(status)status.textContent=err.message||'Order could not be submitted.';}
     finally{if(btn){btn.disabled=false;btn.textContent='Place boost order';}}
   }
+  async function refreshProviderStatuses(){
+    if(!window.authUser||!window.supabaseClient||isAdmin())return;
+    var status=byId('hcGrowthServiceStatus');
+    try{
+      if(status)status.textContent='Refreshing provider order statuses…';
+      var q=await window.supabaseClient.from('growth_service_orders').select('id,provider_reference').not('provider_reference','is',null).order('created_at',{ascending:false}).limit(20);
+      if(q.error)throw q.error;
+      var orders=q.data||[];
+      for(var i=0;i<orders.length;i++){
+        if(!orders[i].provider_reference)continue;
+        await window.supabaseClient.functions.invoke('sproute-provider',{body:{action:'status_order',order_id:orders[i].id}});
+      }
+      if(status)status.textContent=orders.length?'Provider status refresh checked '+orders.length+' tracked order(s).':'No provider-tracked orders yet.';
+    }catch(err){
+      if(status)status.textContent='Could not refresh provider statuses right now.';
+    }
+    if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
+  }
   function bind(){
     addDurationField();
     var form=byId('hcGrowthOrderForm');
@@ -159,7 +177,7 @@
       },true);
       document.addEventListener('click',function(e){
         var b=e.target&&e.target.closest('[data-action="growthRefreshOrders"]');
-        if(b && typeof window.loadGrowthOrders==='function')window.loadGrowthOrders();
+        if(b)refreshProviderStatuses();
       },true);
     }
   }

@@ -20,9 +20,7 @@
     label.textContent='Delivery type';
     var select=document.createElement('select');
     select.className='field'; select.id='hcGrowthDuration'; select.innerHTML=
-      '<option value="standard">Standard delivery (provider estimate)</option>'+
-      '<option value="permanent">Permanent, if provider offers it</option>'+
-      '<option value="temporary">Temporary, if provider offers it</option>';
+      '<option value="standard">Standard delivery (verified provider service)</option>';
     var note=byId('hcGrowthNote');
     (note ? note.parentNode : form.lastElementChild).insertBefore(label,note||form.lastElementChild);
     label.insertAdjacentElement('afterend',select);
@@ -114,7 +112,26 @@
         return;
       }
       if(!data.paid||!data.order_id)throw new Error(data.message||'Order could not be confirmed.');
-      if(status)status.textContent='Order '+data.order_id+' created. '+Number(data.coins_charged||0).toLocaleString()+' coins charged. Remaining purchased balance: '+Number(data.balance||0).toLocaleString()+'.';
+      if(status)status.textContent='Payment recorded. Submitting order securely to Sproute…';
+      var providerResponse=await window.supabaseClient.functions.invoke('sproute-provider',{body:{action:'submit_order',order_id:data.order_id}});
+      if(providerResponse.error){
+        if(status)status.textContent='Order reference '+data.order_id+' was created, but provider acceptance could not be confirmed. Do not submit it again. Refresh order history or contact Hell Camp support before retrying.';
+        if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
+        return;
+      }
+      var providerData=providerResponse.data||{};
+      if(providerData.refunded){
+        if(status)status.textContent='Sproute did not accept order '+data.order_id+'. The charged coins have been returned to your wallet.';
+        e.target.reset();var refundedPanel=byId('hcGrowthOrderPanel');if(refundedPanel)refundedPanel.hidden=true;
+        if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
+        return;
+      }
+      if(!providerData.ok){
+        if(status)status.textContent=(providerData.error||'Provider submission was not confirmed.')+' Order reference: '+data.order_id+'. Do not submit again; check order history or contact support.';
+        if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
+        return;
+      }
+      if(status)status.textContent='Order '+data.order_id+' accepted by Sproute. Provider reference: '+providerData.provider_order_id+'. '+Number(data.coins_charged||0).toLocaleString()+' coins charged. Remaining purchased balance: '+Number(data.balance||0).toLocaleString()+'.';
       e.target.reset();var panel=byId('hcGrowthOrderPanel');if(panel)panel.hidden=true;
       if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
     }catch(err){if(status)status.textContent=err.message||'Order could not be submitted.';}

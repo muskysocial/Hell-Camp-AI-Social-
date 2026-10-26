@@ -1690,18 +1690,22 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
     setTimeout(function(){
       var v=document.getElementById('view');
       if(!v|| (v.innerHTML.trim() && v.textContent.trim()))return;
-      // Last-resort recovery: the main app renderer may have missed its startup call.
+      // The main app is intentionally scoped inside an IIFE, so recover through its real delegated navigation.
+      // First ask the currently saved page to render by activating its matching navigation control.
       try{
-        if(typeof window.render==='function')window.render();
-      }catch(recoveryRenderError){console.error('Hell Camp recovery render failed:',recoveryRenderError);}
+        var savedPage='';
+        try{savedPage=localStorage.getItem('hc_last_page')||'';}catch(storageReadError){}
+        var savedButton=savedPage?document.querySelector('[data-page="'+savedPage.replace(/["\\\\]/g,'')+'"]'):null;
+        if(savedButton)savedButton.click();
+      }catch(savedRouteRecoveryError){console.error('Hell Camp saved-route recovery failed:',savedRouteRecoveryError);}
       if(v.innerHTML.trim() && v.textContent.trim())return;
-      // A stale/invalid saved route must never leave the app shell empty.
+      // Fall back to the Home control, which runs the app's own navigation handler and renderer.
       try{
-        if(window.state)window.state.page='Home';
         localStorage.setItem('hc_last_page','Home');
-        if(typeof window.render==='function')window.render();
+        var homeButton=document.querySelector('[data-page="Home"]');
+        if(homeButton)homeButton.click();
       }catch(homeRecoveryError){console.error('Hell Camp Home recovery failed:',homeRecoveryError);}
-      if(!v.innerHTML.trim() || !v.textContent.trim())showRecovery('The app could not render its saved page. A safe Home recovery was attempted; reload once if this message remains.');
+      if(!v.innerHTML.trim() || !v.textContent.trim())showRecovery('The app could not render its saved page after a Home recovery attempt.');
     },2500);
   });
 })();

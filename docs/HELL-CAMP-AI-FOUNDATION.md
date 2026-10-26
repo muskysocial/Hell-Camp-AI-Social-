@@ -49,4 +49,8 @@ All tables enable RLS. Conversation/message/tool-run reads are owner-scoped; the
 - Added `record_hellcamp_ai_exchange`, a service-role-only database function that charges coins and writes the user/assistant message pair in one database transaction. A failed message write rolls back the charge.
 - Added owner-only `health_check` action to verify database table reachability and record diagnostic results. It reports whether `GROQ_API_KEY` is configured, but deliberately does not spend provider tokens or claim the key has been validated.
 - Added owner-scoped feedback storage and a branch-only AI chat toolbar for saved conversation history, explicit user-controlled memories (list/save/delete), and owner diagnostics.
-- The live `groq-chat` route and live GitHub Pages `index.html` are still unchanged. The new chat UI remains on the feature branch until browser-based sign-in, persistence, coin-charge rollback, and mobile regression checks pass.
+- The updated `index.html` is merged to `main` and now calls `hellcamp-ai` for AI Chat; existing AI tool functions and HELL EDITS were not replaced. GitHub Pages propagation and signed-in browser behavior still need a real client check.
+
+## Release state
+
+The foundation PR was merged to `main` on 2026-10-26. The `hellcamp-ai` Edge Function is active at version 3 with JWT verification enabled. Repository source checks pass; the exact GitHub Pages deployment and authenticated end-to-end flow cannot be confirmed from the server-side tools alone.

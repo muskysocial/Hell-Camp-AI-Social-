@@ -1,6 +1,6 @@
 # HELL CAMP AI Foundation
 
-Status: initial isolated foundation deployed to the connected Supabase project on 2026-10-26. The website UI and existing production AI functions have not been replaced.
+Status: isolated AI foundation schema and a new `hellcamp-ai` Edge Function deployed to the connected Supabase project on 2026-10-26. A narrowly scoped AI-chat UI integration is staged on the feature branch; it has not been merged to `main` or released through GitHub Pages. Existing production AI functions have not been replaced.
 
 ## Existing project facts verified
 - Static GitHub Pages front end with a large `index.html`, a standalone HELL EDITS visual editor/runtime, and an existing Pages workflow.
@@ -8,6 +8,13 @@ Status: initial isolated foundation deployed to the connected Supabase project o
 - Existing functions include `groq-chat`, `profile-about-ai`, and several image/editing functions.
 - Existing product tables already cover profiles, posts, messaging, HELL EDITS activity/assets/templates, profile About Me history, and user memories. Do not recreate these product areas under new names unless a distinct AI-engine need is proven.
 - Current Groq model ID `openai/gpt-oss-20b` appears in the provider's current supported-model documentation. The reported 404 must be traced from the actual request path/logs; do not blindly change the model ID.
+
+## New AI gateway
+- Added and deployed `hellcamp-ai` as a separate Edge Function with JWT verification enabled.
+- Supports authenticated chat, owner-scoped conversation history, and explicit user-managed memory list/save/delete actions.
+- Uses server-side `GROQ_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY`; neither is added to public HTML.
+- Chat uses the same 1,400-coin AI Chat charge path as the existing chat function. Memory/history reads do not invoke the model.
+- The gateway is currently a foundation, not a full autonomous agent: website tool execution, health repair actions, media generation, and full UI memory controls are not yet implemented.
 
 ## Isolated AI engine schema
 The migration `supabase/migrations/202610260001_hellcamp_ai_foundation.sql` introduces:
@@ -22,9 +29,9 @@ All tables enable RLS. Conversation/message/tool-run reads are owner-scoped; the
 
 ## Next implementation stages
 1. Confirm this migration is represented in the repository and verify live table/RLS/advisor state.
-2. Add an isolated `hellcamp-ai` Edge Function with JWT verification, server-only model keys, bounded request sizes, owner-scoped history and memory retrieval, and explicit tool allowlists.
+2. Finish testing the isolated `hellcamp-ai` Edge Function with authenticated chat, history, memory ownership, coin charging, and request-size tests.
 3. Trace and fix the reported Groq 404 with exact request logs before touching `groq-chat` or `profile-about-ai`.
-4. Integrate one UI path at a time, starting with the existing AI chat and HELL EDITS/document assistance, while preserving the bottom navigation and editor.
+4. Review and merge the staged AI-chat integration only after end-to-end tests; then integrate HELL EDITS/document assistance without changing their existing editor layout.
 5. Add diagnostics with read-only checks first; require approval and rollback for production writes.
 6. Add feedback-based evaluation. Do not train on private conversations by default.
 7. Evaluate an open-weight model on a separate host before considering any production model switch.

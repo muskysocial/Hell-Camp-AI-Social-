@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const MODEL = Deno.env.get("GROQ_MODEL") || "openai/gpt-oss-20b";
 const ALLOWED_ORIGINS = new Set([
@@ -65,19 +65,45 @@ Deno.serve(async (req: Request) => {
         return fail("Only the site owner can run platform diagnostics.", 403, origin);
       }
       const checks: Array<{ name: string; status: "healthy" | "warning" | "failed"; details: Record<string, unknown> }> = [];
-      for (const table of ["profiles", "hellcamp_ai_conversations", "hellcamp_ai_messages", "hellcamp_ai_memories", "hellcamp_ai_tool_runs", "hellcamp_ai_feedback"]) {
-        const { error } = await admin.from(table).select("id", { count: "exact", head: true }).limit(1);
+      // Read-only connectivity checks for the AI engine and key site modules.
+      for (const table of [
+        "profiles", "posts", "conversations", "direct_messages",
+        "hell_edit_activity", "hell_edit_assets", "hell_edit_templates",
+        "site_settings", "site_tool_activity",
+        "hellcamp_ai_conversations", "hellcamp_ai_messages",
+        "hellcamp_ai_memories", "hellcamp_ai_tool_runs", "hellcamp_ai_feedback",
+      ]) {
+        const { error } = await admin.from(table).select("*", { count: "exact", head: true }).limit(1);
         checks.push({
           name: "database:" + table,
           status: error ? "failed" : "healthy",
           details: error ? { message: String(error.message).slice(0, 240) } : { reachable: true },
         });
       }
-      checks.push({
-        name: "provider:groq",
-        status: groqKey ? "warning" : "failed",
-        details: { configured: Boolean(groqKey), note: groqKey ? "Secret exists; provider authentication/model not tested by this low-cost check." : "GROQ_API_KEY is missing." },
-      });
+      if (!groqKey) {
+        checks.push({ name: "provider:groq", status: "failed", details: { configured: false, note: "GROQ_API_KEY is missing." } });
+      } else {
+        try {
+          const providerCheck = await fetch("https://api.groq.com/openai/v1/models", {
+            headers: { Authorization: "Bearer " + groqKey },
+            signal: AbortSignal.timeout(10000),
+          });
+          const providerData = await providerCheck.json().catch(() => ({}));
+          const models = Array.isArray(providerData?.data) ? providerData.data : [];
+          const modelAvailable = providerCheck.ok && models.some((m: any) => m?.id === MODEL);
+          checks.push({
+            name: "provider:groq",
+            status: !providerCheck.ok ? "failed" : modelAvailable ? "healthy" : "warning",
+            details: {
+              configured: true, authenticated: providerCheck.ok, model: MODEL,
+              model_available: modelAvailable, http_status: providerCheck.status,
+              note: !providerCheck.ok ? "Groq rejected the diagnostic request." : modelAvailable ? "Groq key and configured model are available." : "Key is accepted, but the configured model was not found in the model list.",
+            },
+          });
+        } catch (error) {
+          checks.push({ name: "provider:groq", status: "failed", details: { configured: true, note: "Groq diagnostic request failed.", message: String(error).slice(0, 240) } });
+        }
+      }
       const checkedAt = new Date().toISOString();
       const rows = checks.map((check) => ({
         check_name: check.name,

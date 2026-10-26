@@ -68,7 +68,8 @@ The foundation PR was merged to `main` on 2026-10-26. The `hellcamp-ai` Edge Fun
 - Added a persistent, responsive **Ask HELL CAMP AI** launcher throughout the site so members can reach AI without first finding the AI Lab.
 - Added quick-start workflows for social posts, profile bios, message replies, member growth plans, learning and seller/job post drafting.
 - The companion uses the authenticated `hellcamp-ai` Edge Function, restores the member's latest conversation, lets members start a new conversation, and provides a history picker for prior conversations.
+- Added a private AI Draft Library: members can save AI replies as drafts, copy them, review saved drafts and delete them. Saving a draft does not spend coins.
 - Added member-controlled saved memory management: members can explicitly save preferences or project details, list active memories, and delete saved items. Memory remains account-scoped.
 - Added mobile full-screen layout, keyboard accessibility, reduced-motion-aware launcher animation, and clear coin charging status. It uses the existing 1,400-coin successful-reply rule and does not expose provider keys in the browser.
 - Upgraded the deployed AI system prompt with platform-aware guidance for profiles, posts, direct messages, groups/events, jobs/marketplace, gifts, HELL EDITS and AI Lab. It is explicit that it cannot publish or mutate site data without a connected action tool.
-- Edge Function version 5 is deployed with JWT verification enabled. A signed-in browser smoke test of the new companion, history, and memory controls remains to be performed after Pages publishes the branch.
+- Edge Function version 6 is deployed with JWT verification enabled. The new owner-scoped `hellcamp_ai_drafts` table has RLS enabled; draft list/save/delete actions enforce the authenticated user ID. A signed-in browser smoke test of the new companion, history, and memory controls remains to be performed after Pages publishes the branch.

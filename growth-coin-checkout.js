@@ -104,7 +104,20 @@
       if(result.error) throw new Error(result.error.message||'Order could not be submitted.');
       var data=result.data||{};
       if(data.provider_not_ready){
-        if(status)status.textContent='This service is not connected to a verified delivery provider yet. No coins were deducted.';
+        /* Keep the request usable for manual review while provider setup is incomplete. Never charge coins or submit a live order here. */
+        if(data.order_id){
+          if(status)status.textContent='This service is not connected to a verified delivery provider yet. No coins were deducted. Request reference: '+data.order_id+'.';
+          if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
+          return;
+        }
+        var pending=await window.supabaseClient.from('growth_service_orders').insert({
+          user_id:window.authUser.id,service_id:service.id,service_title:service.title,platform:service.platform,
+          target_url:target,quantity:quantity,customer_note:note,payment_status:'not_started',order_status:'requested'
+        }).select('id').single();
+        if(pending.error)throw new Error('Provider is not ready and the request could not be saved for review: '+pending.error.message);
+        if(status)status.textContent='Request saved for Hell Camp review. No payment was taken and no live order was sent. Reference: '+pending.data.id+'.';
+        e.target.reset();var pendingPanel=byId('hcGrowthOrderPanel');if(pendingPanel)pendingPanel.hidden=true;
+        if(typeof window.loadGrowthOrders==='function')await window.loadGrowthOrders();
         return;
       }
       if(data.insufficient_coins){

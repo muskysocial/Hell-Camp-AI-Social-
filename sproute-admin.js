@@ -44,6 +44,36 @@
       if (button) button.disabled = false;
     }
   }
+  // Capture Growth Hub request taps before other app-level handlers can swallow them.
+  // This keeps the Request buttons responsive on mobile while reusing the existing order panel.
+  document.addEventListener('click', function (event) {
+    var requestButton = event.target && event.target.closest('[data-action="growthSelectService"]');
+    if (!requestButton) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof window.hcGrowthSelectService === 'function') {
+      window.hcGrowthSelectService(requestButton.getAttribute('data-id'));
+    } else {
+      var serviceId = requestButton.getAttribute('data-id');
+      var panel = document.getElementById('hcGrowthOrderPanel');
+      var serviceInput = document.getElementById('hcGrowthServiceId');
+      var titleInput = document.getElementById('hcGrowthServiceTitle');
+      var platformInput = document.getElementById('hcGrowthPlatform');
+      var label = document.getElementById('hcGrowthSelectedLabel');
+      var card = requestButton.closest('.hc-growth-service');
+      if (panel && serviceInput && titleInput && platformInput && card) {
+        serviceInput.value = serviceId || '';
+        titleInput.value = (card.querySelector('h3') || {}).textContent || '';
+        platformInput.value = (card.querySelector('.hc-growth-pill') || {}).textContent || '';
+        if (label) label.textContent = platformInput.value + ' · ' + titleInput.value;
+        panel.hidden = false;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        requestButton.textContent = 'Please refresh';
+      }
+    }
+  }, true);
+
   document.addEventListener('click', function (event) {
     var button = event.target && event.target.closest('[data-hc-sproute-test]');
     if (!button) return;

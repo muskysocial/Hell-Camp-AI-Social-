@@ -31,8 +31,9 @@ Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin") || "";
   if (req.method === "OPTIONS") return response({ ok: true }, 200, origin);
   if (req.method !== "POST") return fail("Use POST for HELL CAMP AI requests.", 405, origin);
-  const contentLength = Number(req.headers.get("content-length") || "0");
-  if (contentLength > 100_000) return fail("Request is too large.", 413, origin);
+  // Read the raw body once and enforce the limit even when Content-Length is absent.
+  const rawBody = await req.text();
+  if (rawBody.length > 100_000) return fail("Request is too large.", 413, origin);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
@@ -54,7 +55,7 @@ Deno.serve(async (req: Request) => {
   });
 
   try {
-    const body = await req.json().catch(() => null);
+    const body = await Promise.resolve().then(() => JSON.parse(rawBody)).catch(() => null);
     if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Send a valid JSON request.", 400, origin);
     const action = String(body.action || "chat");
 
@@ -176,30 +177,26 @@ Deno.serve(async (req: Request) => {
     const answer = providerBody?.choices?.[0]?.message?.content;
     if (typeof answer !== "string" || !answer.trim()) return fail("The AI provider returned an empty response.", 502, origin);
 
+    // Charge and persist both sides of the exchange in one database transaction.
+    // If either message insert fails, Postgres rolls back the coin charge as well.
     const requestKey = "hellcamp-ai:" + crypto.randomUUID();
-    const { data: charge, error: chargeError } = await admin.rpc("charge_ai_generation", {
-      p_user_id: userId, p_request_key: requestKey, p_tool_key: "AI Chat",
+    const { data: exchange, error: exchangeError } = await admin.rpc("record_hellcamp_ai_exchange", {
+      p_user_id: userId,
+      p_conversation_id: conversationId,
+      p_request_key: requestKey,
+      p_model: MODEL,
+      p_user_message: message,
+      p_assistant_message: answer.trim().slice(0, 20000),
     });
-    if (chargeError) throw new Error("Could not securely charge AI coins: " + chargeError.message);
-    if (!charge?.ok) return fail(charge?.message || "AI generation could not be charged.", 402, origin, {
-      code: charge?.code || "charge_failed", balance: Number(charge?.balance) || 0,
+    if (exchangeError) throw new Error("Could not safely save AI exchange: " + exchangeError.message);
+    if (!exchange?.ok) return fail(exchange?.message || "AI generation could not be charged.", 402, origin, {
+      code: exchange?.code || "charge_failed",
+      balance: Number(exchange?.balance) || 0,
+      required: Number(exchange?.required) || 1400,
     });
-
-    const now = new Date().toISOString();
-    const userRecord = await admin.from("hellcamp_ai_messages").insert({
-      conversation_id: conversationId, user_id: userId, role: "user", content: message, model: MODEL,
-    });
-    if (userRecord.error) throw userRecord.error;
-    const assistantRecord = await admin.from("hellcamp_ai_messages").insert({
-      conversation_id: conversationId, user_id: userId, role: "assistant", content: answer.trim().slice(0, 20000), model: MODEL,
-    });
-    if (assistantRecord.error) throw assistantRecord.error;
-    const updated = await admin.from("hellcamp_ai_conversations")
-      .update({ updated_at: now, last_message_at: now }).eq("id", conversationId).eq("user_id", userId);
-    if (updated.error) throw updated.error;
     return response({
       reply: answer.trim(), conversation_id: conversationId, title: conversation.title,
-      model: MODEL, coin_balance: Number(charge.balance) || 0, coins_charged: 1400,
+      model: MODEL, coin_balance: Number(exchange.balance) || 0, coins_charged: Number(exchange.coins_charged) || 1400,
     }, 200, origin);
   } catch (error) {
     console.error("hellcamp-ai request failed", String(error));

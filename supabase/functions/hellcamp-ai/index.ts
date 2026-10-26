@@ -59,6 +59,67 @@ Deno.serve(async (req: Request) => {
     if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Send a valid JSON request.", 400, origin);
     const action = String(body.action || "chat");
 
+    if (action === "health_check") {
+      // This diagnostic endpoint is intentionally restricted to the site owner.
+      if (String(authData.user.email || "").toLowerCase() !== "kaptainarizonah@gmail.com") {
+        return fail("Only the site owner can run platform diagnostics.", 403, origin);
+      }
+      const checks: Array<{ name: string; status: "healthy" | "warning" | "failed"; details: Record<string, unknown> }> = [];
+      for (const table of ["profiles", "hellcamp_ai_conversations", "hellcamp_ai_messages", "hellcamp_ai_memories", "hellcamp_ai_tool_runs", "hellcamp_ai_feedback"]) {
+        const { error } = await admin.from(table).select("id", { count: "exact", head: true }).limit(1);
+        checks.push({
+          name: "database:" + table,
+          status: error ? "failed" : "healthy",
+          details: error ? { message: String(error.message).slice(0, 240) } : { reachable: true },
+        });
+      }
+      checks.push({
+        name: "provider:groq",
+        status: groqKey ? "warning" : "failed",
+        details: { configured: Boolean(groqKey), note: groqKey ? "Secret exists; provider authentication/model not tested by this low-cost check." : "GROQ_API_KEY is missing." },
+      });
+      const checkedAt = new Date().toISOString();
+      const rows = checks.map((check) => ({
+        check_name: check.name,
+        status: check.status,
+        details: check.details,
+        checked_at: checkedAt,
+      }));
+      const { error: saveError } = await admin.from("hellcamp_ai_health_checks").insert(rows);
+      if (saveError) throw saveError;
+      return response({
+        checked_at: checkedAt,
+        overall: checks.some((c) => c.status === "failed") ? "failed" : checks.some((c) => c.status === "warning") ? "warning" : "healthy",
+        checks,
+      }, 200, origin);
+    }
+
+    if (action === "feedback_save") {
+      const conversationId = String(body.conversation_id || "");
+      const messageId = body.message_id ? String(body.message_id) : null;
+      const rating = Number(body.rating);
+      const feedback = typeof body.feedback === "string" ? body.feedback.trim() : null;
+      if (!/^[0-9a-f-]{36}$/i.test(conversationId)) return fail("A valid conversation ID is required.", 400, origin);
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) return fail("Rating must be from 1 to 5.", 400, origin);
+      if (feedback && feedback.length > 2000) return fail("Feedback must be at most 2,000 characters.", 400, origin);
+      const { data: conversation, error: conversationError } = await admin.from("hellcamp_ai_conversations")
+        .select("id").eq("id", conversationId).eq("user_id", userId).maybeSingle();
+      if (conversationError) throw conversationError;
+      if (!conversation) return fail("Conversation not found.", 404, origin);
+      if (messageId) {
+        if (!/^[0-9a-f-]{36}$/i.test(messageId)) return fail("Invalid message ID.", 400, origin);
+        const { data: messageRow, error: messageError } = await admin.from("hellcamp_ai_messages")
+          .select("id").eq("id", messageId).eq("conversation_id", conversationId).eq("user_id", userId).maybeSingle();
+        if (messageError) throw messageError;
+        if (!messageRow) return fail("Message not found in this conversation.", 404, origin);
+      }
+      const { data, error } = await admin.from("hellcamp_ai_feedback").insert({
+        user_id: userId, conversation_id: conversationId, message_id: messageId, rating, feedback,
+      }).select("id,rating,created_at").single();
+      if (error) throw error;
+      return response({ feedback: data }, 201, origin);
+    }
+
     if (action === "memory_list") {
       const { data, error } = await admin.from("hellcamp_ai_memories")
         .select("id,memory,memory_type,source,active,created_at,updated_at")

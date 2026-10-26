@@ -29,7 +29,13 @@ Set these values as **Supabase Edge Function secrets** (never in the browser, HT
 - `HELLCAMP_AI_MODEL`: model identifier exposed by that endpoint
 - `HELLCAMP_VISION_MODEL`: optional vision-capable model identifier; defaults to `HELLCAMP_AI_MODEL`
 
-The previous `GROQ_API_KEY` and `GROQ_MODEL` values remain supported as fallbacks. The private inference host must be reachable from Supabase Edge Functions over HTTPS and expose compatible `/models` and `/chat/completions` routes. Do not expose a private model server directly to browsers.
+The previous `GROQ_API_KEY` and `GROQ_MODEL` values remain supported as fallbacks. Gemini can also be selected through its OpenAI-compatible endpoint if the server-side `GEMINI_API_KEY` secret is saved:
+
+- `HELLCAMP_AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai`
+- `HELLCAMP_AI_MODEL=gemini-2.5-flash`
+- `GEMINI_API_KEY`: the key from Google AI Studio, stored only as a Supabase Edge Function secret
+
+When the Gemini base URL is selected, the gateway prefers `GEMINI_API_KEY`. If no explicit endpoint is configured, the existing Groq key remains preferred when present; adding a Gemini key alone does not silently switch production traffic away from Groq. The chosen endpoint must be reachable from Supabase Edge Functions over HTTPS and expose compatible `/models` and `/chat/completions` routes. Do not expose provider keys or a private model server directly to browsers.
 
 ### Suggested evaluation protocol
 

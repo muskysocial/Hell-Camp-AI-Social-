@@ -407,7 +407,8 @@ window.addEventListener('error', function(e){
 (function(){
 'use strict';
 var view=document.getElementById('view');
-var supabaseClient=window.supabase&&window.supabase.createClient?window.supabase.createClient('https://lwgbfnyjuxixduuehckp.supabase.co','sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null,authUser=null,authProfile=null,authMode='login',authNotice='',authNoticeType='success';window.supabaseClient=supabaseClient;Object.defineProperty(window,'authUser',{configurable:true,get:function(){return authUser},set:function(v){authUser=v}});Object.defineProperty(window,'authProfile',{configurable:true,get:function(){return authProfile},set:function(v){authProfile=v}});
+var hcAuthStorageKey='hell-camp-auth-session-v2';
+var supabaseClient=window.supabase&&window.supabase.createClient?window.supabase.createClient('https://lwgbfnyjuxixduuehckp.supabase.co','sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:hcAuthStorageKey}}):null,authUser=null,authProfile=null,authMode='login',authNotice='',authNoticeType='success';window.supabaseClient=supabaseClient;Object.defineProperty(window,'authUser',{configurable:true,get:function(){return authUser},set:function(v){authUser=v}});Object.defineProperty(window,'authProfile',{configurable:true,get:function(){return authProfile},set:function(v){authProfile=v}});
 
 if(supabaseClient&&supabaseClient.functions&&typeof supabaseClient.functions.invoke==='function'){
   var hcOriginalInvoke=supabaseClient.functions.invoke.bind(supabaseClient.functions);

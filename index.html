@@ -2689,58 +2689,63 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
 <script src="./sproute-admin.js?v=3"></script>
 
 <style id="hc-grid-menu-redesign">
-/* Hell Camp menu: turn the three-dot drawer into a responsive app-launcher grid. */
+/* Explicit four-column app-launcher grid; headings span the full grid. */
 .menu-overlay{align-items:stretch!important;justify-content:flex-start!important}
 .menu-drawer{
-  width:min(94vw,520px)!important;max-width:100%!important;height:100dvh!important;
-  max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;
-  padding:calc(14px + env(safe-area-inset-top)) 15px calc(22px + env(safe-area-inset-bottom))!important;
-  background:linear-gradient(160deg,#0b1020 0%,#101528 55%,#17102b 100%)!important;
-  color:#f8f7ff!important;border-right:1px solid #8b5cf655!important;
-  box-shadow:18px 0 55px #0007!important;
+ width:min(96vw,600px)!important;max-width:100%!important;height:100dvh!important;max-height:100dvh!important;
+ overflow-y:auto!important;overscroll-behavior:contain!important;
+ padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))!important;
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ align-content:start!important;align-items:stretch!important;gap:8px!important;
+ background:linear-gradient(160deg,#0b1020 0%,#101528 55%,#17102b 100%)!important;
+ color:#f8f7ff!important;border-right:1px solid #8b5cf655!important;box-shadow:18px 0 55px #0007!important;
 }
-.menu-drawer .drawer-head{grid-column:1/-1;border-color:#ffffff1c!important;padding:3px 2px 15px!important}
-.menu-drawer .drawer-profile{grid-column:1/-1;padding:12px;border:1px solid #b45cff40;border-radius:16px;background:linear-gradient(120deg,#a855f71b,#ec48991a)!important;margin:13px 0 8px!important;color:#fff!important}
+.menu-drawer .drawer-head,.menu-drawer .drawer-profile,.menu-drawer .drawer-section{
+ grid-column:1/-1!important;min-width:0!important;
+}
+.menu-drawer .drawer-head{border-color:#ffffff1c!important;padding:3px 2px 12px!important}
+.menu-drawer .drawer-profile{
+ padding:10px!important;border:1px solid #b45cff40!important;border-radius:14px!important;
+ background:linear-gradient(120deg,#a855f71b,#ec48991a)!important;margin:4px 0!important;color:#fff!important;
+}
 .menu-drawer .drawer-section{
-  grid-column:1/-1!important;padding:15px 3px 7px!important;margin:2px 0 0!important;
-  color:#c8a2ff!important;font-size:11px!important;font-weight:900!important;
-  letter-spacing:1.4px!important;border-bottom:1px solid #ffffff12!important;
+ padding:12px 3px 5px!important;margin:0!important;color:#c8a2ff!important;
+ font-size:10px!important;font-weight:900!important;letter-spacing:1.3px!important;
+ border-bottom:1px solid #ffffff12!important;
 }
 .menu-drawer .drawer-item{
-  min-width:0!important;min-height:96px!important;width:100%!important;
-  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
-  gap:8px!important;padding:12px 7px!important;margin:0!important;
-  border:1px solid #a78bfa24!important;border-radius:16px!important;
-  background:linear-gradient(145deg,#ffffff0b,#a855f70b)!important;
-  color:#f3efff!important;text-align:center!important;font-size:12px!important;
-  line-height:1.3!important;font-weight:700!important;overflow-wrap:anywhere!important;
-  transition:transform .16s ease,border-color .16s ease,background .16s ease!important;
+ position:relative!important;min-width:0!important;width:100%!important;min-height:84px!important;
+ display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+ gap:6px!important;padding:8px 3px!important;margin:0!important;
+ border:1px solid #a78bfa2b!important;border-radius:14px!important;
+ background:linear-gradient(145deg,#ffffff0b,#a855f70b)!important;color:#f3efff!important;
+ text-align:center!important;font-size:10px!important;line-height:1.25!important;font-weight:700!important;
+ overflow-wrap:anywhere!important;white-space:normal!important;
 }
 .menu-drawer .drawer-item span:first-child{
-  display:grid!important;place-items:center!important;width:42px!important;height:42px!important;
-  flex:0 0 42px!important;border-radius:14px!important;
-  background:linear-gradient(135deg,#9333ea,#db2777)!important;
-  color:#fff!important;font-size:22px!important;box-shadow:0 5px 18px #a855f733!important;
+ display:grid!important;place-items:center!important;width:34px!important;height:34px!important;
+ flex:0 0 34px!important;border-radius:11px!important;
+ background:linear-gradient(135deg,#9333ea,#db2777)!important;color:#fff!important;
+ font-size:19px!important;box-shadow:0 5px 18px #a855f733!important;
 }
 .menu-drawer .drawer-item:hover,.menu-drawer .drawer-item:focus-visible{
-  transform:translateY(-2px)!important;border-color:#c084fcaa!important;
-  background:linear-gradient(145deg,#8b5cf626,#ec48991a)!important;color:#fff!important;outline:none!important;
+ border-color:#c084fcaa!important;background:linear-gradient(145deg,#8b5cf626,#ec48991a)!important;
+ color:#fff!important;outline:none!important;
 }
-.menu-drawer .drawer-item:active{transform:scale(.98)!important}
+.menu-drawer .drawer-item:active{transform:scale(.97)!important}
 .menu-drawer .drawer-close{background:#ffffff14!important;border:1px solid #ffffff24!important;color:#fff!important}
-.menu-drawer .brand-mobile{color:#fff!important}
-.menu-drawer .brand-mobile span{color:#d879ff!important}
+.menu-drawer .brand-mobile{color:#fff!important}.menu-drawer .brand-mobile span{color:#d879ff!important}
 .menu-drawer .muted{color:#b9b2cb!important}
-.menu-drawer #hcNotificationDrawerDot{position:absolute!important}
 .menu-drawer .drawer-item[data-auth-action="signout"]{background:#ef444412!important;border-color:#ef444444!important}
 @media(max-width:360px){
- .menu-drawer{padding-left:10px!important;padding-right:10px!important}
- .menu-drawer .drawer-item{min-height:88px!important;font-size:11px!important;padding:9px 4px!important}
- .menu-drawer .drawer-item span:first-child{width:36px!important;height:36px!important;flex-basis:36px!important;font-size:20px!important}
+ .menu-drawer{padding-left:8px!important;padding-right:8px!important;gap:6px!important}
+ .menu-drawer .drawer-item{min-height:76px!important;font-size:9px!important;padding:6px 2px!important}
+ .menu-drawer .drawer-item span:first-child{width:30px!important;height:30px!important;flex-basis:30px!important;font-size:17px!important}
 }
 @media(min-width:700px){
- .menu-drawer{width:min(94vw,560px)!important;padding-left:20px!important;padding-right:20px!important}
- .menu-drawer .drawer-item{min-height:104px!important;font-size:13px!important}
+ .menu-drawer{width:min(96vw,640px)!important;padding-left:18px!important;padding-right:18px!important;gap:10px!important}
+ .menu-drawer .drawer-item{min-height:100px!important;font-size:12px!important}
+ .menu-drawer .drawer-item span:first-child{width:40px!important;height:40px!important;flex-basis:40px!important;font-size:22px!important}
 }
 .light .menu-drawer{background:linear-gradient(160deg,#fff 0%,#f7f1ff 100%)!important;color:#241c2d!important}
 .light .menu-drawer .drawer-profile{color:#241c2d!important}

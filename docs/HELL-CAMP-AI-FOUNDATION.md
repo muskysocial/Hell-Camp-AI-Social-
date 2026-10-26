@@ -42,3 +42,11 @@ All tables enable RLS. Conversation/message/tool-run reads are owner-scoped; the
 - API secrets are never shipped in `index.html` or other public assets.
 - New model/provider calls are rate-limited, bounded, logged without secret content, and return useful error codes.
 - Deploy only after tests pass; keep rollback instructions for each release.
+
+## Stage 1 hardening added (2026-10-26)
+
+- `hellcamp-ai` now enforces the request-body limit after reading the actual body, including requests without a `Content-Length` header.
+- Added `record_hellcamp_ai_exchange`, a service-role-only database function that charges coins and writes the user/assistant message pair in one database transaction. A failed message write rolls back the charge.
+- Added owner-only `health_check` action to verify database table reachability and record diagnostic results. It reports whether `GROQ_API_KEY` is configured, but deliberately does not spend provider tokens or claim the key has been validated.
+- Added owner-scoped feedback storage and a branch-only AI chat toolbar for saved conversation history, explicit user-controlled memories (list/save/delete), and owner diagnostics.
+- The live `groq-chat` route and live GitHub Pages `index.html` are still unchanged. The new chat UI remains on the feature branch until browser-based sign-in, persistence, coin-charge rollback, and mobile regression checks pass.

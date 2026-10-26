@@ -1,6 +1,6 @@
 # HELL CAMP AI Foundation
 
-Status: isolated AI foundation schema and a new `hellcamp-ai` Edge Function deployed to the connected Supabase project on 2026-10-26. A narrowly scoped AI-chat UI integration is staged on the feature branch; it has not been merged to `main` or released through GitHub Pages. Existing production AI functions have not been replaced.
+Status: AI foundation and site-wide member AI companion are implemented on the feature branch; `hellcamp-ai` Edge Function version 5 is deployed.
 
 ## Existing project facts verified
 - Static GitHub Pages front end with a large `index.html`, a standalone HELL EDITS visual editor/runtime, and an existing Pages workflow.
@@ -61,3 +61,14 @@ All tables enable RLS. Conversation/message/tool-run reads are owner-scoped; the
 ## Release state
 
 The foundation PR was merged to `main` on 2026-10-26. The `hellcamp-ai` Edge Function is active at version 3 with JWT verification enabled. Repository source checks pass; the exact GitHub Pages deployment and authenticated end-to-end flow cannot be confirmed from the server-side tools alone.
+
+
+## Member AI companion — stage 2 (2026-10-26)
+
+- Added a persistent, responsive **Ask HELL CAMP AI** launcher throughout the site so members can reach AI without first finding the AI Lab.
+- Added quick-start workflows for social posts, profile bios, message replies, member growth plans, learning and seller/job post drafting.
+- The companion uses the authenticated `hellcamp-ai` Edge Function, restores the member's latest conversation, lets members start a new conversation, and provides a history picker for prior conversations.
+- Added member-controlled saved memory management: members can explicitly save preferences or project details, list active memories, and delete saved items. Memory remains account-scoped.
+- Added mobile full-screen layout, keyboard accessibility, reduced-motion-aware launcher animation, and clear coin charging status. It uses the existing 1,400-coin successful-reply rule and does not expose provider keys in the browser.
+- Upgraded the deployed AI system prompt with platform-aware guidance for profiles, posts, direct messages, groups/events, jobs/marketplace, gifts, HELL EDITS and AI Lab. It is explicit that it cannot publish or mutate site data without a connected action tool.
+- Edge Function version 5 is deployed with JWT verification enabled. A signed-in browser smoke test of the new companion, history, and memory controls remains to be performed after Pages publishes the branch.

@@ -1135,7 +1135,7 @@ async function loadGrowthServices(){
  if(!supabaseClient){status.textContent='Service catalogue is unavailable right now.';return;}
  var isAdmin=!!(authProfile&&authProfile.role==='admin')||String(authUser&&authUser.email||'').toLowerCase()==='kaptainarizonah@gmail.com';var adminPanel=document.getElementById('hcGrowthAdminServices');if(adminPanel)adminPanel.hidden=!isAdmin;var query=supabaseClient.from('growth_services').select('id,title,platform,category,description,delivery_window,price_ngn,min_quantity,max_quantity,active').order('platform').order('title');if(!isAdmin)query=query.eq('active',true);var r=await query;
  if(r.error){status.textContent='Could not load services: '+r.error.message;host.innerHTML='<div class="card">Please refresh this page in a moment.</div>';return;}
- hcGrowthServicesCache=r.data||[];renderGrowthServiceCards();status.textContent=hcGrowthServicesCache.length+' services available';loadGrowthOrders();
+ hcGrowthServicesCache=r.data||[];window.hcGrowthServicesCache=hcGrowthServicesCache;renderGrowthServiceCards();status.textContent=hcGrowthServicesCache.length+' services available';loadGrowthOrders();
 }
 function renderGrowthServiceCards(){
  var host=document.getElementById('hcGrowthServiceGrid');if(!host)return;
@@ -1144,7 +1144,8 @@ function renderGrowthServiceCards(){
  host.innerHTML=rows.map(function(s){return '<article class="tile hc-growth-service"'+(s.active?'':' style="opacity:.65"')+'><div class="row spread"><span class="hc-growth-platform">'+hcGrowthPlatformIcon(s.platform)+'</span><span class="hc-growth-pill">'+hcGrowthEscape(s.platform)+(s.active?'':' · INACTIVE')+'</span></div><h3>'+hcGrowthEscape(s.title)+'</h3><p>'+hcGrowthEscape(s.description)+'</p><div class="hc-growth-card-bottom"><span>'+hcGrowthEscape(s.category)+'</span>'+(s.active?'<button class="btn primary" type="button" data-action="growthSelectService" data-id="'+hcGrowthEscape(s.id)+'">Request →</button>':'')+'</div><div class="muted tiny">Campaign size: '+Number(s.min_quantity||1).toLocaleString()+'–'+Number(s.max_quantity||100000).toLocaleString()+'</div><div class="muted tiny">Price and delivery estimate confirmed after review</div>'+(String(authProfile&&authProfile.role||'')==='admin'||String(authUser&&authUser.email||'').toLowerCase()==='kaptainarizonah@gmail.com'?'<button class="btn" type="button" data-action="growthToggleService" data-id="'+hcGrowthEscape(s.id)+'" data-active="'+(!s.active)+'">'+(s.active?'Deactivate service':'Activate service')+'</button>':'')+'</article>';}).join('');
 }
 function hcGrowthSelectService(id){
- var s=hcGrowthServicesCache.find(function(x){return x.id===id;});if(!s)return;
+ window.hcGrowthServicesCache=hcGrowthServicesCache;
+ var s=hcGrowthServicesCache.find(function(x){return String(x.id)===String(id);});if(!s)return;
  var panel=document.getElementById('hcGrowthOrderPanel');if(!panel)return;
  document.getElementById('hcGrowthServiceId').value=s.id;document.getElementById('hcGrowthServiceTitle').value=s.title;document.getElementById('hcGrowthPlatform').value=s.platform;
  document.getElementById('hcGrowthSelectedLabel').textContent=s.platform+' · '+s.title;

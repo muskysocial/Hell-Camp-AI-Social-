@@ -6,8 +6,17 @@ function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=c
 async function api(action,data){if(!client()||!user())throw Error("Please sign in first.");var r=await client().functions.invoke("hellcamp-ai",{body:Object.assign({action:action},data||{})});if(r.error)throw Error(r.data&&r.data.error||r.error.message||"AI request failed.");if(r.data&&r.data.error)throw Error(r.data.error);return r.data||{}}
 function status(s){var n=document.getElementById("hcGroqStatus");if(n)n.textContent=s}
 function bubble(log,role,content){var b=el("div","hc-groq-bubble"+(role==="user"?" me":""));b.appendChild(el("b","",role==="user"?"You":"Hell Camp AI"));b.appendChild(el("p","",content||""));if(role==="assistant"){var s=el("button","btn","🔊 Speak");s.type="button";s.setAttribute("data-hc-speak","true");b.appendChild(s)}log.appendChild(b)}
+var validated={};
+async function validateSavedConversation(){
+ var u=user();if(!u)return;
+ var key="hcGroqConversationId:"+u.id,id=localStorage.getItem(key);if(!id)return;
+ var stamp=u.id+":"+id;if(validated[stamp])return;validated[stamp]=true;
+ try{await api("history",{conversation_id:id});if(user()&&user().id===u.id){window.hcGroqConversationId=id;window.hcGroqConversationOwner=u.id;}}
+ catch(_){if(localStorage.getItem(key)===id)localStorage.removeItem(key);if(window.hcGroqConversationId===id)window.hcGroqConversationId=null;if(window.hcGroqConversationOwner===u.id)window.hcGroqConversationOwner=u.id;status("An old chat link could not be restored. Start a new chat or choose Chat history.");}
+}
 function install(){
  var card=document.getElementById("hcGroqChatCard");if(!card)return;
+ validateSavedConversation();
  var bar=card.querySelector("[data-hc-ai-tools]");
  if(!bar){
   bar=el("div","hc-ai-persistence-tools");bar.dataset.hcAiTools="true";

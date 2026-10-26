@@ -51,6 +51,12 @@ All tables enable RLS. Conversation/message/tool-run reads are owner-scoped; the
 - Added owner-scoped feedback storage and a branch-only AI chat toolbar for saved conversation history, explicit user-controlled memories (list/save/delete), and owner diagnostics.
 - The updated `index.html` is merged to `main` and now calls `hellcamp-ai` for AI Chat; existing AI tool functions and HELL EDITS were not replaced. GitHub Pages propagation and signed-in browser behavior still need a real client check.
 
+## Chat persistence hotfix (2026-10-26)
+
+- Production logs showed Groq generation reached the exchange persistence step, but the database RPC rejected it with `service role required`, causing HTTP 500 and no visible assistant response.
+- The guard relied on the legacy `request.jwt.claim.role` setting, which was not populated for the configured Supabase secret API key. The fix removes that unreliable in-function check while retaining explicit EXECUTE permissions for `service_role` only; `anon` and `authenticated` are denied.
+- The production function definition and grants were verified after the hotfix. A fresh signed-in browser exchange is still needed to confirm the entire generation/charge/persistence path end to end.
+
 ## Release state
 
 The foundation PR was merged to `main` on 2026-10-26. The `hellcamp-ai` Edge Function is active at version 3 with JWT verification enabled. Repository source checks pass; the exact GitHub Pages deployment and authenticated end-to-end flow cannot be confirmed from the server-side tools alone.

@@ -1170,8 +1170,14 @@ async function saveGrowthOrderAdmin(id){
  var quoteEl=document.getElementById('hcGrowthQuote_'+id),statusEl=document.getElementById('hcGrowthStatus_'+id),noteEl=document.getElementById('hcGrowthNote_'+id),providerEl=document.getElementById('hcGrowthProvider_'+id),customerUpdateEl=document.getElementById('hcGrowthCustomerUpdate_'+id),status=document.getElementById('hcGrowthAdminStatus_'+id);if(!quoteEl||!statusEl||!noteEl||!providerEl||!customerUpdateEl||!status)return;
  var quote=quoteEl.value.trim(),amount=quote===''?null:Number(quote);if(amount!==null&&(!Number.isFinite(amount)||amount<0)){status.textContent='Enter a valid quote.';return;}
  status.textContent='Saving…';
- var orderStatus=statusEl.value,paymentStatus=orderStatus==='awaiting_payment'?'pending':undefined;
- var patch={quoted_price_ngn:amount,order_status:orderStatus,admin_note:noteEl.value.trim().slice(0,2000),customer_update:customerUpdateEl.value.trim().slice(0,1000),provider_reference:providerEl.value.trim().slice(0,200),updated_at:new Date().toISOString()};
+ var orderStatus=statusEl.value,paymentStatus=orderStatus==='awaiting_payment'?'pending':undefined,providerReference=providerEl.value.trim().slice(0,200);
+ if(orderStatus==='processing'||orderStatus==='completed'){
+  var currentOrder=await supabaseClient.from('growth_service_orders').select('payment_status').eq('id',id).maybeSingle();
+  if(currentOrder.error||!currentOrder.data){status.textContent='Could not verify the order payment status. Please reload and try again.';return;}
+  if(currentOrder.data.payment_status!=='paid'){status.textContent='Payment must be verified before an order can move to In progress or Completed.';return;}
+  if(!providerReference){status.textContent='Add the supplier job ID or an internal fulfilment reference before moving this order to In progress or Completed.';return;}
+ }
+ var patch={quoted_price_ngn:amount,order_status:orderStatus,admin_note:noteEl.value.trim().slice(0,2000),customer_update:customerUpdateEl.value.trim().slice(0,1000),provider_reference:providerReference,updated_at:new Date().toISOString()};
  if(paymentStatus)patch.payment_status=paymentStatus;
  var r=await supabaseClient.from('growth_service_orders').update(patch).eq('id',id);
  status.textContent=r.error?'Could not save: '+r.error.message:'Order update saved.';

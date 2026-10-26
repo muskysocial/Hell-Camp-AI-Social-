@@ -59,6 +59,37 @@ Deno.serve(async (req: Request) => {
     if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Send a valid JSON request.", 400, origin);
     const action = String(body.action || "chat");
 
+    if (action === "draft_list") {
+      const { data, error } = await admin.from("hellcamp_ai_drafts")
+        .select("id,title,draft_type,content,created_at,updated_at")
+        .eq("user_id", userId).order("updated_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      return response({ drafts: data || [] }, 200, origin);
+    }
+
+    if (action === "draft_save") {
+      const title = typeof body.title === "string" ? body.title.trim().slice(0, 160) : "";
+      const content = typeof body.content === "string" ? body.content.trim() : "";
+      const allowedTypes = ["post", "bio", "message", "job", "listing", "event", "learning", "general"];
+      const draftType = allowedTypes.includes(String(body.draft_type)) ? String(body.draft_type) : "general";
+      if (!title || !content || content.length > 20000) return fail("A title and draft content (up to 20,000 characters) are required.", 400, origin);
+      const { data, error } = await admin.from("hellcamp_ai_drafts")
+        .insert({ user_id: userId, title, content, draft_type: draftType })
+        .select("id,title,draft_type,content,created_at,updated_at").single();
+      if (error) throw error;
+      return response({ draft: data }, 201, origin);
+    }
+
+    if (action === "draft_delete") {
+      const draftId = String(body.draft_id || "");
+      if (!/^[0-9a-f-]{36}$/i.test(draftId)) return fail("A valid draft ID is required.", 400, origin);
+      const { data, error } = await admin.from("hellcamp_ai_drafts")
+        .delete().eq("id", draftId).eq("user_id", userId).select("id");
+      if (error) throw error;
+      if (!data?.length) return fail("Draft not found.", 404, origin);
+      return response({ deleted: true }, 200, origin);
+    }
+
     if (action === "health_check") {
       // This diagnostic endpoint is intentionally restricted to the site owner.
       if (String(authData.user.email || "").toLowerCase() !== "kaptainarizonah@gmail.com") {

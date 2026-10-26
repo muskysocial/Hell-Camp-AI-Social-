@@ -53,4 +53,11 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
   else mount();
   new MutationObserver(mount).observe(document.documentElement, { childList: true, subtree: true });
+  // Auth can resolve after the Growth Hub has already rendered, so retry on session changes too.
+  try {
+    if (window.supabaseClient && window.supabaseClient.auth && window.supabaseClient.auth.onAuthStateChange) {
+      window.supabaseClient.auth.onAuthStateChange(function () { window.setTimeout(mount, 0); });
+    }
+  } catch (_) {}
+  window.addEventListener('hellcamp-auth-ready', mount);
 })();

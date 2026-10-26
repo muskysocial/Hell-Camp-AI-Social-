@@ -8,3 +8,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 new MutationObserver(schedule).observe(document.documentElement,{subtree:true,childList:true});
 window.addEventListener('storage',e=>{if(e.key===KEY)apply()});
 })();
+// Load the isolated AI persistence controls without changing the main application runtime.
+(function(){var s=document.createElement('script');s.src='./hellcamp-ai-controls.js';s.defer=true;document.head.appendChild(s)})();

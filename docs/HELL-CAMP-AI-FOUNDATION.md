@@ -56,6 +56,7 @@ All tables enable RLS. Conversation/message/tool-run reads are owner-scoped; the
 - Production logs showed Groq generation reached the exchange persistence step, but the database RPC rejected it with `service role required`, causing HTTP 500 and no visible assistant response.
 - The guard relied on the legacy `request.jwt.claim.role` setting, which was not populated for the configured Supabase secret API key. The fix removes that unreliable in-function check while retaining explicit EXECUTE permissions for `service_role` only; `anon` and `authenticated` are denied.
 - The production function definition and grants were verified after the hotfix. A fresh signed-in browser exchange is still needed to confirm the entire generation/charge/persistence path end to end.
+- Deployed Edge Function version 4 extends owner-only diagnostics to core feed, messaging, HELL EDITS, site settings/activity, and AI tables. It now performs a low-cost Groq models endpoint check to verify the configured key and model without generating a completion.
 
 ## Release state
 

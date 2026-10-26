@@ -2447,6 +2447,43 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
  document.addEventListener('dragstart',function(e){if(e.target&&e.target.closest('.hc-edit-template-art img,.hc-edit-customer-source img,#hcHellEditBeforeAfter img,#hcHellEditBlendPreview'))e.preventDefault();},true);
 })();
 </script>
+
+<style id="hc-hell-edit-preview-protection-v2">
+/* Preview-only deterrents. These do not claim to block screenshots. */
+.hc-edit-template-art::after,
+#hcHellEditBlendPreview::after {
+ content:"HELL CAMP  •  PREVIEW  •  NOT THE ORIGINAL";
+ position:absolute; z-index:3; inset:0; display:flex; align-items:center; justify-content:center;
+ padding:12px; text-align:center; white-space:normal; overflow:hidden;
+ color:rgba(255,255,255,.82); font-size:clamp(11px,2.2vw,17px); font-weight:1000;
+ letter-spacing:1.1px; text-shadow:0 2px 5px #000,0 0 2px #000;
+ background:repeating-linear-gradient( -28deg, transparent 0, transparent 68px, rgba(20,10,40,.16) 69px, rgba(20,10,40,.16) 70px, transparent 71px, transparent 138px);
+ pointer-events:none; user-select:none; -webkit-user-select:none;
+}
+.hc-edit-template-art::after{transform:none}
+.hc-edit-template-art img{pointer-events:none;touch-action:pan-y pinch-zoom}
+.hc-edit-template-art{isolation:isolate}
+#hcHellEditBlendPreview{position:relative;touch-action:pan-y; -webkit-touch-callout:none}
+#hcHellEditBlendPreview::after{content:"HELL CAMP • PREVIEW";font-size:12px;letter-spacing:.8px}
+.hc-edit-template-art img, #hcHellEditBlendPreview{
+ -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; -webkit-user-drag:none;
+}
+</style>
+<script id="hc-hell-edit-preview-protection-v2-script">
+(function(){
+ function protectedPreview(target){
+  return !!(target && target.closest && target.closest('.hc-edit-template-art img,#hcHellEditBlendPreview'));
+ }
+ document.addEventListener('contextmenu',function(e){if(protectedPreview(e.target))e.preventDefault();},true);
+ document.addEventListener('dragstart',function(e){if(protectedPreview(e.target))e.preventDefault();},true);
+ document.addEventListener('selectstart',function(e){if(protectedPreview(e.target))e.preventDefault();},true);
+ document.addEventListener('touchstart',function(e){
+  if(protectedPreview(e.target) && e.touches && e.touches.length>1) e.preventDefault();
+ },{capture:true,passive:false});
+ document.addEventListener('gesturestart',function(e){if(protectedPreview(e.target))e.preventDefault();},true);
+})();
+</script>
+
 </body></html>
 
 

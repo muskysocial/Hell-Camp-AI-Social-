@@ -1,4 +1,7 @@
 -- HELL CAMP Cyber Lab: member-owned run history and a server-only 20,000-coin charge.
+alter table public.ai_generation_charges drop constraint if exists ai_generation_charges_coins_charged_check;
+alter table public.ai_generation_charges add constraint ai_generation_charges_coins_charged_check check (coins_charged in (1400, 20000));
+
 create table if not exists public.hellcamp_cyber_lab_runs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -42,8 +45,6 @@ begin
   if not found then
     return jsonb_build_object('ok',false,'code','profile_missing','message','Your Hell Camp profile is not ready yet.');
   end if;
-  select * into v_run from public.hellcamp_cyber_lab_runs
-    where user_id=p_user_id and id::text=p_request_key;
   -- Idempotency is backed by the charge ledger's unique request key.
   if exists(select 1 from public.ai_generation_charges where user_id=p_user_id and request_key=p_request_key) then
     select coalesce(paid_coins,0), case when daily_free_coins_expires_at is not null and daily_free_coins_expires_at <= now() then 0 else coalesce(daily_free_coins,0) end

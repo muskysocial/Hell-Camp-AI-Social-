@@ -231,6 +231,73 @@ Deno.serve(async (req: Request) => {
       return response({ conversation, messages: messages || [] }, 200, origin);
     }
 
+    if (action === "cyber_lab_history") {
+      const { data, error } = await admin.from("hellcamp_cyber_lab_runs")
+        .select("id,mode,title,prompt,result,coins_charged,created_at")
+        .eq("user_id", userId).order("created_at", { ascending: false }).limit(30);
+      if (error) throw error;
+      return response({ runs: data || [] }, 200, origin);
+    }
+
+    if (action === "cyber_lab_run") {
+      if (!groqKey) return fail("Cyber Lab AI is not configured. Please try again later.", 503, origin);
+      const allowedModes = ["learn", "ctf", "audit", "code_review", "incident_response"];
+      const mode = String(body.mode || "");
+      const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
+      const title = typeof body.title === "string" ? body.title.trim().slice(0, 160) : "";
+      if (!allowedModes.includes(mode)) return fail("Choose a supported Cyber Lab mode.", 400, origin);
+      if (!prompt || prompt.length > 4000) return fail("Describe your learning goal in 1–4,000 characters.", 400, origin);
+      if (!title) return fail("A run title is required.", 400, origin);
+      const { data: profile, error: profileError } = await admin.from("profiles")
+        .select("paid_coins,daily_free_coins,daily_free_coins_expires_at")
+        .eq("id", userId).maybeSingle();
+      if (profileError || !profile) return fail("Your Hell Camp profile is unavailable.", 403, origin);
+      const daily = new Date(profile.daily_free_coins_expires_at || 0).getTime() > Date.now()
+        ? Math.max(0, Number(profile.daily_free_coins) || 0) : 0;
+      const balance = Math.max(0, Number(profile.paid_coins) || 0) + daily;
+      if (balance < 20000) return fail("A completed Cyber Lab AI run costs 20,000 coins. No coins were charged.", 402, origin, { required: 20000, balance });
+
+      const modeGuidance: Record<string, string> = {
+        learn: "Teach cybersecurity concepts step by step, with safe examples, a short quiz, and defensive takeaways.",
+        ctf: "Run a self-contained fictional capture-the-flag exercise. Invent a toy target, mock logs or sample strings inside your answer. Do not target public IPs, real accounts, real websites or third-party systems. Provide hints and a walkthrough only for this fictional lab.",
+        audit: "Create an authorized security audit checklist for systems the user owns or has explicit written permission to test. Start with scope, permission, safe non-destructive checks and remediation. Do not provide stealth, persistence, credential theft, evasion or destructive actions.",
+        code_review: "Review code or configuration the user pasted for security weaknesses. Explain impact and show safe fixes. Do not provide exploit chains against a live target.",
+        incident_response: "Help investigate and contain a suspected security incident: preserve evidence, isolate safely, rotate affected credentials, patch, recover and document. Do not retaliate or attack back."
+      };
+      const cyberSystem = "You are HELL CAMP Cyber Lab, an ethical cybersecurity tutor and defensive security assistant. Only teach legal, authorized security work and contained fictional labs. Never provide instructions to compromise accounts, steal credentials or data, bypass access controls, deploy malware or ransomware, evade detection, persist on systems, attack third parties, or run offensive actions against real targets. If asked to hack a real person, account, website or device without authorization, refuse that action briefly and redirect to a safe toy lab or defensive alternative. You cannot execute scans, exploit systems, log into targets, or verify a hack; do not claim you did. Prefer practical learning, safe simulated examples, detection, hardening and remediation. Never ask the member to paste passwords, tokens, private keys or sensitive personal data. Mode: " + modeGuidance[mode];
+      const providerResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + groqKey, "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(45000),
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [{ role: "system", content: cyberSystem }, { role: "user", content: prompt }],
+          max_completion_tokens: 1800,
+        }),
+      });
+      const providerBody = await providerResponse.json().catch(() => ({}));
+      if (!providerResponse.ok) {
+        const detail = String(providerBody?.error?.message || "Cyber Lab AI request failed.").slice(0, 400);
+        console.error("hellcamp cyber lab provider failure", { status: providerResponse.status, model: MODEL, userId });
+        return fail(detail, providerResponse.status === 429 ? 429 : 502, origin);
+      }
+      const answer = providerBody?.choices?.[0]?.message?.content;
+      if (typeof answer !== "string" || !answer.trim()) return fail("Cyber Lab returned an empty response. No coins were charged.", 502, origin);
+      const requestKey = "cyber-lab:" + crypto.randomUUID();
+      const { data: run, error: runError } = await admin.rpc("record_hellcamp_cyber_lab_run", {
+        p_user_id: userId, p_request_key: requestKey, p_mode: mode, p_title: title,
+        p_prompt: prompt, p_result: answer.trim().slice(0, 20000),
+      });
+      if (runError) throw new Error("Could not safely save Cyber Lab run: " + runError.message);
+      if (!run?.ok) return fail(run?.message || "Cyber Lab could not charge or save this run.", 402, origin, {
+        code: run?.code || "charge_failed", required: Number(run?.required) || 20000, balance: Number(run?.balance) || 0,
+      });
+      return response({
+        run_id: run.id, result: answer.trim(), mode, title, coins_charged: 20000,
+        coin_balance: Number(run.balance) || 0,
+      }, 200, origin);
+    }
+
     if (action !== "chat") return fail("Unsupported HELL CAMP AI action.", 400, origin);
     if (!groqKey) return fail("Groq is not configured. Add GROQ_API_KEY to Supabase Edge Function secrets.", 503, origin);
     const message = typeof body.message === "string" ? body.message.trim() : "";

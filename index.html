@@ -2519,6 +2519,10 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
  font-size:11px!important; line-height:1.45!important;
  color:#5b21b6!important; font-weight:800!important;
 }
+
+/* Keep catalog and source-photo areas clear; watermark belongs to generated comparison only. */
+.hc-edit-template-art::after,
+.hc-edit-customer-source::before{content:none!important;display:none!important}
 </style>
 
 </body></html>

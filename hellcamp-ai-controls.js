@@ -7,12 +7,18 @@ async function api(action,data){if(!client()||!user())throw Error("Please sign i
 function status(s){var n=document.getElementById("hcGroqStatus");if(n)n.textContent=s}
 function bubble(log,role,content){var b=el("div","hc-groq-bubble"+(role==="user"?" me":""));b.appendChild(el("b","",role==="user"?"You":"Hell Camp AI"));b.appendChild(el("p","",content||""));if(role==="assistant"){var s=el("button","btn","🔊 Speak");s.type="button";s.setAttribute("data-hc-speak","true");b.appendChild(s)}log.appendChild(b)}
 function install(){
- var card=document.getElementById("hcGroqChatCard");if(!card||card.querySelector("[data-hc-ai-tools]"))return;
- var bar=el("div","hc-ai-persistence-tools");bar.dataset.hcAiTools="true";
- [["new","＋ New chat"],["history","Chat history"],["memories","Saved memory"]].forEach(function(x){var b=el("button","",x[1]);b.type="button";b.dataset.hcAiAction=x[0];bar.appendChild(b)});
- if(String((user()||{}).email||"").toLowerCase()==="kaptainarizonah@gmail.com"){var d=el("button","","Run AI diagnostics");d.type="button";d.dataset.hcAiAction="diagnostics";bar.appendChild(d)}
- var panel=el("section","hc-ai-persistence-panel");panel.hidden=true;panel.setAttribute("aria-live","polite");
- var form=card.querySelector("#hcGroqForm");card.insertBefore(bar,form||null);card.insertBefore(panel,form||null);
+ var card=document.getElementById("hcGroqChatCard");if(!card)return;
+ var bar=card.querySelector("[data-hc-ai-tools]");
+ if(!bar){
+  bar=el("div","hc-ai-persistence-tools");bar.dataset.hcAiTools="true";
+  [["new","＋ New chat"],["history","Chat history"],["memories","Saved memory"]].forEach(function(x){var b=el("button","",x[1]);b.type="button";b.dataset.hcAiAction=x[0];bar.appendChild(b)});
+  var panel=el("section","hc-ai-persistence-panel");panel.hidden=true;panel.setAttribute("aria-live","polite");
+  var form=card.querySelector("#hcGroqForm");card.insertBefore(bar,form||null);card.insertBefore(panel,form||null);
+ }
+ var owner=String((user()||{}).email||"").toLowerCase()==="kaptainarizonah@gmail.com";
+ var diag=bar.querySelector('[data-hc-ai-action="diagnostics"]');
+ if(owner&&!diag){diag=el("button","","Run AI diagnostics");diag.type="button";diag.dataset.hcAiAction="diagnostics";bar.appendChild(diag)}
+ if(!owner&&diag)diag.remove();
 }
 function panelStart(panel,title){panel.hidden=false;panel.replaceChildren();panel.appendChild(el("strong","",title));var out=el("div","hc-ai-persistence-note","Loading…");panel.appendChild(out);return out}
 async function memories(panel,out){

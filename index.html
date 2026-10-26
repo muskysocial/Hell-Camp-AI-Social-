@@ -1689,8 +1689,20 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
   window.addEventListener('load',function(){
     setTimeout(function(){
       var v=document.getElementById('view');
-      if(v&&(!v.innerHTML.trim()||!v.textContent.trim()))showRecovery('The app shell loaded, but its main content stayed empty. Try reloading after the update.');
-    },5000);
+      if(!v|| (v.innerHTML.trim() && v.textContent.trim()))return;
+      // Last-resort recovery: the main app renderer may have missed its startup call.
+      try{
+        if(typeof window.render==='function')window.render();
+      }catch(recoveryRenderError){console.error('Hell Camp recovery render failed:',recoveryRenderError);}
+      if(v.innerHTML.trim() && v.textContent.trim())return;
+      // A stale/invalid saved route must never leave the app shell empty.
+      try{
+        if(window.state)window.state.page='Home';
+        localStorage.setItem('hc_last_page','Home');
+        if(typeof window.render==='function')window.render();
+      }catch(homeRecoveryError){console.error('Hell Camp Home recovery failed:',homeRecoveryError);}
+      if(!v.innerHTML.trim() || !v.textContent.trim())showRecovery('The app could not render its saved page. A safe Home recovery was attempted; reload once if this message remains.');
+    },2500);
   });
 })();
 </script>

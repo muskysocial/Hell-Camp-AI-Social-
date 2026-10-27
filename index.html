@@ -407,9 +407,9 @@ window.addEventListener('error', function(e){
 (function(){
 'use strict';
 var view=document.getElementById('view');
-// Restore Supabase's original project-scoped storage key so existing logins
-// continue to persist. Migrate sessions created by the temporary app-specific keys
-// back to the original key before the Supabase client is initialized.
+// Use a Hell Camp-specific key because localStorage is shared by every GitHub Pages
+// project on this origin. Do not copy the shared Supabase key: another app can refresh
+// the same rotating token and invalidate this app's session.
 /* Keep Hell Camp's session isolated from other GitHub Pages apps on the same origin. */
 var hcAuthStorageKey='hell-camp-project-auth-v1';
 try{

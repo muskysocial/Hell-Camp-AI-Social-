@@ -433,14 +433,16 @@ var view=document.getElementById('view');
 // Use a Hell Camp-specific key because localStorage is shared by every GitHub Pages
 // project on this origin. Do not copy the shared Supabase key: another app can refresh
 // the same rotating token and invalidate this app's session.
-/* Keep Hell Camp's session isolated from other GitHub Pages apps on the same origin. */
+/* Keep Hell Camp's session isolated from other GitHub Pages apps on this origin.
+   Never clone a rotating refresh token into a second storage key: two app versions
+   can then refresh the same token and revoke each other's sessions. */
 var hcAuthStorageKey='hell-camp-project-auth-v1';
 try{
-  if(window.localStorage&&!localStorage.getItem(hcAuthStorageKey)){
-    var hcLegacyAuthSession=localStorage.getItem('hell-camp-auth-session-v3')||localStorage.getItem('hell-camp-auth-session-v2');
-    if(hcLegacyAuthSession)localStorage.setItem(hcAuthStorageKey,hcLegacyAuthSession);
+  if(window.localStorage){
+    localStorage.removeItem('hell-camp-auth-session-v3');
+    localStorage.removeItem('hell-camp-auth-session-v2');
   }
-}catch(hcAuthStorageMigrationError){console.warn('Hell Camp session migration warning:',hcAuthStorageMigrationError);}
+}catch(hcLegacyAuthCleanupError){console.warn('Hell Camp legacy session cleanup warning:',hcLegacyAuthCleanupError);}
 var supabaseClient=window.supabase&&window.supabase.createClient?window.supabase.createClient('https://lwgbfnyjuxixduuehckp.supabase.co','sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:hcAuthStorageKey}}):null,authUser=null,authProfile=null,authMode='login',authNotice='',authNoticeType='success';window.supabaseClient=supabaseClient;Object.defineProperty(window,'authUser',{configurable:true,get:function(){return authUser},set:function(v){authUser=v}});Object.defineProperty(window,'authProfile',{configurable:true,get:function(){return authProfile},set:function(v){authProfile=v}});
 
 if(supabaseClient&&supabaseClient.functions&&typeof supabaseClient.functions.invoke==='function'){

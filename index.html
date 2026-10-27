@@ -438,7 +438,7 @@ if(supabaseClient&&supabaseClient.functions&&typeof supabaseClient.functions.inv
   supabaseClient.functions.invoke=async function(functionName,options){
     var result=await hcOriginalInvoke(functionName,options);
     if(result&&result.data&&Number.isFinite(Number(result.data.coin_balance))&&authProfile){
-      try{var walletRefresh=await supabaseClient.rpc('claim_daily_free_coins');if(walletRefresh&&walletRefresh.data&&walletRefresh.data.ok){authProfile.paid_coins=Math.max(0,Number(walletRefresh.data.paid_coins)||0);authProfile.daily_free_coins=Math.max(0,Number(walletRefresh.data.daily_free_coins)||0);authProfile.daily_free_coins_expires_at=walletRefresh.data.daily_free_coins_expires_at||null;}else{authProfile._serverCoinBalance=Math.max(0,Number(result.data.coin_balance)||0);}}catch(_){authProfile._serverCoinBalance=Math.max(0,Number(result.data.coin_balance)||0);}
+      authProfile._serverCoinBalance=Math.max(0,Number(result.data.coin_balance)||0);
       var balanceText=typeof coinBalanceValue==='function'?coinBalanceValue():String(Math.max(0,Number(result.data.coin_balance)||0)).toLocaleString('en-US');
       document.querySelectorAll('.hc-wallet-value,#hcHomeCoinBalance,[data-coin-balance]').forEach(function(el){el.textContent=balanceText;});
     }
@@ -1667,7 +1667,7 @@ body:not(.light) .mobile button.active,body:not(.light) .mobile button.active b{
   finally{submit.disabled=false;submit.textContent='🤖 Validate & publish eligible job'}
  },true);
  document.addEventListener('click',function(e){var p=e.target&&e.target.closest?e.target.closest('[data-page]'):null;if(p&&p.getAttribute('data-page')==='Jobs')setTimeout(function(){if(typeof window.loadJobImportStatus==='function')window.loadJobImportStatus()},250)});
-document.addEventListener('visibilitychange',function(){if(!document.hidden&&typeof window.refreshUnreadNotificationDot==='function')window.refreshUnreadNotificationDot();});setInterval(function(){if(typeof window.refreshUnreadNotificationDot==='function')window.refreshUnreadNotificationDot();},30000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&typeof window.refreshUnreadNotificationDot==='function')window.refreshUnreadNotificationDot();});
 })();
 </script>
 <style id="hc-live-notification-dot">.hc-notification-button{position:relative!important}.hc-notification-dot{position:absolute;right:5px;top:4px;width:9px;height:9px;border-radius:50%;background:#ef3340;border:2px solid var(--surface,#fff);box-shadow:0 0 0 1px rgba(239,51,64,.12);display:inline-block}.hc-notification-dot[hidden]{display:none!important}.hc-notification-drawer-dot{position:relative;right:auto;top:auto;margin-left:auto;flex:0 0 9px}</style>
@@ -2025,8 +2025,8 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&typ
   var obs=new MutationObserver(function(){installSettingsControl();});
   function boot(){routeFromQuery();installSettingsControl();obs.observe(document.body,{childList:true,subtree:true});if(window.supabaseClient&&window.authUser)setupRealtime();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  if(window.supabaseClient&&window.supabaseClient.auth){window.supabaseClient.auth.onAuthStateChange(function(){hcNotificationSetup=false;setupRealtime();});}
-  var timer=setInterval(function(){if(window.authUser&&window.supabaseClient)setupRealtime();installSettingsControl();},5000);
+  if(window.supabaseClient&&window.supabaseClient.auth){window.supabaseClient.auth.onAuthStateChange(function(event){if(event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='USER_UPDATED'){hcNotificationSetup=false;setupRealtime();}else if(event==='SIGNED_OUT'){hcNotificationSetup=false;if(hcChannel&&window.supabaseClient){window.supabaseClient.removeChannel(hcChannel);hcChannel=null;}}});}
+  var timer=setInterval(function(){installSettingsControl();},5000);
   window.addEventListener('beforeunload',function(){clearInterval(timer);if(hcChannel&&window.supabaseClient)window.supabaseClient.removeChannel(hcChannel);});
 })();
 </script>

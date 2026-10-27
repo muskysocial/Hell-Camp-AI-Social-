@@ -410,7 +410,8 @@ var view=document.getElementById('view');
 // Restore Supabase's original project-scoped storage key so existing logins
 // continue to persist. Migrate sessions created by the temporary app-specific keys
 // back to the original key before the Supabase client is initialized.
-var hcAuthStorageKey='sb-lwgbfnyjuxixduuehckp-auth-token';
+/* Keep Hell Camp's session isolated from other GitHub Pages apps on the same origin. */
+var hcAuthStorageKey='hell-camp-project-auth-v1';
 try{
   if(window.localStorage&&!localStorage.getItem(hcAuthStorageKey)){
     var hcLegacyAuthSession=localStorage.getItem('hell-camp-auth-session-v3')||localStorage.getItem('hell-camp-auth-session-v2');

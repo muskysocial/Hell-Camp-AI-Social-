@@ -154,7 +154,7 @@ async function init(){
  $('quantityInput').addEventListener('input',updateSummary);$('linkInput').addEventListener('input',()=>setBusy(busy));$('placeOrderButton').addEventListener('click',placeOrder);
  if(!client){notice('Supabase client did not load. Check your connection and refresh.','error');return;}
  await loadAccount();await loadServices();await loadOrders();renderOwnerTools();updateSummary();
- client.auth.onAuthStateChange(async()=>{await loadAccount();await loadOrders();setBusy(busy);});
+ client.auth.onAuthStateChange(()=>{Promise.resolve().then(async()=>{await loadAccount();await loadOrders();setBusy(busy);});});
 }
 init();
 })();

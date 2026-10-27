@@ -26,7 +26,7 @@
 <div class="field-wrap"><label class="label" for="linkInput">Link</label><input class="text-input" id="linkInput" placeholder="Enter the public profile, post or video link" autocomplete="url"></div>
 <div class="field-wrap"><label class="label" for="quantityInput">Quantity</label><input class="text-input" id="quantityInput" type="number" min="1" step="1" placeholder="Enter quantity" inputmode="numeric"><div class="service-meta"><span>Quantity: <b id="quantitySummary">—</b></span><span>Min: —</span><span>Max: —</span><span>Average time: —</span></div></div>
 <div class="field-wrap"><label class="label">Charge</label><div class="charge" id="chargeAmount">— <span style="font-weight:500;color:#718795;font-size:11px">Choose a service</span></div></div>
-<div class="pending">● Server-verified ordering · only configured services can be purchased</div><button class="place-order" id="placeOrderButton" type="button" disabled aria-disabled="true">Place order</button>
+<div class="pending">● Live checkout stays blocked until delivery is connected</div><button class="place-order" id="placeOrderButton" type="button" disabled aria-disabled="true">Place order</button><button type="button" id="sandboxButton" class="select-btn" style="width:100%;margin-top:9px;justify-content:center">Run free sandbox test · no coins charged</button><p class="sub" id="sandboxResult" aria-live="polite" style="margin-top:8px"></p>
 </section>
 <section class="panel" id="orderHistoryPanel"><div class="eyebrow">YOUR ACTIVITY</div><h2 class="heading" style="font-size:20px">Hell Boost orders</h2><p class="sub">View your Hell Boost order progress and updates from Hell Camp.</p><div id="orderHistory" style="margin-top:12px"><p class="sub">Loading orders…</p></div></section>
 <section class="guide" aria-label="Ordering guidance"><article class="guide-card"><span class="number">01</span><div><b>Choose carefully</b><p>Check the service name, description, minimum, maximum and delivery estimate before ordering.</p></div></article><article class="guide-card"><span class="number">02</span><div><b>Use the correct link</b><p>Paste the public profile, post or video link requested by the selected service.</p></div></article><article class="guide-card"><span class="number">03</span><div><b>Track every order</b><p>When order tracking is connected, follow progress and view the latest status here.</p></div></article></section>
@@ -120,6 +120,26 @@ async function refreshOrder(orderId,button){
  try{await loadOrders();notice('Order details refreshed from Hell Camp.','success');button.disabled=false;button.textContent='Refresh status';}
  catch(e){notice(e.message||'Could not refresh order status.','error');button.disabled=false;button.textContent='Refresh status';}
 }
+async function runSandboxTest(){
+ if(!client){notice('Supabase client is not available.','error');return;}
+ if(!currentUser){notice('Sign in to Hell Camp before running the sandbox test.','error');return;}
+ if(!selectedService){notice('Choose a service before running the sandbox test.','error');return;}
+ const q=Number($('quantityInput').value),link=$('linkInput').value.trim(),b=$('sandboxButton');
+ if(!Number.isInteger(q)||q<Number(selectedService.min_quantity)||q>Number(selectedService.max_quantity)){notice('Enter a quantity within this service’s limits.','error');return;}
+ if(!/^https?:\\/\\//i.test(link)){notice('Enter a valid public HTTP(S) link.','error');return;}
+ b.disabled=true;b.textContent='Running no-charge test…';$('sandboxResult').textContent='Validating session, service and quantity…';
+ try{
+  const {data,error}=await client.functions.invoke('hell-boost-sandbox',{body:{service_id:selectedService.id,target_url:link,quantity:q}});
+  if(error)throw error;
+  if(!data?.ok)throw new Error(data?.error||'Sandbox validation failed.');
+  $('sandboxResult').textContent='PASS · '+data.status+' · Coins charged: 0 · Live provider called: No. '+data.message;
+  notice('Sandbox validation passed. No order or coin charge was created.','success');
+ }catch(e){
+  console.error('Hell Boost sandbox test failed',e);
+  $('sandboxResult').textContent='Test unavailable: '+(e.message||'Could not reach the sandbox endpoint.')+' Make sure the hell-boost-sandbox Edge Function is deployed.';
+  notice('Sandbox did not complete. No coins were charged.','error');
+ }finally{b.disabled=false;b.textContent='Run free sandbox test · no coins charged';}
+}
 async function placeOrder(){
  if(busy)return;
  if(!currentUser){notice('Sign in to Hell Camp before placing an order.','error');return;}
@@ -196,7 +216,7 @@ async function loadOwnerOrders(){
 async function init(){
  $('categoryButton').addEventListener('click',()=>openModal('category'));$('serviceButton').addEventListener('click',()=>openModal('service'));
  $('modalClose').addEventListener('click',closeModal);$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});$('modalSearch').addEventListener('input',renderOptions);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
- $('quantityInput').addEventListener('input',updateSummary);$('linkInput').addEventListener('input',()=>setBusy(busy));$('placeOrderButton').addEventListener('click',placeOrder);
+ $('quantityInput').addEventListener('input',updateSummary);$('linkInput').addEventListener('input',()=>setBusy(busy));$('placeOrderButton').addEventListener('click',placeOrder);$('sandboxButton').addEventListener('click',runSandboxTest);
  if(!client){notice('Supabase client did not load. Check your connection and refresh.','error');return;}
  await loadAccount();await loadServices();await loadOrders();renderOwnerTools();updateSummary();
  client.auth.onAuthStateChange(()=>{Promise.resolve().then(async()=>{await loadAccount();await loadOrders();setBusy(busy);});});

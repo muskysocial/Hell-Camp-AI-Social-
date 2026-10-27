@@ -126,7 +126,7 @@ async function runSandboxTest(){
  if(!selectedService){notice('Choose a service before running the sandbox test.','error');return;}
  const q=Number($('quantityInput').value),link=$('linkInput').value.trim(),b=$('sandboxButton');
  if(!Number.isInteger(q)||q<Number(selectedService.min_quantity)||q>Number(selectedService.max_quantity)){notice('Enter a quantity within this service’s limits.','error');return;}
- if(!/^https?:\\/\\//i.test(link)){notice('Enter a valid public HTTP(S) link.','error');return;}
+ if(!/^https?:\/\//i.test(link)){notice('Enter a valid public HTTP(S) link.','error');return;}
  b.disabled=true;b.textContent='Running no-charge test…';$('sandboxResult').textContent='Validating session, service and quantity…';
  try{
   const {data,error}=await client.functions.invoke('hell-boost-sandbox',{body:{service_id:selectedService.id,target_url:link,quantity:q}});

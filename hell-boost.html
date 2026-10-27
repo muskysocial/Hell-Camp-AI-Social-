@@ -25,52 +25,138 @@
 <div class="description" id="description"><p><b>✨ Hell Boost catalogue preview</b></p><p>Choose a platform, category and service to review the order details here.</p><p>Service rates, delivery estimates and limits will appear after the verified supplier catalogue is connected.</p></div>
 <div class="field-wrap"><label class="label" for="linkInput">Link</label><input class="text-input" id="linkInput" placeholder="Enter the public profile, post or video link" autocomplete="url"></div>
 <div class="field-wrap"><label class="label" for="quantityInput">Quantity</label><input class="text-input" id="quantityInput" type="number" min="1" step="1" placeholder="Enter quantity" inputmode="numeric"><div class="service-meta"><span>Quantity: <b id="quantitySummary">—</b></span><span>Min: —</span><span>Max: —</span><span>Average time: —</span></div></div>
-<div class="field-wrap"><label class="label">Charge</label><div class="charge">₦— <span style="font-weight:500;color:#718795;font-size:11px">Rates pending verified catalogue</span></div></div>
-<div class="pending">● Supplier and payment integration pending</div><button class="place-order" type="button" disabled aria-disabled="true">Place order · Coming soon</button>
+<div class="field-wrap"><label class="label">Charge</label><div class="charge" id="chargeAmount">— <span style="font-weight:500;color:#718795;font-size:11px">Choose a service</span></div></div>
+<div class="pending">● Server-verified ordering · only configured services can be purchased</div><button class="place-order" id="placeOrderButton" type="button" disabled aria-disabled="true">Place order</button>
 </section>
+<section class="panel" id="orderHistoryPanel"><div class="eyebrow">YOUR ACTIVITY</div><h2 class="heading" style="font-size:20px">Hell Boost orders</h2><p class="sub">View recent orders and refresh supplier status.</p><div id="orderHistory" style="margin-top:12px"><p class="sub">Loading orders…</p></div></section>
 <section class="guide" aria-label="Ordering guidance"><article class="guide-card"><span class="number">01</span><div><b>Choose carefully</b><p>Check the service name, description, minimum, maximum and delivery estimate before ordering.</p></div></article><article class="guide-card"><span class="number">02</span><div><b>Use the correct link</b><p>Paste the public profile, post or video link requested by the selected service.</p></div></article><article class="guide-card"><span class="number">03</span><div><b>Track every order</b><p>When order tracking is connected, follow progress and view the latest status here.</p></div></article></section>
-<p class="footnote">Hell Boost · Preview interface only. No supplier calls, payments or live orders are enabled.</p>
+<p class="footnote">Hell Boost · Live catalogue and order flow. Checkout remains disabled for services that lack verified supplier configuration.</p>
 </main>
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><section class="modal"><div class="modal-head"><div><h2 id="modalTitle">Choose a category</h2><p id="modalCount">Catalogue integration pending</p></div><button class="close" id="modalClose" aria-label="Close">×</button></div><input class="modal-search" id="modalSearch" placeholder="Search categories or services…" autocomplete="off"><div class="options" id="modalOptions"></div></section></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-const platforms=[
- ['All services','▦'],['Instagram','◎'],['TikTok','♪'],['Facebook','f'],['YouTube','▶'],['X (Twitter)','𝕏'],['Telegram','➤'],['Spotify','≋'],['LinkedIn','in'],['Snapchat','◉'],['Twitch','▣'],['WhatsApp','◔'],['Threads','＠'],['Pinterest','℘'],['Reddit','●'],['Kick','▰']
-];
-const categories=[
- 'Sproute Top Services · Updated every 24 hours (NON DROP)',
- 'Sproute Best and Top Services',
- 'Sproute Verified Top Services',
- 'Instagram guaranteed followers',
- 'Instagram Followers · Targeted · Best Quality',
- 'Instagram Likes · Guaranteed',
- 'Instagram premium likes',
- 'Instagram Premium Video Views',
- 'TikTok Followers · No Drop',
- 'TikTok Likes',
- 'TikTok Views',
- 'Facebook Page Likes',
- 'YouTube Views',
- 'Telegram Members',
- 'Spotify Plays'
-];
-const services=[
- {name:'TikTok Followers | No Drop',platform:'TikTok',category:categories[0],id:'preview-694'},
- {name:'TikTok Likes',platform:'TikTok',category:categories[0],id:'preview-695'},
- {name:'TikTok Views',platform:'TikTok',category:categories[0],id:'preview-696'},
- {name:'Instagram Followers | No Drop',platform:'Instagram',category:categories[0],id:'preview-697'},
- {name:'Instagram Likes',platform:'Instagram',category:categories[0],id:'preview-698'},
- {name:'Instagram Video Views',platform:'Instagram',category:categories[0],id:'preview-699'}
-];
-let selectedPlatform='All services',selectedCategory='',selectedService=null,modalMode='category';
-const grid=document.getElementById('platformGrid'),backdrop=document.getElementById('modalBackdrop'),search=document.getElementById('modalSearch'),options=document.getElementById('modalOptions');
-function renderPlatforms(){grid.innerHTML='';platforms.forEach(([name,icon])=>{const b=document.createElement('button');b.type='button';b.className='platform'+(selectedPlatform===name?' active':'');b.innerHTML='<span class="pico"></span><span></span>';b.querySelector('.pico').textContent=icon;b.querySelectorAll('span')[1].textContent=name;b.addEventListener('click',()=>{selectedPlatform=name;selectedCategory='';selectedService=null;document.getElementById('categoryValue').textContent='Choose a category';document.getElementById('serviceValue').textContent='Choose a service';renderPlatforms();renderDescription()});grid.appendChild(b)})}
-function openModal(mode){modalMode=mode;document.getElementById('modalTitle').textContent=mode==='category'?'Choose a category':'Choose a service';search.placeholder=mode==='category'?'Search category…':'Search service name or ID…';search.value='';renderOptions();backdrop.classList.add('open');document.body.style.overflow='hidden';search.focus()}
-function closeModal(){backdrop.classList.remove('open');document.body.style.overflow=''}
-function renderOptions(){const term=search.value.trim().toLowerCase();let list;if(modalMode==='category'){list=categories.filter(c=>(selectedPlatform==='All services'||c.toLowerCase().includes(selectedPlatform.toLowerCase())||c.startsWith('Sproute'))&&c.toLowerCase().includes(term))}else{list=services.filter(s=>(selectedPlatform==='All services'||s.platform===selectedPlatform)&&(!selectedCategory||s.category===selectedCategory)&&((s.name+' '+s.id).toLowerCase().includes(term)))}document.getElementById('modalCount').textContent=modalMode==='category'?'Preview categories · verified catalogue not connected':'Preview service names · supplier IDs not verified';options.innerHTML='';if(!list.length){options.innerHTML='<div class="empty">No matching preview items. Try another search.</div>';return}list.forEach(item=>{const name=modalMode==='category'?item:item.name;const detail=modalMode==='category'?'Category preview · rates not available':'Supplier service ID pending · price unavailable';const row=document.createElement('button');row.type='button';row.className='option'+((modalMode==='category'?selectedCategory===name:selectedService&&selectedService.id===item.id)?' chosen':'');const main=document.createElement('span');main.className='option-main';const b=document.createElement('b');b.textContent=name;const small=document.createElement('small');small.textContent=detail;main.append(b,small);const radio=document.createElement('span');radio.className='radio';row.append(main,radio);row.addEventListener('click',()=>{if(modalMode==='category'){selectedCategory=name;selectedService=null;document.getElementById('categoryValue').textContent=name;document.getElementById('serviceValue').textContent='Choose a service';closeModal();renderDescription()}else{selectedService=item;document.getElementById('serviceValue').textContent=item.name+' · rate pending';closeModal();renderDescription()}});options.appendChild(row)})}
-function renderDescription(){const d=document.getElementById('description');if(!selectedService){d.innerHTML='<p><b>✨ Hell Boost catalogue preview</b></p><p>'+(selectedCategory?'Selected category: '+escapeHtml(selectedCategory):'Choose a platform, category and service to review the order details here.')+'</p><p>Verified rates, supplier IDs, delivery estimates and quantity limits will appear after catalogue connection.</p>';return}d.innerHTML='<p><b>✨ '+escapeHtml(selectedService.name)+'</b></p><p>This service is shown as a design preview only. Its supplier identity, price, availability, delivery estimate and quantity limits have not been verified.</p><p>🔗 Submit only the public profile or post link requested by the verified service.</p><p>📊 Delivery times and results can vary; no order will be sent until the live integration is enabled and checked.</p>'}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-document.getElementById('categoryButton').addEventListener('click',()=>openModal('category'));document.getElementById('serviceButton').addEventListener('click',()=>openModal('service'));document.getElementById('modalClose').addEventListener('click',closeModal);backdrop.addEventListener('click',e=>{if(e.target===backdrop)closeModal()});search.addEventListener('input',renderOptions);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});document.getElementById('quantityInput').addEventListener('input',e=>{const n=Number(e.target.value);document.getElementById('quantitySummary').textContent=Number.isFinite(n)&&n>0?Math.floor(n).toLocaleString():'—'});renderPlatforms();renderDescription();
+'use strict';
+const SUPABASE_URL='https://lwgbfnyjuxixduuehckp.supabase.co';
+const SUPABASE_KEY='sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS';
+const STORAGE_KEY='hc-auth-lwgbfnyjuxixduuehckp-v4';
+const OWNER='kaptainarizonah@gmail.com';
+const client=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:STORAGE_KEY}}):null;
+let currentUser=null,profile=null,services=[],selectedPlatform='All services',selectedCategory='',selectedService=null,modalMode='category',busy=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function notice(message,type='info'){const d=$('description');d.innerHTML='<p><b>'+(type==='error'?'⚠️':type==='success'?'✓':'ℹ️')+' '+esc(message)+'</b></p>';d.style.borderColor=type==='error'?'#e6a3a3':type==='success'?'#8bd4ba':'#d9edf0';}
+function setBusy(v){busy=v;const b=$('placeOrderButton');if(b){b.disabled=v||!canOrder();b.textContent=v?'Processing…':'Place order';b.style.cursor=b.disabled?'not-allowed':'pointer';b.style.background=b.disabled?'#a4cbd1':'#087f98';}}
+function isOwner(){return String(currentUser?.email||'').toLowerCase()===OWNER;}
+function priceFor(s,q){const n=Number(s?.price_coins_per_1000);return Number.isFinite(n)&&n>0&&q>0?Math.ceil(n*q/1000):0;}
+function canOrder(){const q=Number($('quantityInput')?.value);return !!(currentUser&&selectedService&&selectedService.fulfillment_enabled&&selectedService.provider_service_code&&Number(selectedService.price_coins_per_1000)>0&&Number.isInteger(q)&&q>=Number(selectedService.min_quantity)&&q<=Number(selectedService.max_quantity)&&/^https?:\/\//i.test($('linkInput')?.value.trim()||''));}
+function updateSummary(){
+ const q=Number($('quantityInput').value);$('quantitySummary').textContent=Number.isInteger(q)&&q>0?q.toLocaleString():'—';
+ const min=selectedService?.min_quantity,max=selectedService?.max_quantity;
+ const meta=$('quantityInput').parentElement.querySelector('.service-meta');
+ if(meta)meta.innerHTML='<span>Quantity: <b id="quantitySummary">'+(Number.isInteger(q)&&q>0?q.toLocaleString():'—')+'</b></span><span>Min: '+(min??'—')+'</span><span>Max: '+(max??'—')+'</span><span>Average time: '+esc(selectedService?.delivery_window||'Not supplied')+'</span>';
+ const cost=priceFor(selectedService,q);
+ const charge=$('chargeAmount');
+ if(charge)charge.innerHTML=cost?cost.toLocaleString()+' coins <span style="font-weight:500;color:#718795;font-size:11px">estimated; server verifies final charge</span>':'— <span style="font-weight:500;color:#718795;font-size:11px">'+(selectedService?'Live price not configured':'Choose a service')+'</span>';
+ setBusy(busy);
+}
+function renderPlatforms(){
+ const grid=$('platformGrid');grid.innerHTML='';
+ const names=['All services',...new Set(services.map(s=>s.platform).filter(Boolean).sort())];
+ const symbols={'All services':'▦','Instagram':'◎','TikTok':'♪','Facebook':'f','YouTube':'▶','X (Twitter)':'𝕏','Telegram':'➤','Spotify':'≋','LinkedIn':'in','Snapchat':'◉','WhatsApp':'◔'};
+ names.forEach(name=>{const b=document.createElement('button');b.type='button';b.className='platform'+(selectedPlatform===name?' active':'');b.innerHTML='<span class="pico">'+esc(symbols[name]||'•')+'</span><span>'+esc(name)+'</span>';b.addEventListener('click',()=>{selectedPlatform=name;selectedCategory='';selectedService=null;$('categoryValue').textContent='Choose a category';$('serviceValue').textContent='Choose a service';renderPlatforms();renderDescription();updateSummary()});grid.appendChild(b)});
+ if(!names.length)grid.innerHTML='<div class="empty">No services are published yet.</div>';
+}
+function openModal(mode){modalMode=mode;$('modalTitle').textContent=mode==='category'?'Choose a category':'Choose a service';$('modalSearch').placeholder=mode==='category'?'Search category…':'Search service…';$('modalSearch').value='';renderOptions();$('modalBackdrop').classList.add('open');document.body.style.overflow='hidden';$('modalSearch').focus();}
+function closeModal(){$('modalBackdrop').classList.remove('open');document.body.style.overflow='';}
+function renderOptions(){
+ const term=$('modalSearch').value.trim().toLowerCase();let list;
+ if(modalMode==='category')list=[...new Set(services.filter(s=>selectedPlatform==='All services'||s.platform===selectedPlatform).map(s=>s.category||'General').filter(Boolean))].filter(c=>c.toLowerCase().includes(term));
+ else list=services.filter(s=>(selectedPlatform==='All services'||s.platform===selectedPlatform)&&(!selectedCategory||String(s.category||'General')===selectedCategory)&&((s.title+' '+s.description).toLowerCase().includes(term)));
+ $('modalCount').textContent=modalMode==='category'?list.length+' live categories from Hell Camp':'Live database catalogue · prices verified by server';
+ $('modalOptions').innerHTML='';
+ if(!list.length){$('modalOptions').innerHTML='<div class="empty">No matching live catalogue items.</div>';return;}
+ list.forEach(item=>{
+  const isCat=modalMode==='category',name=isCat?item:item.title;
+  const row=document.createElement('button');row.type='button';row.className='option'+((isCat?selectedCategory===name:selectedService?.id===item.id)?' chosen':'');
+  const main=document.createElement('span');main.className='option-main';const b=document.createElement('b');b.textContent=name;const small=document.createElement('small');
+  small.textContent=isCat?'Category':((Number(item.price_coins_per_1000)>0&&item.fulfillment_enabled&&item.provider_service_code)?Number(item.price_coins_per_1000).toLocaleString()+' coins per 1,000 · live ordering enabled':'Not ready for checkout · admin setup required');
+  main.append(b,small);const radio=document.createElement('span');radio.className='radio';row.append(main,radio);
+  row.addEventListener('click',()=>{if(isCat){selectedCategory=name;selectedService=null;$('categoryValue').textContent=name;$('serviceValue').textContent='Choose a service';}else{selectedService=item;$('serviceValue').textContent=item.title;}closeModal();renderDescription();updateSummary();});$('modalOptions').appendChild(row);
+ });
+}
+function renderDescription(){
+ if(!selectedService){$('description').innerHTML='<p><b>✨ Hell Boost live catalogue</b></p><p>'+(selectedCategory?'Selected category: '+esc(selectedCategory):'Choose a platform, category and service.')+'</p><p>Service rates, quantity limits and checkout eligibility are loaded from the Hell Camp database. Unconfigured services cannot charge coins or submit orders.</p>';return;}
+ const ready=!!(selectedService.fulfillment_enabled&&selectedService.provider_service_code&&Number(selectedService.price_coins_per_1000)>0);
+ $('description').innerHTML='<p><b>✨ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ Live fulfilment is configured. The server will validate price and balance before charging.':'⚠️ This service is visible, but checkout is not enabled because a verified provider code and positive coin rate are not configured. No coins will be deducted.')+'</p>';
+}
+async function loadAccount(){
+ if(!client){$('accountStrip').innerHTML='<div><b>Connection unavailable</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Offline</b><small>Order status</small></div>';return;}
+ const {data,error}=await client.auth.getSession();
+ currentUser=data?.session?.user||null;
+ if(!currentUser){$('accountStrip').innerHTML='<div><b>Not signed in</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Sign in required</b><small>Order status</small></div>';notice('Sign in to Hell Camp first, then return here. Your account session is shared with Hell Camp.');return;}
+ const p=await client.from('profiles').select('display_name,credits,daily_credits,paid_coins,daily_free_coins').eq('id',currentUser.id).maybeSingle();
+ profile=p.data||{};
+ $('accountStrip').innerHTML='<div><b>'+esc(profile.display_name||currentUser.email||'Member')+'</b><small>Signed-in account</small></div><div><b>'+Math.max(0,Number(profile.paid_coins)||0).toLocaleString()+' coins</b><small>Paid coin balance</small></div><div><b>Connected</b><small>Order status</small></div>';
+ if(error||p.error)console.warn('Hell Boost account lookup issue',error||p.error);
+}
+async function loadServices(){
+ $('description').innerHTML='<p><b>Loading live catalogue…</b></p><p>Reading the active Hell Camp service catalogue.</p>';
+ const {data,error}=await client.from('growth_services').select('id,title,platform,category,description,delivery_window,price_coins_per_1000,min_quantity,max_quantity,active,provider_service_code,fulfillment_enabled').eq('active',true).order('platform').order('category').order('title');
+ if(error){console.error('Hell Boost catalogue failed',error);services=[];notice('Could not load the live catalogue. Please refresh and try again.','error');renderPlatforms();return;}
+ services=data||[];renderPlatforms();renderDescription();
+}
+async function loadOrders(){
+ const host=$('orderHistory');if(!host)return;
+ if(!currentUser){host.innerHTML='<p class="sub">Sign in to see your orders.</p>';return;}
+ const {data,error}=await client.from('growth_service_orders').select('id,service_title,platform,quantity,coins_charged,order_status,customer_update,created_at,provider_reference').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(10);
+ if(error){host.innerHTML='<p class="sub">Order history is temporarily unavailable.</p>';console.warn('Hell Boost order history failed',error);return;}
+ if(!data?.length){host.innerHTML='<p class="sub">No Hell Boost orders yet.</p>';return;}
+ host.innerHTML=data.map(o=>'<article style="padding:12px 0;border-bottom:1px solid #dcebef"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b>'+esc(o.service_title)+'</b><span class="pending">'+esc(o.order_status||'pending')+'</span></div><p class="sub">'+esc(o.platform)+' · '+Number(o.quantity||0).toLocaleString()+' units · '+Number(o.coins_charged||0).toLocaleString()+' coins</p><p class="sub">'+esc(o.customer_update||'Waiting for order processing.')+'</p><button type="button" class="select-btn" data-refresh-order="'+esc(o.id)+'" style="margin-top:8px;min-height:36px;padding:8px 10px">Refresh status</button></article>').join('');
+ host.querySelectorAll('[data-refresh-order]').forEach(b=>b.addEventListener('click',()=>refreshOrder(b.dataset.refreshOrder,b)));
+}
+async function refreshOrder(orderId,button){
+ if(!client||!currentUser)return;button.disabled=true;button.textContent='Checking…';
+ try{const {data,error}=await client.functions.invoke('sproute-provider',{body:{action:'status_order',order_id:orderId}});if(error)throw error;if(data?.error)throw new Error(data.error);notice('Order status refreshed.','success');await loadOrders();}
+ catch(e){notice(e.message||'Could not refresh order status.','error');button.disabled=false;button.textContent='Refresh status';}
+}
+async function placeOrder(){
+ if(busy)return;
+ if(!currentUser){notice('Sign in to Hell Camp before placing an order.','error');return;}
+ if(!selectedService){notice('Choose a service first.','error');return;}
+ if(!canOrder()){notice('Check the public link, quantity limits, and service readiness before ordering.','error');return;}
+ const q=Number($('quantityInput').value);const link=$('linkInput').value.trim();
+ if(!confirm('Place '+q.toLocaleString()+' units for '+selectedService.title+'? The server will verify the coin charge before submitting.'))return;
+ setBusy(true);$('placeOrderButton').textContent='Checking wallet…';
+ try{
+  const {data,error}=await client.rpc('create_growth_coin_order',{p_service_id:selectedService.id,p_target_url:link,p_quantity:q,p_duration_type:'standard',p_customer_note:''});
+  if(error)throw error;
+  if(data?.provider_not_ready){notice(data.message||'This service is not ready. No coins were deducted.','error');return;}
+  if(data?.insufficient_coins){notice('Not enough paid coins. Required: '+Number(data.required_coins||0).toLocaleString()+'. Current balance: '+Number(data.balance||0).toLocaleString()+'.','error');return;}
+  if(!data?.paid||!data?.order_id)throw new Error(data?.message||'Server did not confirm the order. No success was reported.');
+  notice('Coins charged: '+Number(data.coins_charged||0).toLocaleString()+'. Sending order to the verified supplier…','success');
+  const submitted=await client.functions.invoke('sproute-provider',{body:{action:'submit_order',order_id:data.order_id}});
+  if(submitted.error||submitted.data?.error){const msg=submitted.data?.error||submitted.error?.message||'Provider submission needs review.';notice('Order created, but supplier confirmation is not complete: '+msg,'error');}
+  else notice('Supplier accepted the order. Tracking reference: '+(submitted.data?.provider_order_id||'saved')+'.','success');
+  await loadAccount();await loadOrders();
+ }catch(e){console.error('Hell Boost order failed',e);notice(e.message||'Order could not be confirmed. Check order history before retrying.','error');await loadAccount();await loadOrders();}
+ finally{setBusy(false);updateSummary();}
+}
+function renderOwnerTools(){
+ if(!isOwner())return;
+ const box=document.createElement('section');box.className='panel';box.innerHTML='<div class="eyebrow">OWNER CHECK</div><h2 style="margin:4px 0 6px;font-size:18px">Supplier connection check</h2><p class="sub">This checks the server-side supplier connection only. It does not publish or price services.</p><button id="checkProvider" class="select-btn" style="margin-top:12px">Check supplier balance</button><p id="providerCheckResult" class="sub" style="margin-top:10px"></p>';
+ $('orderHistoryPanel').before(box);
+ $('checkProvider').addEventListener('click',async()=>{const b=$('checkProvider'),out=$('providerCheckResult');b.disabled=true;b.textContent='Checking…';out.textContent='';try{const {data,error}=await client.functions.invoke('sproute-provider',{body:{action:'balance'}});if(error)throw error;if(data?.error)throw new Error(data.error);out.textContent='Supplier connection responded. Balance response: '+JSON.stringify(data?.result??data); }catch(e){out.textContent=e.message||'Supplier check failed. Confirm SPROUTE_API_KEY in Edge Function secrets.';}finally{b.disabled=false;b.textContent='Check supplier balance';}});
+}
+async function init(){
+ $('categoryButton').addEventListener('click',()=>openModal('category'));$('serviceButton').addEventListener('click',()=>openModal('service'));
+ $('modalClose').addEventListener('click',closeModal);$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});$('modalSearch').addEventListener('input',renderOptions);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+ $('quantityInput').addEventListener('input',updateSummary);$('linkInput').addEventListener('input',()=>setBusy(busy));$('placeOrderButton').addEventListener('click',placeOrder);
+ if(!client){notice('Supabase client did not load. Check your connection and refresh.','error');return;}
+ await loadAccount();await loadServices();await loadOrders();renderOwnerTools();updateSummary();
+ client.auth.onAuthStateChange(async()=>{await loadAccount();await loadOrders();setBusy(busy);});
+}
+init();
 })();
 </script>
 </body>

@@ -430,7 +430,7 @@ var view=document.getElementById('view');
 // the same rotating token and invalidate this app's session.
 /* Use a versioned, Hell Camp-only session namespace. Do not copy or delete other app keys:
    GitHub Pages projects share an origin, and duplicated refresh tokens can revoke each other. */
-var hcAuthStorageKey='hc-auth-lwgbfnyjuxixduuehckp-v2';
+var hcAuthStorageKey='hc-auth-lwgbfnyjuxixduuehckp-v3';
 var supabaseClient=window.supabase&&window.supabase.createClient?window.supabase.createClient('https://lwgbfnyjuxixduuehckp.supabase.co','sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:hcAuthStorageKey}}):null,authUser=null,authProfile=null,authMode='login',authNotice='',authNoticeType='success';window.supabaseClient=supabaseClient;Object.defineProperty(window,'authUser',{configurable:true,get:function(){return authUser},set:function(v){authUser=v}});Object.defineProperty(window,'authProfile',{configurable:true,get:function(){return authProfile},set:function(v){authProfile=v}});
 
 if(supabaseClient&&supabaseClient.functions&&typeof supabaseClient.functions.invoke==='function'){

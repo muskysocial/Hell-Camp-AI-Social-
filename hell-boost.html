@@ -16,13 +16,13 @@
 <header class="topbar"><div class="brand"><span class="logo">↗</span><span>HELL <span style="color:#38c5d3">BOOST</span></span></div><div class="top-actions"><a href="./index.html">← Hell Camp</a><button type="button" aria-label="Menu" onclick="document.getElementById('menuNote').hidden=!document.getElementById('menuNote').hidden">☰</button></div></header>
 <main class="wrap">
 <div id="menuNote" class="pending" hidden style="margin-bottom:12px">Hell Boost is a preview section. Full in-app navigation will be connected with the service integration.</div>
-<section class="account-strip" aria-label="Account summary"><div><b>Guest preview</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Not connected</b><small>Order status</small></div></section>
+<section class="account-strip" id="accountStrip" aria-label="Account summary"><div><b>Guest preview</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Not connected</b><small>Order status</small></div></section>
 <section class="panel">
 <div class="title-row"><div><div class="eyebrow">CREATE ORDER</div><h1 class="heading">Choose your service</h1><p class="sub">Choose a platform, service and quantity. Paid orders enter Hell Camp’s own fulfilment queue.</p></div><span class="public-note">◈ Public links only</span></div>
 <div class="platform-box"><div class="platform-heading"><span class="square">▦</span><span>Choose a social media platform</span><span style="margin-left:auto;color:#8ca3ad">⌃</span></div><div class="platform-grid" id="platformGrid"></div></div>
 <div class="field-wrap"><label class="label" for="categoryButton">Category</label><button class="select-btn" id="categoryButton"><span class="selected-value" id="categoryValue">Choose a category</span><span class="arrow">⌄</span></button></div>
 <div class="field-wrap"><label class="label" for="serviceButton">Service</label><button class="select-btn" id="serviceButton"><span class="selected-value" id="serviceValue">Choose a service</span><span class="arrow">⌄</span></button></div>
-<div class="description" id="description"><p><b>✨ Hell Boost catalogue preview</b></p><p>Choose a platform, category and service to review the order details here.</p><p>Service rates, delivery estimates and limits will appear after the verified supplier catalogue is connected.</p></div>
+<div class="description" id="description"><p><b>✨ Hell Boost catalogue preview</b></p><p>Choose a platform, category and service to review the order details here.</p><p>Service rates, delivery estimates and limits are managed by Hell Camp. Checkout stays off until the owner configures pricing and fulfilment.</p></div>
 <div class="field-wrap"><label class="label" for="linkInput">Link</label><input class="text-input" id="linkInput" placeholder="Enter the public profile, post or video link" autocomplete="url"></div>
 <div class="field-wrap"><label class="label" for="quantityInput">Quantity</label><input class="text-input" id="quantityInput" type="number" min="1" step="1" placeholder="Enter quantity" inputmode="numeric"><div class="service-meta"><span>Quantity: <b id="quantitySummary">—</b></span><span>Min: —</span><span>Max: —</span><span>Average time: —</span></div></div>
 <div class="field-wrap"><label class="label">Charge</label><div class="charge" id="chargeAmount">— <span style="font-weight:500;color:#718795;font-size:11px">Choose a service</span></div></div>
@@ -63,7 +63,7 @@ function updateSummary(){
 function renderPlatforms(){
  const grid=$('platformGrid');grid.innerHTML='';
  const names=['All services',...new Set(services.map(s=>s.platform).filter(Boolean).sort())];
- const symbols={'All services':'▦','Instagram':'◎','TikTok':'♪','Facebook':'f','YouTube':'▶','X (Twitter)':'𝕏','Telegram':'➤','Spotify':'≋','LinkedIn':'in','Snapchat':'◉','WhatsApp':'◔'};
+ const symbols={'All services':'▦','Instagram':'◎','TikTok':'♪','Facebook':'f','YouTube':'▶','X':'𝕏','X (Twitter)':'𝕏','Telegram':'➤','Spotify':'≋','LinkedIn':'in','Snapchat':'◉','WhatsApp':'◔'};
  names.forEach(name=>{const label=name==='X'?'X (Twitter)':name;const b=document.createElement('button');b.type='button';b.className='platform'+(selectedPlatform===name?' active':'');b.innerHTML='<span class="pico">'+esc(symbols[name]||'•')+'</span><span>'+esc(label)+'</span>';b.addEventListener('click',()=>{selectedPlatform=name;selectedCategory='';selectedService=null;$('categoryValue').textContent='Choose a category';$('serviceValue').textContent='Choose a service';renderPlatforms();renderDescription();updateSummary()});grid.appendChild(b)});
  if(!names.length)grid.innerHTML='<div class="empty">No services are published yet.</div>';
 }
@@ -88,7 +88,7 @@ function renderOptions(){
 function renderDescription(){
  if(!selectedService){$('description').innerHTML='<p><b>✨ Hell Boost live catalogue</b></p><p>'+(selectedCategory?'Selected category: '+esc(selectedCategory):'Choose a platform, category and service.')+'</p><p>Service rates, quantity limits and checkout eligibility are loaded from the Hell Camp database. Unconfigured services cannot charge coins or submit orders.</p>';return;}
  const ready=!!(selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0);
- $('description').innerHTML='<p><b>✨ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ Hell Boost queue is enabled. The server validates the price and balance before charging; delivery is handled by Hell Camp.':'⚠️ This service is visible, but checkout is not enabled because a verified provider code and positive coin rate are not configured. No coins will be deducted.')+'</p>';
+ $('description').innerHTML='<p><b>✨ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ Hell Boost queue is enabled. The server validates the price and balance before charging; delivery is handled by Hell Camp.':'⚠️ This service is visible, but checkout is not enabled because a positive coin rate and Hell Camp fulfilment setting are not configured. No coins will be deducted.')+'</p>';
 }
 async function loadAccount(){
  if(!client){$('accountStrip').innerHTML='<div><b>Connection unavailable</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Offline</b><small>Order status</small></div>';return;}
@@ -109,7 +109,7 @@ async function loadServices(){
 async function loadOrders(){
  const host=$('orderHistory');if(!host)return;
  if(!currentUser){host.innerHTML='<p class="sub">Sign in to see your orders.</p>';return;}
- const {data,error}=await client.from('growth_service_orders').select('id,service_title,platform,quantity,coins_charged,order_status,customer_update,created_at,provider_reference').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(10);
+ const {data,error}=await client.from('growth_service_orders').select('id,service_title,platform,quantity,coins_charged,order_status,customer_update,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(10);
  if(error){host.innerHTML='<p class="sub">Order history is temporarily unavailable.</p>';console.warn('Hell Boost order history failed',error);return;}
  if(!data?.length){host.innerHTML='<p class="sub">No Hell Boost orders yet.</p>';return;}
  host.innerHTML=data.map(o=>'<article style="padding:12px 0;border-bottom:1px solid #dcebef"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b>'+esc(o.service_title)+'</b><span class="pending">'+esc(o.order_status||'pending')+'</span></div><p class="sub">'+esc(o.platform)+' · '+Number(o.quantity||0).toLocaleString()+' units · '+Number(o.coins_charged||0).toLocaleString()+' coins</p><p class="sub">'+esc(o.customer_update||'Waiting for order processing.')+'</p><button type="button" class="select-btn" data-refresh-order="'+esc(o.id)+'" style="margin-top:8px;min-height:36px;padding:8px 10px">Refresh status</button></article>').join('');

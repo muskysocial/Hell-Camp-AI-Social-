@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hell Camp — New Login Work Area</title>
+<style>
+:root{color-scheme:dark;--bg:#10091b;--panel:#1b102b;--purple:#9b5cff;--pink:#d8b8ff;--muted:#b8a9ca;--line:#493260}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(ellipse at 50% 0%,#48216f 0%,#1b102c 40%,#0c0713 100%);color:#fff;display:grid;place-items:center;padding:22px}
+.wrap{width:min(100%,430px)}.brand{text-align:center;margin-bottom:22px}.logo{width:76px;height:76px;margin:0 auto 12px;border-radius:24px;display:grid;place-items:center;font-size:37px;background:linear-gradient(145deg,#c28cff,#6724b8);box-shadow:0 0 36px #9b5cff55}.brand h1{margin:0;font-size:26px;letter-spacing:.5px}.brand p{color:var(--muted);margin:7px 0 0;font-size:14px}
+.card{border:1px solid #ffffff1c;background:#1a1029eF;backdrop-filter:blur(16px);border-radius:25px;padding:24px;box-shadow:0 24px 80px #0007}.display-name{margin:0 0 18px;color:#eadcff;font-size:14px}.display-name strong{color:#fff}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:5px;background:#0e0817;border-radius:13px;margin-bottom:21px}.tabs button{border:0;border-radius:10px;padding:11px;background:transparent;color:#cbb9df;font-weight:700}.tabs button.active{background:#6e32b3;color:white}
+label{display:block;font-size:13px;color:#e5d8f5;margin:14px 0 7px}input{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);background:#100a19;color:white;font:inherit;outline:none}input:focus{border-color:#b785ff;box-shadow:0 0 0 3px #9b5cff26}.primary,.google{width:100%;padding:14px;border-radius:12px;font:inherit;font-weight:750;cursor:pointer}.primary{border:0;color:#fff;background:linear-gradient(100deg,#7b35cb,#a15cff);margin-top:18px}.google{margin-top:13px;border:1px solid #654b80;background:#251737;color:#fff}.google span{display:inline-grid;place-items:center;background:#fff;color:#4285f4;border-radius:50%;width:22px;height:22px;margin-right:8px;font-weight:900}.divider{display:flex;align-items:center;gap:12px;color:#9f8cb4;font-size:12px;margin:16px 0}.divider:before,.divider:after{content:"";height:1px;background:#493260;flex:1}.links{display:flex;justify-content:space-between;gap:12px;margin-top:16px}.links button{border:0;background:none;color:#d7b7ff;font-size:13px;cursor:pointer;padding:4px}.notice{display:none;margin-top:15px;padding:11px 12px;border-radius:10px;background:#291b3c;color:#eadcff;font-size:13px;line-height:1.45;overflow-wrap:anywhere}.note{color:#9f90b0;text-align:center;font-size:12px;line-height:1.5;margin:17px 6px 0}
+</style>
+</head>
+<body><main class="wrap">
+<header class="brand"><div class="logo" aria-hidden="true">🔥</div><h1>HELL CAMP</h1><p>Your people. Your space. Your world.</p></header>
+<section class="card" aria-labelledby="welcome">
+<p class="display-name" id="welcome">Welcome back, <strong id="namePreview">Hell Camp member</strong></p>
+<div class="tabs"><button id="loginTab" class="active" type="button">Log in</button><button id="signupTab" type="button">Create account</button></div>
+<form id="authForm">
+<div id="nameField" hidden><label for="displayName">Display name</label><input id="displayName" name="displayName" autocomplete="nickname" placeholder="How people see you"></div>
+<label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+<label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="Your password">
+<button class="primary" id="submit" type="submit">Log in</button>
+</form>
+<div class="divider">or continue with</div>
+<button class="google" id="google" type="button"><span>G</span> Continue with Google</button>
+<div class="links"><button id="forgot" type="button">Forgot password?</button><button id="back" type="button">Back to Hell Camp</button></div>
+<div class="notice" id="notice" role="status" aria-live="polite"></div>
+</section><p class="note">New login screen preview only. It is isolated from the live app and does not submit credentials or change your account.</p>
+</main>
+<script>
+(function(){let mode='login';const $=id=>document.getElementById(id);function notice(msg){$('notice').textContent=msg;$('notice').style.display='block'}function setMode(next){mode=next;const signup=mode==='signup';$('loginTab').classList.toggle('active',!signup);$('signupTab').classList.toggle('active',signup);$('nameField').hidden=!signup;$('displayName').required=signup;$('submit').textContent=signup?'Create account':'Log in';$('password').autocomplete=signup?'new-password':'current-password';$('notice').style.display='none'}$('loginTab').onclick=()=>setMode('login');$('signupTab').onclick=()=>setMode('signup');$('displayName').addEventListener('input',()=>{$('namePreview').textContent=$('displayName').value.trim()||'Hell Camp member'});$('authForm').addEventListener('submit',e=>{e.preventDefault();notice('Preview only: authentication is not connected yet. This work area does not send or store your credentials.');});$('google').onclick=()=>notice('Preview only: Google sign-in is not connected in this isolated work area.');$('forgot').onclick=()=>notice('Password recovery will be connected after the session issue is diagnosed.');$('back').onclick=()=>{location.href='./'};})();
+</script></body></html>

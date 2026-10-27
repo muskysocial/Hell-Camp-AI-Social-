@@ -2764,6 +2764,34 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
 .light .menu-drawer .drawer-section{color:#7e3bb2!important;border-color:#e6d9f0!important}
 .light .menu-drawer .drawer-close{color:#241c2d!important;background:#f0e7f8!important}
 </style>
+
+<script id="hc-hell-boost-menu-link">
+(function(){
+ function addHellBoostLink(){
+  var drawer=document.querySelector('.menu-drawer');
+  if(!drawer || drawer.querySelector('[data-hell-boost-link]')) return;
+  var sections=Array.from(drawer.querySelectorAll('.drawer-section'));
+  var toolsSection=sections.find(function(el){return /tools\s*&\s*services/i.test(el.textContent||'')});
+  var link=document.createElement('button');
+  link.type='button';
+  link.className='drawer-item';
+  link.setAttribute('data-hell-boost-link','true');
+  link.setAttribute('aria-label','Open Hell Boost');
+  link.innerHTML='<span>↗</span>Hell Boost';
+  link.addEventListener('click',function(event){
+   event.preventDefault();
+   event.stopImmediatePropagation();
+   window.location.href=new URL('./hell-boost.html',window.location.href).href;
+  },true);
+  if(toolsSection) toolsSection.insertAdjacentElement('afterend',link);
+  else drawer.appendChild(link);
+ }
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addHellBoostLink,{once:true});
+ else addHellBoostLink();
+ new MutationObserver(addHellBoostLink).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
 </body></html>
 
 

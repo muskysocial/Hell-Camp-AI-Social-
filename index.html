@@ -838,7 +838,7 @@ async function loadAdminHub(){
  var rows=document.getElementById('adminContentRows');if(!rows)return;
  rows.innerHTML='<p class="muted">Loading your listings…</p>';
  var r=await supabaseClient.from('admin_content').select('id,content_type,title,description,category,price,currency,location,contact_url,image_url,status,created_by,created_at,updated_at').order('created_at',{ascending:false});
- if(r.error){rows.innerHTML='<div class="notice">Could not load admin listings: '+esc(r.error.message)+'. If you just changed admin permissions, sign out and sign back in to refresh your session.</div>';return;}
+ if(r.error){rows.innerHTML='<div class="notice">Could not load admin listings: '+esc(r.error.message)+'. If you just changed admin permissions, sign in again to refresh your session.</div>';return;}
  state.adminItems=(r.data||[]).filter(function(x){return x.content_type!=='gift'&&x.content_type!=='marketplace'});
  var all=document.getElementById('adminCountAll');if(all)all.textContent=state.adminItems.length;
  [['Published','published'],['Draft','draft'],['Archived','archived']].forEach(function(pair){var n=document.getElementById('adminCount'+pair[0]);if(n)n.textContent=state.adminItems.filter(function(x){return x.status===pair[1]}).length;});

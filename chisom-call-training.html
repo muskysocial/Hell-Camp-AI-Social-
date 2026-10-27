@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100d20">
+<title>Chisom AI — Call Training Room</title>
+<style>
+:root{color-scheme:dark;--bg:#100d20;--panel:#1b1730;--panel2:#241d3d;--line:#393052;--text:#f8f5ff;--muted:#b9b0d0;--accent:#b99aff;--accent2:#7c5ce0;--good:#a7f3d0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#302052 0,#100d20 52%);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text);min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:10px 14px}button:hover{border-color:var(--accent)}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:980px;margin:auto;padding:22px 16px 48px}.top{display:flex;gap:14px;align-items:center;margin-bottom:22px}.avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#d6b8ff,#6d48cf);color:#180d2c;font-size:26px;font-weight:800;box-shadow:0 0 32px #9d78ff44}.eyebrow{color:var(--accent);font-size:.78rem;letter-spacing:.13em;text-transform:uppercase;font-weight:700}h1{font-size:clamp(1.55rem,4vw,2.2rem);margin:0}h2{font-size:1.15rem;margin:0 0 12px}p{margin:5px 0;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:#1b1730eF;border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 16px 40px #0002}.wide{grid-column:1/-1}.field{display:grid;gap:6px;margin:12px 0}.field label{font-size:.9rem;color:#ded6f4;font-weight:600}input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#100d20;color:var(--text)}textarea{min-height:104px;resize:vertical}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.primary{background:linear-gradient(110deg,#8a65e8,#6542c5);border-color:transparent;font-weight:700}.safe{background:#143329;border-color:#28644e;color:#c8ffe8}.status{display:inline-flex;align-items:center;gap:7px;border:1px solid #28644e;background:#143329;color:var(--good);padding:5px 10px;border-radius:99px;font-size:.8rem}.status:before{content:"";width:7px;height:7px;border-radius:50%;background:#6ee7b7}.dialogue{display:grid;gap:10px;margin-top:14px}.bubble{padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:#171329}.bubble.ai{border-color:#59458a;background:#251b3e}.who{font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;color:var(--accent);font-weight:800;margin-bottom:4px}.bubble p{color:var(--text);white-space:pre-wrap}.hint{font-size:.83rem}.notice{border-left:3px solid var(--accent);padding:10px 12px;background:#211a36;border-radius:0 10px 10px 0;color:#ded6f4;font-size:.9rem}.hidden{display:none!important}.footer{margin-top:16px;text-align:center;color:var(--muted);font-size:.82rem}@media(max-width:680px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.wrap{padding:16px 12px 32px}.card{padding:15px}.top{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="top"><div class="avatar" aria-hidden="true">C</div><div><div class="eyebrow">Hell Camp · Personal Intelligence</div><h1>Chisom AI</h1><p>Call Training Room · Practice before live calls</p></div></header>
+<div class="notice">Practice mode only. This page simulates a call and can read Chisom's sample reply aloud using a voice available on your device. It does not place, answer, record, or connect real phone calls.</div>
+<div class="grid" style="margin-top:16px">
+<section class="card">
+<h2>Her speaking style</h2>
+<div class="field"><label for="accent">Accent / language style</label><select id="accent"><option>Benin/Edo-influenced English</option><option>American English</option><option>Nigerian English</option><option>Igbo-influenced English</option></select></div>
+<div class="field"><label for="tone">Personality</label><select id="tone"><option>Warm and professional</option><option>Friendly and playful</option><option>Calm and formal</option><option>Confident business assistant</option></select></div>
+<div class="field"><label for="voice">Device voice (if available)</label><select id="voice"><option value="">Default available voice</option></select></div>
+<p class="hint">Accent selection guides the practice script; your device's text-to-speech voices may not reproduce every accent accurately.</p>
+</section>
+<section class="card">
+<h2>Teach her the rules</h2>
+<div class="field"><label for="rules">Your call instructions</label><textarea id="rules">Greet the caller warmly, listen carefully, answer clearly, and ask Chisom before making commitments.</textarea></div>
+<div class="field"><label for="topic">What is this practice call about?</label><input id="topic" value="A caller asking about a business proposal" maxlength="180"></div>
+<div class="field"><label for="caller">Caller says</label><textarea id="caller">I want to know whether Chisom can accept my business proposal.</textarea></div>
+<button class="primary" id="replyBtn">Generate practice reply</button>
+</section>
+<section class="card wide">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><h2 style="margin:0">Practice conversation</h2><span class="status">Practice only</span></div>
+<div class="dialogue" aria-live="polite">
+<div class="bubble"><div class="who">Caller · simulation</div><p id="callerPreview">I want to know whether Chisom can accept my business proposal.</p></div>
+<div class="bubble ai"><div class="who">Chisom AI · suggested reply</div><p id="reply">Good afternoon! Thank you for calling. I'm Chisom's AI assistant. I can take the details of your proposal and pass them to Chisom. I won't promise anything on his behalf before he reviews it. Could you please tell me a little more about your proposal?</p></div>
+</div>
+<div class="actions"><button class="primary" id="speakBtn">▶ Speak reply</button><button id="stopBtn">■ Stop voice</button><button id="copyBtn">Copy reply</button><button id="resetBtn">Reset example</button></div>
+<p class="hint" id="voiceStatus" role="status">Voice playback uses your browser/device if speech synthesis is supported.</p>
+</section>
+<section class="card wide">
+<h2>Live-call readiness checklist</h2>
+<p>Live calls remain disabled until a supported telephony provider, secure server-side connection, caller disclosure, and explicit per-call authorization are implemented and tested.</p>
+<div class="field"><label><input type="checkbox" disabled> Telephony provider and audio routing verified</label></div>
+<div class="field"><label><input type="checkbox" disabled> AI identity and required consent/disclosure handled</label></div>
+<div class="field"><label><input type="checkbox" disabled> Approval required for payments, promises and agreements</label></div>
+<div class="field"><label><input type="checkbox" disabled> Human handoff and emergency stop tested</label></div>
+</section>
+</div>
+<p class="footer">Prototype only · No API keys · No microphone access · No real calls · No changes to login or authentication</p>
+</main>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const defaultReply="Good afternoon! Thank you for calling. I'm Chisom's AI assistant. I can take the details of your proposal and pass them to Chisom. I won't promise anything on his behalf before he reviews it. Could you please tell me a little more about your proposal?";
+function makeReply(){
+ const caller=$('caller').value.trim();
+ const accent=$('accent').value;
+ const tone=$('tone').value;
+ const topic=$('topic').value.trim()||'your enquiry';
+ let opening=tone==='Calm and formal'?'Good afternoon. Thank you for your call.':tone==='Friendly and playful'?'Hello there! Thanks so much for calling.':'Good afternoon! Thank you for calling.';
+ let body="I'm Chisom's AI assistant. I’m listening, and I’d be happy to take the details about "+topic+". I’ll pass the information to Chisom for review, and I won’t make promises or commitments on his behalf.";
+ if(/proposal|business|deal|partner/i.test(caller)) body="I'm Chisom's AI assistant. Thank you for your interest. I can take the details of your proposal and pass them to Chisom. I won't promise anything on his behalf before he reviews it. Could you please tell me a little more about your proposal?";
+ if(/price|pay|payment|money|cost|transfer/i.test(caller)) body="I'm Chisom's AI assistant. I can record your question and ask Chisom to review it. I’m not authorized to approve payments or agree to financial terms.";
+ if(/password|code|otp|verification/i.test(caller)) body="For your security, please don't share passwords, one-time codes, or private authentication details on this call. I can pass a safe message to Chisom.";
+ if(accent==='Benin/Edo-influenced English') body=body;
+ if(accent==='American English') opening='Hi, thanks for calling! ';
+ else if(accent==='Nigerian English') opening='Good afternoon! Thank you for calling. ';
+ else if(accent==='Igbo-influenced English') opening='Good afternoon! Thank you for calling. ';
+ $('callerPreview').textContent=caller||'(Caller has not entered a message.)';
+ $('reply').textContent=opening+body.replace(/^I'm Chisom's AI assistant\.\s*/,'');
+}
+function loadVoices(){
+ if(!('speechSynthesis'in window))return;
+ const sel=$('voice'), old=sel.value;
+ const voices=window.speechSynthesis.getVoices();
+ sel.innerHTML='<option value="">Default available voice</option>';
+ voices.forEach((v,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o)});
+ if(old)sel.value=old;
+}
+$('replyBtn').addEventListener('click',()=>{makeReply();$('voiceStatus').textContent='Practice reply updated. Review it before speaking.'});
+$('speakBtn').addEventListener('click',()=>{
+ if(!('speechSynthesis'in window)){ $('voiceStatus').textContent='Speech synthesis is not available in this browser/device.';return;}
+ window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance($('reply').textContent);
+ const voices=window.speechSynthesis.getVoices(); const idx=$('voice').value;
+ if(idx!==''&&voices[Number(idx)])u.voice=voices[Number(idx)];
+ u.rate=$('tone').value==='Calm and formal'?.92:1;
+ u.onstart=()=>{$('voiceStatus').textContent='Playing sample voice. This is not a live call.'};
+ u.onend=()=>{$('voiceStatus').textContent='Sample finished.'};
+ u.onerror=()=>{$('voiceStatus').textContent='Could not play voice. Check your device voice settings.'};
+ window.speechSynthesis.speak(u);
+});
+$('stopBtn').addEventListener('click',()=>{if('speechSynthesis'in window)window.speechSynthesis.cancel();$('voiceStatus').textContent='Voice stopped.'});
+$('copyBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('reply').textContent);$('voiceStatus').textContent='Reply copied.'}catch(e){$('voiceStatus').textContent='Copy unavailable; select the reply text manually.'}});
+$('resetBtn').addEventListener('click',()=>{$('accent').value='Benin/Edo-influenced English';$('tone').value='Warm and professional';$('rules').value='Greet the caller warmly, listen carefully, answer clearly, and ask Chisom before making commitments.';$('topic').value='A caller asking about a business proposal';$('caller').value='I want to know whether Chisom can accept my business proposal.';$('reply').textContent=defaultReply;$('callerPreview').textContent=$('caller').value;if('speechSynthesis'in window)window.speechSynthesis.cancel();$('voiceStatus').textContent='Example reset.'});
+if('speechSynthesis'in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
+})();
+</script>
+</body>
+</html>

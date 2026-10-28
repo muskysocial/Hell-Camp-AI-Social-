@@ -9,7 +9,7 @@ on:
       - 'manifest.json'
       - 'icons/**'
       - 'package.json'
-      - 'capacitor.config.ts'
+      - 'capacitor.config.json'
       - 'scripts/**'
       - '.github/workflows/native-mobile-build.yml'
   push:
@@ -22,7 +22,7 @@ on:
       - 'manifest.json'
       - 'icons/**'
       - 'package.json'
-      - 'capacitor.config.ts'
+      - 'capacitor.config.json'
       - 'scripts/**'
       - '.github/workflows/native-mobile-build.yml'
 
@@ -85,7 +85,7 @@ jobs:
       - name: Sync iOS project
         run: npx cap sync ios
       - name: Package Xcode project source
-        run: zip -r hell-camp-ios-xcode-project.zip ios capacitor.config.ts package.json package-lock.json www
+        run: zip -r hell-camp-ios-xcode-project.zip ios capacitor.config.json package.json package-lock.json www
       - name: Upload iOS Xcode project source
         uses: actions/upload-artifact@v4
         with:

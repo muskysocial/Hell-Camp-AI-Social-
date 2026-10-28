@@ -29,6 +29,7 @@
 <div class="pending" id="runnerReadiness">● Checking boost readiness…</div><button class="place-order" id="placeOrderButton" type="button" disabled aria-disabled="true">Start Boost</button><p class="sub" id="runnerStatus" aria-live="polite" style="margin-top:8px">Choose a service to check whether it can run.</p>
 </section>
 <section class="panel" id="instagramConnectPanel"><div class="eyebrow">OFFICIAL INSTAGRAM CONNECTION</div><h2 class="heading" id="instagramConnectionTitle" style="font-size:20px">Instagram connection status</h2><p class="sub">Connect an Instagram professional account to enable supported account tools. This does not automatically add followers.</p><div id="instagramConnectionStatus" role="status" style="padding:10px 12px;border-radius:10px;background:#eaf9fb;border:1px solid #dcebef;margin-top:10px">Checking saved Instagram connection…</div><button type="button" id="connectInstagramButton" class="discovery-submit" style="margin-top:13px;width:100%">Connect Instagram securely</button><p id="instagramConnectNotice" class="discovery-help" aria-live="polite">Your token is exchanged and stored on the server; it is never displayed in the browser.</p></section>
+<section class="panel" id="livePlacementsPanel"><div class="eyebrow">HELL CAMP · REAL AUDIENCE</div><h2 class="heading" style="font-size:20px">Discover creators</h2><p class="sub">Sponsored profiles and posts from Hell Camp members. Every placement is labelled; views and clicks are tracked without promising external followers.</p><div id="livePlacements" class="discovery-grid"><p class="sub">Loading promoted creators…</p></div></section>
 <section class="panel" id="discoveryPanel"><div class="eyebrow">FREE · OPT-IN DISCOVERY</div><h2 class="heading" style="font-size:20px">Creator discovery board</h2><p class="sub">List a public profile for free so other Hell Camp members can discover it. This is real profile discovery—not automatic followers, likes or guaranteed results.</p><form id="discoveryForm" class="discovery-form"><div><label for="discoveryName">Display name</label><input id="discoveryName" maxlength="60" required placeholder="Creator or page name"></div><div><label for="discoveryPlatform">Platform</label><select id="discoveryPlatform" required><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Facebook</option><option>X</option><option>Telegram</option></select></div><div class="wide"><label for="discoveryUrl">Public profile URL</label><input id="discoveryUrl" type="url" required placeholder="https://…"></div><div><label for="discoveryNiche">Topic / niche</label><input id="discoveryNiche" maxlength="40" placeholder="Music, fashion, comedy…"></div><div><label for="discoveryIntro">Short intro (optional)</label><input id="discoveryIntro" maxlength="240" placeholder="What do you post?"></div><button class="discovery-submit wide" id="discoverySubmit" type="submit">Add my profile — free</button></form><p id="discoveryNotice" class="discovery-help" aria-live="polite">No coins charged. Only public profile links; never submit a password.</p><div id="discoveryProfiles" class="discovery-grid"><p class="sub">Loading public creator profiles…</p></div></section>
 <section class="panel" id="campaignPanel">
 <div class="eyebrow">HELL BOOST · REAL AUDIENCE CAMPAIGNS</div>
@@ -240,7 +241,34 @@ async function loadOwnerCampaigns(){
  if(error){host.textContent='Campaign queue unavailable: '+error.message;return;}
  const rows=Array.isArray(data)?data:[];
  if(!rows.length){host.innerHTML='<p class="sub">No campaign requests yet.</p>';return;}
- host.innerHTML=rows.map(x=>'<article style="padding:11px 0;border-bottom:1px solid #dcebef"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>'+esc(x.title)+'</b><span class="pending">'+esc(x.status.replaceAll('_',' '))+'</span></div><p class="sub">'+esc(x.platform)+' · '+esc(x.objective.replaceAll('_',' '))+' · proposed '+Number(x.budget_coins).toLocaleString()+' coins</p><p class="sub" style="overflow-wrap:anywhere"><a href="'+esc(x.target_url)+'" target="_blank" rel="noopener noreferrer">Open campaign link ↗</a></p><p class="sub">'+esc(x.note||'No extra notes')+' · submitted '+new Date(x.created_at).toLocaleString()+'</p></article>').join('');
+ host.innerHTML=rows.map(x=>'<article style="padding:11px 0;border-bottom:1px solid #dcebef"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>'+esc(x.title)+'</b><span class="pending">'+esc(x.status.replaceAll('_',' '))+'</span></div><p class="sub">'+esc(x.platform)+' · '+esc(x.objective.replaceAll('_',' '))+' · budget '+Number(x.budget_coins).toLocaleString()+' paid coins</p><p class="sub" style="overflow-wrap:anywhere"><a href="'+esc(x.target_url)+'" target="_blank" rel="noopener noreferrer">Review link ↗</a></p><p class="sub">'+esc(x.note||'No extra notes')+' · submitted '+new Date(x.created_at).toLocaleString()+'</p>'+(x.status==='pending_review'?'<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button data-approve-campaign="'+esc(x.id)+'" class="discovery-submit">Approve & charge coins</button><button data-reject-campaign="'+esc(x.id)+'" class="select-btn" style="width:auto">Reject</button></div>':'')+'</article>').join('');
+ host.querySelectorAll('[data-approve-campaign]').forEach(btn=>btn.addEventListener('click',async()=>{
+  const id=btn.dataset.approveCampaign;
+  if(!confirm('Approve this placement and deduct its proposed budget from the customer’s PAID coin balance?'))return;
+  btn.disabled=true;btn.textContent='Approving…';
+  const {data,error}=await client.rpc('hell_boost_approve_campaign',{p_campaign_id:id});
+  if(error||!data?.ok){notice(error?.message||data?.message||'Campaign approval failed. No campaign was activated.','error');btn.disabled=false;btn.textContent='Approve & charge coins';return;}
+  notice('Campaign approved. '+Number(data.coins_charged||0).toLocaleString()+' paid coins charged.','success');
+  await loadOwnerCampaigns();await loadCampaigns();await loadLivePlacements();
+ }));
+ host.querySelectorAll('[data-reject-campaign]').forEach(btn=>btn.addEventListener('click',async()=>{
+  const id=btn.dataset.rejectCampaign,note=prompt('Reason for rejection (optional):')||'Campaign not approved';
+  btn.disabled=true;btn.textContent='Rejecting…';
+  const {data,error}=await client.rpc('hell_boost_review_campaign',{p_campaign_id:id,p_decision:'rejected',p_note:note});
+  if(error||!data?.ok){notice(error?.message||data?.message||'Could not reject campaign.','error');btn.disabled=false;btn.textContent='Reject';return;}
+  await loadOwnerCampaigns();await loadCampaigns();
+ }));
+}
+async function loadLivePlacements(){
+ const host=$('livePlacements');if(!host||!client)return;
+ if(!currentUser){host.innerHTML='<p class="sub">Sign in to discover promoted creators.</p>';return;}
+ const {data,error}=await client.rpc('hell_boost_live_placements',{p_limit:12});
+ if(error){host.innerHTML='<p class="sub">Promoted creator placements are temporarily unavailable.</p>';console.warn('Hell Boost placements failed',error);return;}
+ const rows=Array.isArray(data)?data:[];
+ if(!rows.length){host.innerHTML='<p class="sub">No paid placements are live yet. Approved campaigns will appear here for real Hell Camp members to discover.</p>';return;}
+ host.innerHTML=rows.map(x=>'<article class="discovery-card"><span class="eyebrow">SPONSORED · '+esc(x.platform)+'</span><b>'+esc(x.campaign_title)+'</b><p class="sub">'+esc(String(x.objective||'').replaceAll('_',' '))+'</p><p class="sub" style="margin-top:7px;overflow-wrap:anywhere">'+esc(x.campaign_note||'Discover this creator from the Hell Camp community.')+'</p><p class="sub" style="margin-top:7px">Views '+Number(x.impressions||0).toLocaleString()+' · Clicks '+Number(x.clicks||0).toLocaleString()+'</p><a href="'+esc(x.target_url)+'" data-placement-click="'+esc(x.campaign_id)+'" target="_blank" rel="noopener noreferrer">Discover ↗</a></article>').join('');
+ rows.forEach(x=>client.rpc('hell_boost_track_campaign_event',{p_campaign_id:x.campaign_id,p_event_type:'impression'}).then(({error:e})=>{if(e)console.warn('Placement impression not tracked',e);}));
+ host.querySelectorAll('[data-placement-click]').forEach(a=>a.addEventListener('click',()=>{client.rpc('hell_boost_track_campaign_event',{p_campaign_id:a.dataset.placementClick,p_event_type:'click'}).then(({error:e})=>{if(e)console.warn('Placement click not tracked',e);});}));
 }
 async function loadOwnerOrders(){
  const host=$('internalOrders');if(!host||!client)return;
@@ -327,8 +355,8 @@ async function init(){
  $('connectInstagramButton').addEventListener('click',async()=>{const b=$('connectInstagramButton'),n=$('instagramConnectNotice');if(!client||!currentUser){n.textContent='Sign in to Hell Camp first, then try again.';return;}b.disabled=true;b.textContent='Preparing secure connection…';n.textContent='Opening Meta authorization…';try{const {data,error}=await client.functions.invoke('instagram-oauth-start',{body:{}});if(error)throw error;if(!data?.url||!data.url.startsWith('https://www.instagram.com/oauth/authorize?'))throw new Error(data?.error||'Could not create the Instagram authorization link.');window.location.assign(data.url);}catch(e){n.textContent=e.message||'Could not start Instagram connection. Check Supabase function logs.';b.disabled=false;b.textContent='Connect Instagram securely';}});
   $('quantityInput').addEventListener('input',updateSummary);$('linkInput').addEventListener('input',()=>setBusy(busy));$('placeOrderButton').addEventListener('click',placeOrder);
  if(!client){notice('Supabase client did not load. Check your connection and refresh.','error');return;}
- await loadAccount();await loadInstagramConnectionStatus();await loadServices();await loadDeliveryStatus();await loadOrders();await loadDiscoveryProfiles();await loadCampaigns();renderOwnerTools();updateSummary();$('discoveryForm').addEventListener('submit',submitDiscovery);$('campaignForm').addEventListener('submit',submitCampaign);
- client.auth.onAuthStateChange(()=>{Promise.resolve().then(async()=>{await loadAccount();await loadInstagramConnectionStatus();await loadOrders();await loadCampaigns();setBusy(busy);});});
+ await loadAccount();await loadInstagramConnectionStatus();await loadServices();await loadDeliveryStatus();await loadOrders();await loadDiscoveryProfiles();await loadCampaigns();await loadLivePlacements();renderOwnerTools();updateSummary();$('discoveryForm').addEventListener('submit',submitDiscovery);$('campaignForm').addEventListener('submit',submitCampaign);
+ client.auth.onAuthStateChange(()=>{Promise.resolve().then(async()=>{await loadAccount();await loadInstagramConnectionStatus();await loadOrders();await loadCampaigns();await loadLivePlacements();setBusy(busy);});});
 }
 init();
 })();

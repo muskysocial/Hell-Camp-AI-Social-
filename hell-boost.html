@@ -88,9 +88,12 @@ function renderOptions(){
  });
 }
 function renderDescription(){
- if(!selectedService){$('description').innerHTML='<p><b>✨ Hell Boost live catalogue</b></p><p>'+(selectedCategory?'Selected category: '+esc(selectedCategory):'Choose a platform, category and service.')+'</p><p>Service rates, quantity limits and checkout eligibility are loaded from the Hell Camp database. Unconfigured services cannot charge coins or submit orders.</p>';return;}
- const ready=!!(selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0);
- $('description').innerHTML='<p><b>✨ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ Hell Boost queue is enabled. The server validates the price and balance before charging; delivery is handled by Hell Camp.':'⚠️ This service is visible, but checkout is not enabled because a positive coin rate and Hell Camp fulfilment setting are not configured. No coins will be deducted.')+'</p>';
+ const ready=!!(selectedService&&selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0);
+ const readiness=$('runnerReadiness'),runner=$('runnerStatus');
+ if(readiness){readiness.textContent=ready?'● Boost queue is enabled for this service':'● Boost is not ready to start';readiness.style.background=ready?'#dff8ed':'#fff5d9';readiness.style.color=ready?'#17684c':'#85621a';}
+ if(runner)runner.textContent=ready?'READY · This service can submit a paid job to Hell Camp’s fulfilment queue.':(selectedService?'NOT READY · The service has no active fulfilment route or coin rate. No coins can be charged.':'Choose a service to check whether it can run.');
+ if(!selectedService){$('description').innerHTML='<p><b>⚡ Hell Boost runner</b></p><p>'+(selectedCategory?'Selected category: '+esc(selectedCategory):'Choose a platform and boost type.')+'</p><p>Only services with a configured coin rate and fulfilment setting can start a job. A queue status does not mean followers have already been delivered.</p>';return;}
+ $('description').innerHTML='<p><b>⚡ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ This service can submit a job to the Hell Camp fulfilment queue. Follow its status below.':'⚠️ This service is listed, but it cannot start yet because its price and fulfilment setting are not configured. No coins will be deducted.')+'</p>';
 }
 async function loadAccount(){
  if(!client){$('accountStrip').innerHTML='<div><b>Connection unavailable</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Offline</b><small>Order status</small></div>';return;}

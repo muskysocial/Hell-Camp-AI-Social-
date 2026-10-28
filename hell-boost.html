@@ -67,7 +67,7 @@ function notice(message,type='info'){const d=$('description');d.innerHTML='<p><b
 function setBusy(v){busy=v;const b=$('placeOrderButton');if(b){b.disabled=v||!canOrder();b.textContent=v?'Starting…':'Start Boost';b.style.cursor=b.disabled?'not-allowed':'pointer';b.style.background=b.disabled?'#a4cbd1':'#087f98';}}
 function isOwner(){return String(currentUser?.email||'').toLowerCase()===OWNER;}
 function priceFor(s,q){const n=Number(s?.price_coins_per_1000);return Number.isFinite(n)&&n>0&&q>0?Math.ceil(n*q/1000):0;}
-function canOrder(){const q=Number($('quantityInput')?.value);return !!(currentUser&&selectedService&&selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0&&Number.isInteger(q)&&q>=Number(selectedService.min_quantity)&&q<=Number(selectedService.max_quantity)&&/^https?:\/\//i.test($('linkInput')?.value.trim()||''));}
+function canOrder(){const q=Number($('quantityInput')?.value);return !!(currentUser&&deliveryConnected&&selectedService&&selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0&&Number.isInteger(q)&&q>=Number(selectedService.min_quantity)&&q<=Number(selectedService.max_quantity)&&/^https?:\/\//i.test($('linkInput')?.value.trim()||''));}
 function updateSummary(){
  const q=Number($('quantityInput').value);$('quantitySummary').textContent=Number.isInteger(q)&&q>0?q.toLocaleString():'—';
  const min=selectedService?.min_quantity,max=selectedService?.max_quantity;

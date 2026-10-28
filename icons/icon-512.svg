@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Hell Camp flame logo">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8c21ff"/><stop offset=".52" stop-color="#c20bff"/><stop offset="1" stop-color="#f000e8"/></linearGradient>
+ <linearGradient id="fire" x1=".2" y1="0" x2=".8" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#fff7ff"/></linearGradient>
+ <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
+</defs>
+<rect width="512" height="512" rx="116" fill="url(#bg)"/>
+<path d="M255 61c-28 25-44 57-58 87-10-15-16-29-18-44-22 32-33 63-54 93-26 37-40 72-40 111 0 78 63 141 141 141s141-63 141-141c0-49-23-86-51-126-16-24-31-45-47-66-9 12-17 24-22 37-12-32-27-64-52-92z" fill="#fff" opacity=".23" filter="url(#glow)"/>
+<path d="M255 61c-28 25-44 57-58 87-10-15-16-29-18-44-22 32-33 63-54 93-26 37-40 72-40 111 0 78 63 141 141 141s141-63 141-141c0-49-23-86-51-126-16-24-31-45-47-66-9 12-17 24-22 37-12-32-27-64-52-92z" fill="url(#fire)"/>
+<path d="M147 306c29-20 82-31 137-31h29c9 0 14 6 14 15-1 44-37 82-81 82-40 0-76-24-96-57-5-8-9-6-3-9z" fill="url(#bg)"/>
+<path d="M232 354c13-17 31-28 52-33-10 19-27 33-48 38z" fill="#fff"/>
+</svg>

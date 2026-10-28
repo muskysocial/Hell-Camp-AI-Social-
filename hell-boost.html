@@ -253,10 +253,10 @@ async function loadInstagramConnectionStatus(){
   const {data,error}=await client.functions.invoke('instagram-connection-status',{body:{}});
   if(error)throw error;
   if(data?.connected){
-   title.textContent='Instagram connected';
-   status.textContent='Connected to @'+(data.username||'your Instagram account')+'. Hell Boost found the saved connection.';
-   button.textContent='Reconnect Instagram';
-   if(note)note.textContent='Your connection is saved securely on the server.';
+   title.textContent=data.api_verified?'Instagram connected and verified':'Instagram connection needs attention';
+   status.textContent=data.api_verified?'Verified: @'+(data.username||'your Instagram account')+' is saved and Instagram API access is responding.':'Saved account: @'+(data.username||'your Instagram account')+'. '+(data.message||'The saved token could not be verified with Instagram.');
+   button.textContent=data.api_verified?'Reconnect Instagram':'Reconnect Instagram to repair';
+   if(note)note.textContent=data.api_verified?'Connection and API check passed. Access token remains server-side.':'Connection record exists, but API verification failed. Reconnect only if prompted.';
   }else{
    title.textContent='Connect Instagram';
    status.textContent=data?.error||'No saved Instagram connection was found for this Hell Camp account.';

@@ -1,0 +1,97 @@
+name: Hell Camp Native Mobile Builds
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'design-tokens.css'
+      - 'manifest.json'
+      - 'icons/**'
+      - 'package.json'
+      - 'capacitor.config.ts'
+      - 'scripts/**'
+      - '.github/workflows/native-mobile-build.yml'
+  push:
+    branches:
+      - main
+      - feat/native-mobile-app-capacitor
+    paths:
+      - 'index.html'
+      - 'design-tokens.css'
+      - 'manifest.json'
+      - 'icons/**'
+      - 'package.json'
+      - 'capacitor.config.ts'
+      - 'scripts/**'
+      - '.github/workflows/native-mobile-build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Build Android debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install dependencies
+        run: npm install
+      - name: Prepare local app assets
+        run: npm run prepare:mobile
+      - name: Generate Android project
+        run: npx cap add android
+      - name: Sync native project
+        run: npx cap sync android
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - name: Upload installable debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hell-camp-android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-project:
+    name: Generate iOS project for Xcode
+    runs-on: macos-15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Prepare local app assets
+        run: npm run prepare:mobile
+      - name: Generate iOS project
+        run: npx cap add ios
+      - name: Sync iOS project
+        run: npx cap sync ios
+      - name: Package Xcode project source
+        run: zip -r hell-camp-ios-xcode-project.zip ios capacitor.config.ts package.json package-lock.json www
+      - name: Upload iOS Xcode project source
+        uses: actions/upload-artifact@v4
+        with:
+          name: hell-camp-ios-xcode-project
+          path: hell-camp-ios-xcode-project.zip
+          if-no-files-found: error
+          retention-days: 14

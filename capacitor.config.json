@@ -2,6 +2,18 @@
   "appId": "com.hellcamp.social",
   "appName": "Hell Camp",
   "webDir": "www",
+  "server": {
+    "url": "https://muskysocial.github.io/Hell-Camp-AI-Social-/",
+    "cleartext": false,
+    "allowNavigation": [
+      "muskysocial.github.io",
+      "lwgbfnyjuxixduuehckp.supabase.co",
+      "accounts.google.com",
+      "google.com",
+      "paystack.com",
+      "checkout.paystack.com"
+    ]
+  },
   "ios": {
     "contentInset": "automatic"
   },

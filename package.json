@@ -1,0 +1,22 @@
+{
+  "name": "hell-camp-ai-social",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hell Camp AI Social native Android and iOS app project",
+  "scripts": {
+    "prepare:mobile": "node scripts/prepare-mobile.mjs",
+    "cap:sync": "npm run prepare:mobile && cap sync",
+    "android:sync": "npm run cap:sync && cap sync android",
+    "ios:sync": "npm run cap:sync && cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/browser": "^7.0.2",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/ios": "^7.4.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

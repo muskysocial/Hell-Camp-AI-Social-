@@ -44,7 +44,7 @@ const SUPABASE_KEY='sb_publishable_JLA2mA41A-4WUQA024Q5bQ_AVvAb3JS';
 const STORAGE_KEY='hc-auth-lwgbfnyjuxixduuehckp-v4';
 const OWNER='kaptainarizonah@gmail.com';
 const client=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:STORAGE_KEY}}):null;
-let currentUser=null,profile=null,services=[],selectedPlatform='All services',selectedCategory='',selectedService=null,modalMode='category',busy=false;
+let currentUser=null,profile=null,services=[],selectedPlatform='All services',selectedCategory='',selectedService=null,modalMode='category',busy=false,deliveryConnected=false;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notice(message,type='info'){const d=$('description');d.innerHTML='<p><b>'+(type==='error'?'⚠️':type==='success'?'✓':'ℹ️')+' '+esc(message)+'</b></p>';d.style.borderColor=type==='error'?'#e6a3a3':type==='success'?'#8bd4ba':'#d9edf0';}
@@ -87,13 +87,18 @@ function renderOptions(){
   row.addEventListener('click',()=>{if(isCat){selectedCategory=name;selectedService=null;$('categoryValue').textContent=name;$('serviceValue').textContent='Choose a service';}else{selectedService=item;$('serviceValue').textContent=item.title;}closeModal();renderDescription();updateSummary();});$('modalOptions').appendChild(row);
  });
 }
+async function loadDeliveryStatus(){
+ deliveryConnected=false;
+ try{const {data,error}=await client.from('hell_boost_delivery_config').select('live_delivery_enabled,provider_name,provider_endpoint').eq('id',true).maybeSingle();deliveryConnected=!error&&!!data?.live_delivery_enabled&&!!String(data.provider_name||'').trim()&&!!String(data.provider_endpoint||'').trim();}catch{deliveryConnected=false;}
+ renderDescription();updateSummary();
+}
 function renderDescription(){
- const ready=!!(selectedService&&selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0);
+ const ready=!!(deliveryConnected&&selectedService&&selectedService.fulfillment_enabled&&Number(selectedService.price_coins_per_1000)>0);
  const readiness=$('runnerReadiness'),runner=$('runnerStatus');
  if(readiness){readiness.textContent=ready?'● Boost queue is enabled for this service':'● Boost is not ready to start';readiness.style.background=ready?'#dff8ed':'#fff5d9';readiness.style.color=ready?'#17684c':'#85621a';}
- if(runner)runner.textContent=ready?'READY · This service can submit a paid job to Hell Camp’s fulfilment queue.':(selectedService?'NOT READY · The service has no active fulfilment route or coin rate. No coins can be charged.':'Choose a service to check whether it can run.');
+ if(runner)runner.textContent=ready?'READY · A delivery route is configured for this service.':(!deliveryConnected?'NOT READY · Hell Boost has no verified delivery connection. No coins will be charged.':(selectedService?'NOT READY · The service has no active fulfilment route or coin rate. No coins can be charged.':'Choose a service to check whether it can run.'));
  if(!selectedService){$('description').innerHTML='<p><b>⚡ Hell Boost runner</b></p><p>'+(selectedCategory?'Selected category: '+esc(selectedCategory):'Choose a platform and boost type.')+'</p><p>Only services with a configured coin rate and fulfilment setting can start a job. A queue status does not mean followers have already been delivered.</p>';return;}
- $('description').innerHTML='<p><b>⚡ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ This service can submit a job to the Hell Camp fulfilment queue. Follow its status below.':'⚠️ This service is listed, but it cannot start yet because its price and fulfilment setting are not configured. No coins will be deducted.')+'</p>';
+ $('description').innerHTML='<p><b>⚡ '+esc(selectedService.title)+'</b></p><p>'+esc(selectedService.description||'No additional description supplied.')+'</p><p>'+(ready?'✓ This service can submit a job to the Hell Camp fulfilment queue. Follow its status below.':(!deliveryConnected?'⚠️ Delivery is not connected yet. The catalogue and coin estimates are ready, but paid orders remain safely blocked. No coins will be deducted.':'⚠️ This service is listed, but its price and fulfilment setting are not configured. No coins will be deducted.'))+'</p>';
 }
 async function loadAccount(){
  if(!client){$('accountStrip').innerHTML='<div><b>Connection unavailable</b><small>Account</small></div><div><b>—</b><small>Available balance</small></div><div><b>Offline</b><small>Order status</small></div>';return;}
@@ -167,7 +172,7 @@ async function placeOrder(){
 function renderOwnerTools(){
  if(!isOwner())return;
  const box=document.createElement('section');box.className='panel';
- box.innerHTML='<div class="eyebrow">HELL BOOST CONTROL ROOM</div><h2 style="margin:4px 0 6px;font-size:18px">Internal services & order queue</h2><p class="sub">Set coin rates and enable only services you can actually fulfil. Orders are processed by Hell Camp; no external supplier is called.</p><div id="internalServices" style="margin-top:12px"><p class="sub">Loading service controls…</p></div><div style="height:1px;background:#dcebef;margin:18px 0"></div><h3 style="font-size:15px;margin:0 0 8px">Incoming orders</h3><div id="internalOrders"><p class="sub">Loading queue…</p></div>';
+ box.innerHTML='<div class="eyebrow">HELL BOOST CONTROL ROOM</div><h2 style="margin:4px 0 6px;font-size:18px">Internal services & order queue</h2><p class="sub">Set coin rates here. Checkout remains locked until a verified delivery connection is configured; do not enable services you cannot fulfil.</p><div id="internalServices" style="margin-top:12px"><p class="sub">Loading service controls…</p></div><div style="height:1px;background:#dcebef;margin:18px 0"></div><h3 style="font-size:15px;margin:0 0 8px">Incoming orders</h3><div id="internalOrders"><p class="sub">Loading queue…</p></div>';
  $('orderHistoryPanel').before(box);
  loadOwnerServices();loadOwnerOrders();
 }
@@ -276,7 +281,7 @@ async function init(){
  $('connectInstagramButton').addEventListener('click',async()=>{const b=$('connectInstagramButton'),n=$('instagramConnectNotice');if(!client||!currentUser){n.textContent='Sign in to Hell Camp first, then try again.';return;}b.disabled=true;b.textContent='Preparing secure connection…';n.textContent='Opening Meta authorization…';try{const {data,error}=await client.functions.invoke('instagram-oauth-start',{body:{}});if(error)throw error;if(!data?.url||!data.url.startsWith('https://www.instagram.com/oauth/authorize?'))throw new Error(data?.error||'Could not create the Instagram authorization link.');window.location.assign(data.url);}catch(e){n.textContent=e.message||'Could not start Instagram connection. Check Supabase function logs.';b.disabled=false;b.textContent='Connect Instagram securely';}});
   $('quantityInput').addEventListener('input',updateSummary);$('linkInput').addEventListener('input',()=>setBusy(busy));$('placeOrderButton').addEventListener('click',placeOrder);
  if(!client){notice('Supabase client did not load. Check your connection and refresh.','error');return;}
- await loadAccount();await loadInstagramConnectionStatus();await loadServices();await loadOrders();await loadDiscoveryProfiles();renderOwnerTools();updateSummary();$('discoveryForm').addEventListener('submit',submitDiscovery);
+ await loadAccount();await loadInstagramConnectionStatus();await loadServices();await loadDeliveryStatus();await loadOrders();await loadDiscoveryProfiles();renderOwnerTools();updateSummary();$('discoveryForm').addEventListener('submit',submitDiscovery);
  client.auth.onAuthStateChange(()=>{Promise.resolve().then(async()=>{await loadAccount();await loadInstagramConnectionStatus();await loadOrders();setBusy(busy);});});
 }
 init();

@@ -210,9 +210,9 @@ async function placeOrder(){
 function renderOwnerTools(){
  if(!isOwner())return;
  const box=document.createElement('section');box.className='panel';
- box.innerHTML='<div class="eyebrow">HELL BOOST CONTROL ROOM</div><h2 style="margin:4px 0 6px;font-size:18px">Internal services & order queue</h2><p class="sub">Set coin rates here. Checkout remains locked until a verified delivery connection is configured; do not enable services you cannot fulfil.</p><div id="internalServices" style="margin-top:12px"><p class="sub">Loading service controls…</p></div><div style="height:1px;background:#dcebef;margin:18px 0"></div><h3 style="font-size:15px;margin:0 0 8px">Incoming orders</h3><div id="internalOrders"><p class="sub">Loading queue…</p></div>';
+ box.innerHTML='<div class="eyebrow">HELL BOOST CONTROL ROOM</div><h2 style="margin:4px 0 6px;font-size:18px">Internal services & order queue</h2><p class="sub">Set coin rates here. Checkout remains locked until a verified delivery connection is configured; do not enable services you cannot fulfil.</p><div id="internalServices" style="margin-top:12px"><p class="sub">Loading service controls…</p></div><div style="height:1px;background:#dcebef;margin:18px 0"></div><h3 style="font-size:15px;margin:0 0 8px">Real-audience campaign requests</h3><p class="sub">Requests are not paid or published until a real placement route exists.</p><div id="internalCampaigns" style="margin-top:10px"><p class="sub">Loading campaign requests…</p></div><div style="height:1px;background:#dcebef;margin:18px 0"></div><h3 style="font-size:15px;margin:0 0 8px">Incoming orders</h3><div id="internalOrders"><p class="sub">Loading queue…</p></div>';
  $('orderHistoryPanel').before(box);
- loadOwnerServices();loadOwnerOrders();
+ loadOwnerServices();loadOwnerOrders();loadOwnerCampaigns();
 }
 async function loadOwnerServices(){
  const host=$('internalServices');if(!host||!client)return;
@@ -233,6 +233,14 @@ async function loadOwnerServices(){
   if(error){notice('Could not save service: '+error.message,'error');b.disabled=false;b.textContent='Save';return;}
   notice('Hell Boost service settings saved.','success');await loadServices();await loadOwnerServices();updateSummary();
  }));
+}
+async function loadOwnerCampaigns(){
+ const host=$('internalCampaigns');if(!host||!client)return;
+ const {data,error}=await client.rpc('hell_boost_admin_campaign_queue');
+ if(error){host.textContent='Campaign queue unavailable: '+error.message;return;}
+ const rows=Array.isArray(data)?data:[];
+ if(!rows.length){host.innerHTML='<p class="sub">No campaign requests yet.</p>';return;}
+ host.innerHTML=rows.map(x=>'<article style="padding:11px 0;border-bottom:1px solid #dcebef"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>'+esc(x.title)+'</b><span class="pending">'+esc(x.status.replaceAll('_',' '))+'</span></div><p class="sub">'+esc(x.platform)+' · '+esc(x.objective.replaceAll('_',' '))+' · proposed '+Number(x.budget_coins).toLocaleString()+' coins</p><p class="sub" style="overflow-wrap:anywhere"><a href="'+esc(x.target_url)+'" target="_blank" rel="noopener noreferrer">Open campaign link ↗</a></p><p class="sub">'+esc(x.note||'No extra notes')+' · submitted '+new Date(x.created_at).toLocaleString()+'</p></article>').join('');
 }
 async function loadOwnerOrders(){
  const host=$('internalOrders');if(!host||!client)return;

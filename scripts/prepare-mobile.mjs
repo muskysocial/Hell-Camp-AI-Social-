@@ -10,6 +10,7 @@ const webDir = path.join(root, 'www');
 // into the app's publicly readable WebView asset directory.
 const allowedRootFiles = new Set([
   'index.html',
+  'hell-visual-editor.html',
   'manifest.json',
   'design-tokens.css',
   'hell-visual-runtime.js',

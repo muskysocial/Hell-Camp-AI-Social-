@@ -2713,11 +2713,11 @@ body { touch-action: pan-y; }
  .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:40px;font-size:9px}
 }
 @media (orientation:portrait) and (max-width:760px),(max-width:560px){
- .hc-edit-workspace{grid-template-columns:minmax(0,1fr);gap:10px}
- .hc-edit-tool-dock{position:relative;top:auto;padding:10px}
- .hc-edit-tool-dock .hc-edit-toolbar-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
- .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:44px;font-size:9px;padding:5px 3px}
- .hc-edit-workspace .hc-edit-canvas-wrap{max-height:62vh}
+ .hc-edit-workspace{grid-template-columns:minmax(0,1fr) minmax(132px,42%);gap:7px}
+ .hc-edit-tool-dock{position:relative;top:auto;padding:6px}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:38px;font-size:8px;padding:4px 2px}
+ .hc-edit-workspace .hc-edit-canvas-wrap{max-height:68vh}
 }
 </style>
 <script id="hc-hell-edit-responsive-workspace-script">
@@ -2744,6 +2744,9 @@ body { touch-action: pan-y; }
  function setup(){
   var canvas=document.getElementById('hcHellEditPreviewCanvas');
   if(!canvas)return;
+  var room=canvas.closest('.hc-edit-room');
+  var roomTitle=room&&room.querySelector('.hc-edit-room-head h1');
+  if(!roomTitle||roomTitle.textContent.trim().toUpperCase()!=='ALL HELL EDIT POST')return;
   var panel=canvas.closest('.hc-edit-preview-panel');
   var wrap=canvas.closest('.hc-edit-canvas-wrap');
   var actions=panel&&panel.querySelector('.hc-edit-toolbar-actions');

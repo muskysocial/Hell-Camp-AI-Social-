@@ -2674,15 +2674,15 @@ html body .main{padding-bottom:calc(112px + env(safe-area-inset-bottom))!importa
 })();
 </script>
 
-<
 <style id="hell-camp-native-scroll-boundaries">
-/* Keep scrollable pages at their real limits: no rubber-band overscroll or pull-to-refresh bounce. */
-html, body { overscroll-behavior-x: none !important; overscroll-behavior-y: none !important; }
+/* Keep ordinary page scrolling and Android browser pull-to-refresh available. */
+html, body { overscroll-behavior-x: none !important; overscroll-behavior-y: auto !important; }
 body { touch-action: pan-y; }
-/* Nested feeds, drawers, and panels may scroll internally but cannot drag the page behind them. */
-.menu-drawer, .chatlog, .stories, .tabs, [data-scrollable="true"] { overscroll-behavior: contain; }
+/* Nested panels scroll independently without blocking the main page refresh gesture. */
+.menu-drawer, .chatlog, .stories, .tabs, [data-scrollable="true"] { overscroll-behavior-y: contain; }
 </style>
-/body></html>
+</body>
+</html>
 
 
 

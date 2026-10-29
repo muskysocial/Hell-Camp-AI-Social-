@@ -2712,13 +2712,20 @@ body { touch-action: pan-y; }
  .hc-edit-tool-dock .hc-edit-toolbar-actions{gap:4px}
  .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:40px;font-size:9px}
 }
-@media (orientation:portrait) and (max-width:760px),(max-width:560px){
- .hc-edit-workspace{grid-template-columns:minmax(0,1fr) minmax(132px,42%);gap:7px}
- .hc-edit-tool-dock{position:relative;top:auto;padding:6px}
+@media (max-width:760px){
+ .hc-edit-workspace{grid-template-columns:minmax(0,1fr) minmax(118px,40%);gap:6px}
+ .hc-edit-tool-dock{position:relative;top:auto;padding:5px}
  .hc-edit-tool-dock .hc-edit-toolbar-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
- .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:38px;font-size:8px;padding:4px 2px}
- .hc-edit-workspace .hc-edit-canvas-wrap{max-height:68vh}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:36px;font-size:8px;padding:3px 1px}
+ .hc-edit-workspace .hc-edit-canvas-wrap{max-height:66vh}
 }
+.hc-edit-workspace.hc-edit-is-landscape{grid-template-columns:minmax(0,1fr) minmax(180px,34%);gap:8px}
+.hc-edit-workspace.hc-edit-is-landscape .hc-edit-canvas-wrap{max-height:calc(100dvh - 160px);min-height:160px}
+.hc-edit-workspace.hc-edit-is-landscape .hc-edit-tool-dock{position:relative;top:auto;padding:7px}
+.hc-edit-workspace.hc-edit-is-landscape .hc-edit-toolbar-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.hc-edit-workspace.hc-edit-is-landscape .hc-edit-toolbar-actions .btn{min-height:38px;font-size:8px;padding:3px 2px}
+.hc-edit-workspace.hc-edit-is-portrait{grid-template-columns:minmax(0,1fr) minmax(118px,40%);gap:6px}
+.hc-edit-workspace.hc-edit-is-portrait .hc-edit-tool-dock{position:relative;top:auto;padding:5px}
 </style>
 <script id="hc-hell-edit-responsive-workspace-script">
 (function(){
@@ -2727,8 +2734,14 @@ body { touch-action: pan-y; }
  function applyZoom(){
   var canvas=document.getElementById('hcHellEditPreviewCanvas');
   var wrap=canvas&&canvas.closest('.hc-edit-canvas-wrap');
+  var workspace=canvas&&canvas.closest('.hc-edit-workspace');
+  if(workspace){
+   var landscape=window.innerWidth>window.innerHeight;
+   workspace.classList.toggle('hc-edit-is-landscape',landscape);
+   workspace.classList.toggle('hc-edit-is-portrait',!landscape);
+  }
   if(!canvas||!wrap)return;
-  var available=Math.max(160,Math.min(600,(wrap.clientWidth||600)-24));
+  var available=Math.max(120,Math.min(600,(wrap.clientWidth||600)-12));
   canvas.style.width=Math.round(available*zoom)+'px';
   canvas.style.height='auto';
   canvas.dataset.hcZoom=String(zoom);
@@ -2780,8 +2793,8 @@ body { touch-action: pan-y; }
  else run();
  observer=new MutationObserver(function(){setup();});
  observer.observe(document.documentElement,{childList:true,subtree:true});
- window.addEventListener('resize',applyZoom,{passive:true});
- window.addEventListener('orientationchange',function(){window.setTimeout(applyZoom,120);},{passive:true});
+ window.addEventListener('resize',function(){window.requestAnimationFrame(applyZoom);},{passive:true});
+ window.addEventListener('orientationchange',function(){window.setTimeout(applyZoom,80);window.setTimeout(applyZoom,300);},{passive:true});
 })();
 </script>
 

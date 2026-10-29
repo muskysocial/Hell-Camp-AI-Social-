@@ -144,7 +144,7 @@ window.openHellCampCyberLab=function(){if(!signed()){if(window.showAuthModal)win
       image.src = resultUrl;
     } catch (error) {
       console.error('Hell Camp Head Swap backend:', error);
-      status.textContent = (error && error.message ? error.message : 'Head Swap failed. Please try again shortly.').replace(/https?:\\/\\/\\S+/g, '').slice(0, 240);
+      status.textContent = (error && error.message ? error.message : 'Head Swap failed. Please try again shortly.').slice(0, 240);
     } finally {
       button.disabled = false;
       button.textContent = 'Generate head swap';

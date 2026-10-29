@@ -1349,10 +1349,10 @@ function openVideoFaceSwap(){
         var check=await supabaseClient.functions.invoke('magic-hour-face-swap',{body:{action:'status',project_id:projectId}});
         if(check.error)throw new Error(check.error.message||'Could not check face-swap status.');
         if(check.data&&check.data.error)throw new Error(check.data.error);
-        var job=check.data||{};
-        if(job.status==='complete'){finished=job;break}
-        if(job.status==='error'||job.status==='canceled')throw new Error((job.error&&job.error.message)||'Magic Hour could not process this video. Try a clearer face photo or shorter clip.');
-        setStatus('Video status: '+(job.status||'processing')+'. Checking again…');
+        var job=check.data||{},jobStatus=String(job.status||'processing').toLowerCase();
+        if(['complete','completed','success','succeeded'].includes(jobStatus)){finished=job;break}
+        if(['error','failed','canceled','cancelled'].includes(jobStatus))throw new Error((job.error&&job.error.message)||job.message||'Magic Hour could not process this video. Try a clearer face photo or shorter clip.');
+        setStatus('Video status: '+jobStatus+'. Checking again…');
       }
       if(!finished)throw new Error('This video is taking longer than expected. Your job may still be processing. Close this window and try again later, or reopen Video Face Swap to check status.');
       var downloads=finished.downloads||[],output=downloads[0]&&downloads[0].url;

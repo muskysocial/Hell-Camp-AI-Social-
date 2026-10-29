@@ -46,3 +46,108 @@ function save(){var v=(S.out||"").trim();if(!v){el("hcail-status").textContent="
 init();
 window.openHellCampCyberLab=function(){if(!signed()){if(window.showAuthModal)window.showAuthModal();else alert("Please sign in to use Cyber Lab.");return;}open();room("cyber");};
 })();
+
+// Hell Camp Head Swap: keep generation inside the app and route requests through Supabase.
+(function installHellCampHeadSwapProxy(){
+  if (window.__hcHeadSwapProxyInstalled) return;
+  window.__hcHeadSwapProxyInstalled = true;
+
+  function cleanPublicSpaceNote(root) {
+    (root || document).querySelectorAll('#hcHuggingFaceHeadSwapRoom .note').forEach(function(note) {
+      if (/public hugging face space/i.test(note.textContent || '')) {
+        note.textContent = 'Your photos are processed through Hell Camp. Generation time depends on service availability. Upload only photos you have permission to use.';
+      }
+    });
+  }
+  const observer = new MutationObserver(function() { cleanPublicSpaceNote(document); });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  cleanPublicSpaceNote(document);
+
+  document.addEventListener('click', async function(event) {
+    const button = event.target && event.target.closest ? event.target.closest('#hcHfSwapGenerate') : null;
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const modal = document.getElementById('hcHuggingFaceHeadSwapRoom');
+    if (!modal) return;
+    const $ = function(selector) { return modal.querySelector(selector); };
+    const faceInput = $('#hcHfFaceFile');
+    const targetInput = $('#hcHfTargetFile');
+    const status = $('#hcHfSwapStatus');
+    const preview = $('#hcHfSwapPreview');
+    const range = $('#hcHfSwapRange');
+    const download = $('#hcHfSwapDownload');
+    const face = faceInput && faceInput.files && faceInput.files[0];
+    const target = targetInput && targetInput.files && targetInput.files[0];
+
+    if (!face || !target) {
+      status.textContent = 'Please upload both images first.';
+      return;
+    }
+    if (!window.supabaseClient || !window.supabaseClient.functions) {
+      status.textContent = 'Head Swap is temporarily unavailable. Please try again shortly.';
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Generating…';
+    status.textContent = 'Uploading your photos securely. Generation may take a few minutes.';
+    download.style.display = 'none';
+
+    try {
+      const form = new FormData();
+      form.append('reference_face', face, face.name || 'reference.jpg');
+      form.append('target_image', target, target.name || 'target.jpg');
+      const response = await window.supabaseClient.functions.invoke('hellcamp-headswap', { body: form });
+      let payload = response && response.data;
+      if (response && response.error) {
+        let detail = payload && payload.error;
+        try {
+          if (!detail && response.error.context && typeof response.error.context.json === 'function') {
+            const body = await response.error.context.json();
+            detail = body && body.error;
+          }
+        } catch (_) {}
+        throw new Error(detail || 'The generation service could not be reached. Please retry.');
+      }
+      if (!payload || !payload.ok || !payload.image_url) {
+        throw new Error(payload && payload.error || 'No generated image was returned. Please retry.');
+      }
+
+      const resultUrl = payload.image_url;
+      const image = new Image();
+      image.onload = function() {
+        preview.innerHTML = '';
+        const after = document.createElement('img');
+        after.src = resultUrl;
+        after.alt = 'Generated head swap';
+        preview.appendChild(after);
+
+        const before = document.createElement('div');
+        before.className = 'before';
+        const original = document.createElement('img');
+        original.src = URL.createObjectURL(target);
+        original.alt = 'Original target photo';
+        before.appendChild(original);
+        preview.appendChild(before);
+        before.style.width = (range ? range.value : 50) + '%';
+        download.href = resultUrl;
+        download.download = 'hell-camp-head-swap.png';
+        download.style.display = 'block';
+        status.textContent = 'Result ready. Move the slider to compare before and after.';
+      };
+      image.onerror = function() {
+        status.textContent = 'The result was created, but the preview could not be displayed. Please try again.';
+      };
+      image.src = resultUrl;
+    } catch (error) {
+      console.error('Hell Camp Head Swap backend:', error);
+      status.textContent = (error && error.message ? error.message : 'Head Swap failed. Please try again shortly.').replace(/https?:\\/\\/\\S+/g, '').slice(0, 240);
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Generate head swap';
+    }
+  }, true);
+})();

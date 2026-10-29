@@ -2693,7 +2693,96 @@ body { touch-action: pan-y; }
 /* Nested panels scroll independently without blocking the main page refresh gesture. */
 .menu-drawer, .chatlog, .stories, .tabs, [data-scrollable="true"] { overscroll-behavior-y: contain; }
 </style>
-</body>
+<
+<style id="hc-hell-edit-responsive-workspace">
+/* HELL EDITS: keep the artwork on the left and a compact 4-column tool dock on the right. */
+.hc-edit-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,290px);gap:12px;align-items:start;min-width:0}
+.hc-edit-workspace .hc-edit-canvas-wrap{min-width:0;max-width:100%;max-height:min(72vh,760px);display:block;overflow:auto;overscroll-behavior:contain}
+.hc-edit-workspace .hc-edit-canvas-wrap canvas{max-width:none!important;max-height:none!important;height:auto!important;margin:0 auto;transform:none!important}
+.hc-edit-tool-dock{min-width:0;position:sticky;top:10px;padding:12px;border:1px solid #c7d2fe;border-radius:16px;background:linear-gradient(145deg,#fff,#eff6ff,#f5f3ff);box-shadow:0 8px 22px #4f46e512}
+.hc-edit-tool-dock-title{margin:0 0 10px;color:#4338ca;font-size:12px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.hc-edit-tool-dock .hc-edit-toolbar-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:none;overflow:visible;white-space:normal;padding:0}
+.hc-edit-tool-dock .hc-edit-toolbar-actions .btn{display:flex;align-items:center;justify-content:center;min-width:0;width:100%;min-height:48px;padding:6px 4px;font-size:10px;line-height:1.2;white-space:normal;text-align:center;overflow-wrap:anywhere;touch-action:manipulation}
+.hc-edit-tool-dock .hc-edit-toolbar-actions .hc-edit-zoom-button{font-size:13px;font-weight:950;background:#ede9fe!important;color:#4c1d95!important;border:1px solid #c4b5fd!important}
+.hc-edit-workspace+.hc-edit-help{margin-top:10px}
+@media (orientation:landscape) and (max-height:600px){
+ .hc-edit-workspace{grid-template-columns:minmax(0,1fr) minmax(205px,250px);gap:9px}
+ .hc-edit-workspace .hc-edit-canvas-wrap{max-height:calc(100dvh - 190px);min-height:180px}
+ .hc-edit-tool-dock{padding:8px;top:4px}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions{gap:4px}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:40px;font-size:9px}
+}
+@media (orientation:portrait) and (max-width:760px),(max-width:560px){
+ .hc-edit-workspace{grid-template-columns:minmax(0,1fr);gap:10px}
+ .hc-edit-tool-dock{position:relative;top:auto;padding:10px}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ .hc-edit-tool-dock .hc-edit-toolbar-actions .btn{min-height:44px;font-size:9px;padding:5px 3px}
+ .hc-edit-workspace .hc-edit-canvas-wrap{max-height:62vh}
+}
+</style>
+<script id="hc-hell-edit-responsive-workspace-script">
+(function(){
+ 'use strict';
+ var zoom=1, step=0.2, minZoom=0.4, maxZoom=3, observer=null;
+ function applyZoom(){
+  var canvas=document.getElementById('hcHellEditPreviewCanvas');
+  var wrap=canvas&&canvas.closest('.hc-edit-canvas-wrap');
+  if(!canvas||!wrap)return;
+  var available=Math.max(160,Math.min(600,(wrap.clientWidth||600)-24));
+  canvas.style.width=Math.round(available*zoom)+'px';
+  canvas.style.height='auto';
+  canvas.dataset.hcZoom=String(zoom);
+  var label=document.getElementById('hcHellEditZoomLevel');
+  if(label)label.textContent=Math.round(zoom*100)+'%';
+ }
+ function addZoomButton(actions,label,action,title){
+  var b=document.createElement('button');
+  b.type='button';b.className='btn hc-edit-zoom-button';b.dataset.hcHellEditZoom=action;
+  b.textContent=label;b.setAttribute('aria-label',title);b.title=title;
+  actions.appendChild(b);
+ }
+ function setup(){
+  var canvas=document.getElementById('hcHellEditPreviewCanvas');
+  if(!canvas)return;
+  var panel=canvas.closest('.hc-edit-preview-panel');
+  var wrap=canvas.closest('.hc-edit-canvas-wrap');
+  var actions=panel&&panel.querySelector('.hc-edit-toolbar-actions');
+  if(!panel||!wrap||!actions)return;
+  if(!panel.querySelector('.hc-edit-workspace')){
+   var workspace=document.createElement('div');workspace.className='hc-edit-workspace';workspace.id='hc-hell-edit-responsive-workspace';
+   var dock=document.createElement('aside');dock.className='hc-edit-tool-dock';dock.setAttribute('aria-label','HELL EDITS editor tools');
+   var heading=document.createElement('h3');heading.className='hc-edit-tool-dock-title';heading.textContent='Editor tools';
+   dock.appendChild(heading);
+   var toolbar=panel.querySelector('.hc-edit-preview-toolbar');
+   if(toolbar)toolbar.insertAdjacentElement('afterend',workspace);else wrap.insertAdjacentElement('beforebegin',workspace);
+   workspace.appendChild(wrap);workspace.appendChild(dock);dock.appendChild(actions);
+   addZoomButton(actions,'＋ Zoom in','in','Zoom in on the editing workspace');
+   addZoomButton(actions,'− Zoom out','out','Zoom out of the editing workspace');
+   addZoomButton(actions,'↺ Reset view','reset','Return to normal canvas view');
+   actions.addEventListener('click',function(e){
+    var b=e.target.closest('[data-hc-hell-edit-zoom]');
+    if(!b)return;
+    e.preventDefault();e.stopPropagation();
+    var action=b.dataset.hcHellEditZoom;
+    if(action==='in')zoom=Math.min(maxZoom,Math.round((zoom+step)*100)/100);
+    else if(action==='out')zoom=Math.max(minZoom,Math.round((zoom-step)*100)/100);
+    else zoom=1;
+    applyZoom();
+   });
+  }
+  applyZoom();
+ }
+ function run(){setup();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);
+ else run();
+ observer=new MutationObserver(function(){setup();});
+ observer.observe(document.documentElement,{childList:true,subtree:true});
+ window.addEventListener('resize',applyZoom,{passive:true});
+ window.addEventListener('orientationchange',function(){window.setTimeout(applyZoom,120);},{passive:true});
+})();
+</script>
+
+/body>
 </html>
 
 

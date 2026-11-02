@@ -516,7 +516,7 @@ Deno.serve(async (req: Request) => {
       }));
 
       const explicitMemoryRequest = /\b(remember|save to memory|store in memory|keep in mind for future|remember this for next time)\b/i.test(message);
-      const explicitDraftRequest = /\b(save|store|keep|put)\b.{0,70}\b(draft|draft library|my drafts)\b/i.test(message);
+      const explicitDraftRequest = /\b(save|store|keep|put)\b.{0,70}\b(draft|draft library|my drafts)\b/i.test(message) || /\b(save|store|keep)\s+(this|it|that)\b/i.test(message);
       const explicitWorkflowRequest = /\b(create|save|build|design|make|automate)\b.{0,70}\b(workflow|automation|task plan|automated workflow)\b/i.test(message) || /\bautomate this\b/i.test(message);
 
       const toolSpecs = [
@@ -639,6 +639,7 @@ Deno.serve(async (req: Request) => {
           messages.push({
             role: "tool",
             tool_call_id: String(call.id || ""),
+            name: toolName,
             content: JSON.stringify(result)
           });
         }
@@ -657,7 +658,7 @@ Deno.serve(async (req: Request) => {
       ]);
       if (savedMessages.error) throw new Error("Terminator AI could not safely save conversation history: " + savedMessages.error.message);
       const updatedConversation = await admin.from("hellcamp_ai_conversations")
-        .update({ updated_at: now, last_message_at: now, metadata: { agent: "terminator_ai" } })
+        .update({ updated_at: now, last_message_at: now })
         .eq("id", conversationId).eq("user_id", userId);
       if (updatedConversation.error) throw updatedConversation.error;
 

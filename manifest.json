@@ -11,8 +11,8 @@
     "minimal-ui"
   ],
   "orientation": "portrait",
-  "background_color": "#080412",
-  "theme_color": "#a20dff",
+  "background_color": "#f0f2f5",
+  "theme_color": "#087f8c",
   "prefer_related_applications": false,
   "categories": [
     "social",

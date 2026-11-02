@@ -424,6 +424,7 @@ body:has(.hc-home-feed) .mobile button.active,body:has(.hc-home-feed) .mobile bu
    var b=document.createElement('button');b.type='button';b.dataset.page=item[0];b.innerHTML='<span aria-hidden="true">'+item[1]+'</span> '+item[2];tabs.appendChild(b);
   });
   var search=top.querySelector('#search');if(search)search.insertAdjacentElement('afterend',tabs);else top.appendChild(tabs);
+  document.addEventListener('click',function(ev){var target=ev.target.closest('[data-page]');if(!target)return;var page=target.getAttribute('data-page');tabs.querySelectorAll('button[data-page]').forEach(function(btn){btn.classList.toggle('active',btn.getAttribute('data-page')===page)});});
   var rail=document.createElement('aside');rail.className='hc-desktop-right-rail';rail.setAttribute('aria-label','Hell Camp shortcuts');
   rail.innerHTML='<section class="hc-right-rail-card"><h3 class="hc-right-rail-title">Explore Hell Camp</h3>'+
    '<button class="hc-right-rail-link" data-page="Discover"><span class="hc-right-rail-icon">✦</span>Discover people and posts</button>'+

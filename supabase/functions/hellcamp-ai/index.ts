@@ -122,19 +122,30 @@ Deno.serve(async (req: Request) => {
       if (runError) throw runError;
       if (!run || run.tool_name !== "Terminator AI Post Approval") return fail("Approval request not found.", 404, origin);
       if (run.status !== "pending") return fail("This approval request has already been processed.", 409, origin);
-      const summary = run.input_summary || {};
+      const { data: claimed, error: claimError } = await admin.from("hellcamp_ai_tool_runs")
+        .update({ status: "processing" }).eq("id", runId).eq("user_id", userId).eq("status", "pending")
+        .select("id,input_summary").maybeSingle();
+      if (claimError) throw claimError;
+      if (!claimed) return fail("This approval is already being processed or has expired.", 409, origin);
+      const summary = claimed.input_summary || {};
       const content = typeof summary.content === "string" ? summary.content.trim() : "";
-      if (!content || content.length > 10000) return fail("The prepared post is invalid.", 400, origin);
+      if (!content || content.length > 10000) {
+        await admin.from("hellcamp_ai_tool_runs").update({ status: "failed", error_code: "invalid_post" }).eq("id", runId).eq("user_id", userId);
+        return fail("The prepared post is invalid.", 400, origin);
+      }
       const { data: profile, error: profileError } = await admin.from("profiles")
         .select("display_name").eq("id", userId).maybeSingle();
       if (profileError) throw profileError;
       const { data: post, error: postError } = await admin.from("posts")
         .insert({ user_id: userId, author_name: profile?.display_name || "Terminator AI member", content, media_urls: [], is_ad: false, ad_status: "approved" })
         .select("id,content,created_at").single();
-      if (postError) throw postError;
+      if (postError) {
+        await admin.from("hellcamp_ai_tool_runs").update({ status: "failed", error_code: "post_insert_failed" }).eq("id", runId).eq("user_id", userId);
+        throw postError;
+      }
       const { error: updateError } = await admin.from("hellcamp_ai_tool_runs")
         .update({ status: "succeeded", result_summary: { post_id: post.id, approved_by_member: true }, completed_at: new Date().toISOString() })
-        .eq("id", runId).eq("user_id", userId).eq("status", "pending");
+        .eq("id", runId).eq("user_id", userId).eq("status", "processing");
       if (updateError) throw updateError;
       return response({ approved: true, post, message: "Your post was published after your approval." }, 200, origin);
     }

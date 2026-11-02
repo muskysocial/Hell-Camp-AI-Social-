@@ -132,37 +132,73 @@ Deno.serve(async (req: Request) => {
     if (action === "approve_agent_post") {
       const runId = String(body.run_id || "");
       if (!/^[0-9a-f-]{36}$/i.test(runId)) return fail("A valid approval ID is required.", 400, origin);
+      const supported = ["Terminator AI Post Approval", "Terminator AI Profile Update", "Terminator AI Post Edit", "Terminator AI Post Delete"];
       const { data: run, error: runError } = await admin.from("hellcamp_ai_tool_runs")
         .select("id,user_id,tool_name,status,input_summary").eq("id", runId).eq("user_id", userId).maybeSingle();
       if (runError) throw runError;
-      if (!run || run.tool_name !== "Terminator AI Post Approval") return fail("Approval request not found.", 404, origin);
+      if (!run || !supported.includes(run.tool_name)) return fail("Approval request not found.", 404, origin);
       if (run.status !== "pending") return fail("This approval request has already been processed.", 409, origin);
       const { data: claimed, error: claimError } = await admin.from("hellcamp_ai_tool_runs")
         .update({ status: "processing" }).eq("id", runId).eq("user_id", userId).eq("status", "pending")
-        .select("id,input_summary").maybeSingle();
+        .select("id,input_summary,tool_name").maybeSingle();
       if (claimError) throw claimError;
       if (!claimed) return fail("This approval is already being processed or has expired.", 409, origin);
       const summary = claimed.input_summary || {};
-      const content = typeof summary.content === "string" ? summary.content.trim() : "";
-      if (!content || content.length > 10000) {
-        await admin.from("hellcamp_ai_tool_runs").update({ status: "failed", error_code: "invalid_post" }).eq("id", runId).eq("user_id", userId);
-        return fail("The prepared post is invalid.", 400, origin);
+      let resultData: any = null;
+      let successMessage = "";
+      let operationError: any = null;
+
+      if (claimed.tool_name === "Terminator AI Post Approval") {
+        const content = typeof summary.content === "string" ? summary.content.trim() : "";
+        if (!content || content.length > 10000) operationError = new Error("The prepared post is invalid.");
+        else {
+          const { data: profile, error: profileError } = await admin.from("profiles").select("display_name").eq("id", userId).maybeSingle();
+          if (profileError) operationError = profileError;
+          else {
+            const inserted = await admin.from("posts").insert({ user_id: userId, author_name: profile?.display_name || "Termin ator AI member", content, media_urls: [], is_ad: false, ad_status: "approved" }).select("id,content,created_at").single();
+            resultData = inserted.data; operationError = inserted.error; successMessage = "Your post was published after your approval.";
+          }
+        }
+      } else if (claimed.tool_name === "Terminator AI Profile Update") {
+        const allowed = ["display_name", "bio", "location", "country"];
+        const changes: Record<string, string> = {};
+        if (summary.changes && typeof summary.changes === "object" && !Array.isArray(summary.changes)) {
+          for (const key of allowed) if (typeof summary.changes[key] === "string") changes[key] = String(summary.changes[key]).trim().slice(0, key === "bio" ? 2000 : 120);
+        }
+        if (!Object.keys(changes).length) operationError = new Error("No valid profile changes were supplied.");
+        else {
+          const updated = await admin.from("profiles").update(changes).eq("id", userId).select("id,display_name,bio,location,country").maybeSingle();
+          resultData = updated.data; operationError = updated.error || (!updated.data ? new Error("Your profile could not be found.") : null);
+          successMessage = "Your profile was updated after your approval.";
+        }
+      } else if (claimed.tool_name === "Terminator AI Post Edit") {
+        const postId = String(summary.post_id || "");
+        const content = typeof summary.content === "string" ? summary.content.trim() : "";
+        if (!/^[0-9a-f-]{36}$/i.test(postId) || !content || content.length > 10000) operationError = new Error("The post edit is invalid.");
+        else {
+          const updated = await admin.from("posts").update({ content }).eq("id", postId).eq("user_id", userId).select("id,content,created_at").maybeSingle();
+          resultData = updated.data; operationError = updated.error || (!updated.data ? new Error("That post is no longer available in your account.") : null);
+          successMessage = "Your post was edited after your approval.";
+        }
+      } else if (claimed.tool_name === "Terminator AI Post Delete") {
+        const postId = String(summary.post_id || "");
+        if (!/^[0-9a-f-]{36}$/i.test(postId)) operationError = new Error("The post deletion request is invalid.");
+        else {
+          const deleted = await admin.from("posts").delete().eq("id", postId).eq("user_id", userId).select("id").maybeSingle();
+          resultData = deleted.data; operationError = deleted.error || (!deleted.data ? new Error("That post is no longer available in your account.") : null);
+          successMessage = "Your post was deleted after your approval.";
+        }
       }
-      const { data: profile, error: profileError } = await admin.from("profiles")
-        .select("display_name").eq("id", userId).maybeSingle();
-      if (profileError) throw profileError;
-      const { data: post, error: postError } = await admin.from("posts")
-        .insert({ user_id: userId, author_name: profile?.display_name || "Terminator AI member", content, media_urls: [], is_ad: false, ad_status: "approved" })
-        .select("id,content,created_at").single();
-      if (postError) {
-        await admin.from("hellcamp_ai_tool_runs").update({ status: "failed", error_code: "post_insert_failed" }).eq("id", runId).eq("user_id", userId);
-        throw postError;
+
+      if (operationError) {
+        await admin.from("hellcamp_ai_tool_runs").update({ status: "failed", error_code: "approved_action_failed", completed_at: new Date().toISOString() }).eq("id", runId).eq("user_id", userId).eq("status", "processing");
+        return fail(operationError.message || "The approved action could not be completed.", 400, origin);
       }
       const { error: updateError } = await admin.from("hellcamp_ai_tool_runs")
-        .update({ status: "succeeded", result_summary: { post_id: post.id, approved_by_member: true }, completed_at: new Date().toISOString() })
+        .update({ status: "succeeded", result_summary: { approved_by_member: true, result: resultData }, completed_at: new Date().toISOString() })
         .eq("id", runId).eq("user_id", userId).eq("status", "processing");
       if (updateError) throw updateError;
-      return response({ approved: true, post, message: "Your post was published after your approval." }, 200, origin);
+      return response({ approved: true, result: resultData, message: successMessage }, 200, origin);
     }
 
     if (action === "knowledge_list" || action === "knowledge_search") {

@@ -622,7 +622,7 @@ Deno.serve(async (req: Request) => {
                 result = saved.error ? { ok: false, message: "Knowledge could not be saved." } : { ok: true, message: "Saved private knowledge: " + saved.data.title, knowledge_id: saved.data.id };
               }
             }
-          } else if (toolName === "save_draft") {          if (toolName === "save_draft") {
+          } else if (toolName === "save_draft") {
             if (!explicitDraftRequest) {
               result = { ok: false, blocked: true, message: "The member did not explicitly ask to save a draft. Show the draft in chat instead." };
             } else {

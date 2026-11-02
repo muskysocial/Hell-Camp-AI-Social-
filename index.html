@@ -379,7 +379,8 @@ body:has(.hc-home-feed) .mobile button.active,body:has(.hc-home-feed) .mobile bu
 .hc-purple-auth .hc-opt-in{color:#d8cce8}
 .hc-purple-auth .hc-activity-ticker{order:3;width:100%;max-width:440px;margin:0 auto}
 @media(max-width:560px){.auth-wrap.hc-purple-auth{margin:0 -8px;border-radius:0;min-height:calc(100dvh - 70px);padding:16px 10px 24px}.hc-purple-auth .auth-card{padding:21px 18px}.hc-purple-auth .auth-logo{font-size:25px}}
-</style></head>
+</style>  <link rel="stylesheet" href="./hell-camp-social-layout.css?v=20261102">
+</head>
 <body>
 <div id="hcBootSplash" role="status" aria-live="polite" aria-label="Loading Terminator AI">
  <div class="hc-splash-inner">
@@ -411,6 +412,31 @@ body:has(.hc-home-feed) .mobile button.active,body:has(.hc-home-feed) .mobile bu
 </script>
 <div class="app"><aside><div class="brand">TERMINATOR <span>AI</span></div><button class="nav active" data-page="Home">🏠　Home feed</button><button class="nav" data-page="Discover">✨　Discover</button><button class="nav" data-page="Profile">👤　My profile</button><button class="nav" data-page="Premium">💎　Premium</button><button class="nav" data-page="Groups">👥　Groups & Events</button><button class="nav" data-page="Jobs">💼　Jobs</button><button class="nav" data-page="Creator Studio">🎬　Creator Studio</button><button class="nav" data-page="Settings">⚙️　Settings & Privacy</button><button class="nav" data-page="Dashboard">▦　Dashboard</button><div class="foot"><button class="nav" data-page="ADMINhub">🛡️　ADMINhub</button><button class="nav" data-page="Help & Support">❔　Help & Support</button></div></aside><main class="main"><header class="top"><button class="hc-back-button" id="hcGoBack" aria-label="Go back" title="Go back">←</button><button class="menu-trigger" id="openMenu" aria-label="Open menu">⋯</button><div class="brand-mobile">Terminator<span>AI</span></div><input id="search" class="search" placeholder="⌕ Search"><button class="btn hc-notification-button" data-page="Notifications" aria-label="Notifications">♧<span id="hcNotificationDot" class="hc-notification-dot" hidden></span></button><button class="btn hc-top-message-button" data-page="Messages" aria-label="Messages" title="Messages">✉<span id="hcTopMessageDot" class="hc-notification-dot" hidden></span></button><button class="btn" data-page="Profile" aria-label="Profile">●</button></header><div id="view"></div></main></div><nav class="mobile hc-center-fab-nav" aria-label="Main navigation"><button type="button" data-page="Home" aria-label="Home"><b>⌂</b><span>Home</span></button><button type="button" data-page="Discover" aria-label="Explore"><b>⌕</b><span>Explore</span></button><button type="button" data-page="Create Post" aria-label="Create post" title="Create post"><b>＋</b></button><button type="button" data-page="Messages" aria-label="Inbox"><b>▢</b><span>Inbox</span></button><button type="button" data-page="Profile" aria-label="Profile"><b>♙</b><span>Profile</span></button></nav>
 <div class="menu-overlay" id="menuOverlay"><div class="menu-drawer"><div class="drawer-head"><div class="brand-mobile">Terminator<span>AI</span></div><button class="drawer-close" id="closeMenu">×</button></div><div class="drawer-profile"><span class="avatar">H</span><div><b>Terminator AI member</b><div class="muted tiny">@hellcamp</div></div></div><button class="drawer-item" data-page="Home"><span>⌂</span>Home feed</button><button class="drawer-item" data-page="Discover"><span>◎</span>Discover</button><button class="drawer-item" data-page="Trending"><span>🔥</span>Trending posts</button><button class="drawer-item" data-page="Creators"><span>🎨</span>Creators</button><button class="drawer-item" data-page="Profile"><span>♙</span>My Profile</button><button class="drawer-item" data-page="Groups"><span>♧</span>Groups & Events</button><button class="drawer-item" data-page="Saved"><span>♧</span>Saved</button><button class="drawer-item" data-page="Memories"><span>◷</span>Memories</button><button class="drawer-item" data-page="Settings"><span>⚙</span>Settings & Privacy</button><div class="drawer-section">Tools & Services</div><button class="drawer-item" data-page="HeadSwap"><span>✧</span>HeadSwap · 5 credits</button><button class="drawer-item" data-page="Educational Design Studio"><span>▧</span>Educational Design Studio</button><button class="drawer-item" data-page="Library"><span>▤</span>Community Library</button><button class="drawer-item" data-page="Account Listings"><span>▣</span>Account Listings</button><button class="drawer-item" data-page="Ask 4 Aza"><span>✦</span>Ask 4 Aza</button><button class="drawer-item" data-page="Jobs"><span>▦</span>Jobs</button><button class="drawer-item" data-page="Dating Directory"><span>♡</span>Dating Directory</button><button class="drawer-item" data-page="Premium"><span>♢</span>Pro Plans · Gold / Diamond / Platinum</button><button class="drawer-item" data-page="Notifications"><span>♧</span>Notifications<span id="hcNotificationDrawerDot" class="hc-notification-dot hc-notification-drawer-dot" hidden></span></button><button class="drawer-item" data-page="Dashboard"><span>▦</span>Dashboard</button><button class="drawer-item" data-page="ADMINhub"><span>⛨</span>ADMINhub</button><div class="drawer-section">More</div><button class="drawer-item" data-page="Creator Studio"><span>▣</span>Creator Studio</button><button class="drawer-item" data-page="Ad Center"><span>◈</span>Ad Center</button><button class="drawer-item" data-page="Help & Support"><span>?</span>Help & Support</button><div class="drawer-section">Account</div></div></div>
+<script id="hc-social-layout-bootstrap">
+(function(){
+ try{
+  var app=document.querySelector('.app'),main=app&&app.querySelector(':scope > .main'),top=main&&main.querySelector(':scope > .top');
+  if(!app||!main||!top||document.getElementById('hcDesktopTopTabs'))return;
+  app.parentNode.insertBefore(top,app);
+  top.classList.add('hc-global-top');
+  var tabs=document.createElement('nav');tabs.id='hcDesktopTopTabs';tabs.className='hc-desktop-top-tabs';tabs.setAttribute('aria-label','Main sections');
+  [['Home','⌂','Home'],['Groups','♧','Groups'],['Jobs','▣','Jobs'],['Creator Studio','✧','Creator Studio']].forEach(function(item){
+   var b=document.createElement('button');b.type='button';b.dataset.page=item[0];b.innerHTML='<span aria-hidden="true">'+item[1]+'</span> '+item[2];tabs.appendChild(b);
+  });
+  var search=top.querySelector('#search');if(search)search.insertAdjacentElement('afterend',tabs);else top.appendChild(tabs);
+  var rail=document.createElement('aside');rail.className='hc-desktop-right-rail';rail.setAttribute('aria-label','Hell Camp shortcuts');
+  rail.innerHTML='<section class="hc-right-rail-card"><h3 class="hc-right-rail-title">Explore Hell Camp</h3>'+
+   '<button class="hc-right-rail-link" data-page="Discover"><span class="hc-right-rail-icon">✦</span>Discover people and posts</button>'+
+   '<button class="hc-right-rail-link" data-page="Groups"><span class="hc-right-rail-icon">♧</span>Groups and events</button>'+
+   '<button class="hc-right-rail-link" data-page="Jobs"><span class="hc-right-rail-icon">▣</span>Jobs and opportunities</button>'+
+   '<button class="hc-right-rail-link" data-page="Creator Studio"><span class="hc-right-rail-icon">✧</span>Creator Studio</button>'+
+   '<button class="hc-right-rail-link" data-page="Notifications"><span class="hc-right-rail-icon">♢</span>Notifications</button></section>'+
+   '<section class="hc-right-rail-card"><h3 class="hc-right-rail-title">Your community</h3><p style="margin:0;color:#65676b;font-size:13px;line-height:1.5">Find conversations, share updates and discover what is happening across Hell Camp.</p></section>';
+  app.appendChild(rail);
+ }catch(e){console.warn('Hell Camp social layout enhancement skipped:',e)}
+})();
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script id="hc-notification-compat-shim">
 /* Compatibility guard: optional notification badges must never prevent app startup. */

@@ -1,0 +1,47 @@
+/* Hell Camp social layout — Facebook-style proportions, original purple identity. */
+:root{--hc-social-bg:#f0f2f5;--hc-social-card:#fff;--hc-social-text:#17151f;--hc-social-muted:#65676b;--hc-social-line:#e4e6eb;--hc-social-purple:#7438e8;--hc-social-hover:#f2edfc}
+body:has(.hc-home-feed){background:var(--hc-social-bg)!important;color:var(--hc-social-text)!important}
+.hc-global-top{position:sticky;top:0;z-index:10000;width:100%;height:56px;min-height:56px;display:flex;align-items:center;gap:12px;padding:0 18px;margin:0;background:rgba(255,255,255,.97)!important;border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(0,0,0,.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.hc-global-top .hc-back-button,.hc-global-top .menu-trigger,.hc-global-top .brand-mobile{display:none!important}
+.hc-global-top .search{flex:0 1 240px;width:240px;max-width:240px;height:40px;margin:0;padding:0 16px;border:0!important;border-radius:999px!important;background:#f0f2f5!important;color:#17151f!important;font-size:15px}
+.hc-global-top .hc-desktop-top-tabs{height:56px;display:flex;align-items:stretch;justify-content:center;gap:4px;flex:1;min-width:0}
+.hc-global-top .hc-desktop-top-tabs button{position:relative;min-width:90px;max-width:130px;flex:1;height:56px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#65676b;font-size:14px;font-weight:700;white-space:nowrap}
+.hc-global-top .hc-desktop-top-tabs button:hover{background:#f6f3fb;color:#4e278e}
+.hc-global-top .hc-desktop-top-tabs button.active{color:var(--hc-social-purple)}
+.hc-global-top .hc-desktop-top-tabs button.active:after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--hc-social-purple)}
+.hc-global-top>.btn{flex:0 0 40px;width:40px;height:40px;min-height:40px;padding:0;display:grid;place-items:center;border:0!important;border-radius:50%!important;background:#e4e6eb!important;color:#292632!important;font-size:18px}
+.hc-global-top>.btn:hover{background:#d9dbe0!important}
+.app{width:100%;max-width:1680px;margin:0 auto;display:grid;grid-template-columns:minmax(230px,300px) minmax(480px,680px) minmax(230px,300px);justify-content:center;align-items:start;gap:20px;padding:0 16px}
+.app>aside:not(.hc-desktop-right-rail){position:sticky;top:56px;height:calc(100dvh - 56px);overflow-y:auto;padding:18px 12px 24px;background:transparent!important;border:0!important}
+.app>aside:not(.hc-desktop-right-rail) .brand{font-size:21px;padding:8px 10px 18px;color:#20172f}
+.app>aside:not(.hc-desktop-right-rail) .nav{min-height:44px;padding:10px 12px;border-radius:8px;color:#36313e;font-size:14px;font-weight:650}
+.app>aside:not(.hc-desktop-right-rail) .nav.active,.app>aside:not(.hc-desktop-right-rail) .nav:hover{background:#eee7fb;color:#5e2bb8}
+.app>.main{width:100%;max-width:680px;min-width:0;margin:0 auto;padding:16px 0 50px;background:transparent}
+.hc-home-feed{max-width:680px!important;margin:0 auto!important}
+body:has(.hc-home-feed) .hc-home-feed>.card,body:has(.hc-home-feed) .hc-home-feed article.card,body:has(.hc-home-feed) .hc-home-feed .composer{border-radius:8px!important;background:#fff!important;border:1px solid #e4e6eb!important;box-shadow:0 1px 2px rgba(0,0,0,.06)!important}
+body:has(.hc-home-feed) .hc-home-feed .composer{padding:12px!important}
+body:has(.hc-home-feed) .hc-home-feed .actions{gap:0;padding-top:8px;border-top:1px solid #e4e6eb}
+body:has(.hc-home-feed) .hc-home-feed .actions button{height:36px;min-height:36px;border-radius:6px;color:#65676b;font-size:14px;font-weight:650}
+body:has(.hc-home-feed) .hc-home-feed .actions button:hover{background:#f0f2f5}
+body:has(.hc-home-feed) .hc-home-feed .avatar{width:40px;height:40px;min-width:40px}
+body:has(.hc-home-feed) .hc-home-feed .hc-home-story{flex-basis:112px;min-height:200px;border-radius:8px}
+.hc-desktop-right-rail{position:sticky;top:72px;display:none;min-width:0;max-height:calc(100dvh - 84px);overflow-y:auto;padding:18px 4px 24px;background:transparent!important;border:0!important}
+.hc-right-rail-card{margin:0 0 14px;padding:14px;border:1px solid #e4e6eb;border-radius:8px;background:#fff;color:#24202b}
+.hc-right-rail-title{margin:0 0 10px;color:#65676b;font-size:13px;font-weight:750}
+.hc-right-rail-link{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:8px;border:0;border-radius:7px;background:transparent;color:#302a38;text-align:left;font-size:14px;font-weight:650}
+.hc-right-rail-link:hover{background:#f0f2f5}
+.hc-right-rail-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:8px;background:#eee7fb;color:#7139c6;font-size:17px}
+@media(min-width:1500px){.app{grid-template-columns:minmax(280px,320px) minmax(500px,680px) minmax(280px,320px);gap:24px}}
+@media(min-width:1200px){body:has(.hc-home-feed) .hc-desktop-right-rail{display:block}}
+@media(min-width:900px) and (max-width:1199px){.app{grid-template-columns:minmax(200px,245px) minmax(0,680px);gap:16px}.app>.main{max-width:680px}}
+@media(max-width:899px){
+ .hc-global-top{height:56px;padding:0 10px;gap:8px}
+ .hc-global-top .hc-desktop-top-tabs{display:none}
+ .hc-global-top .search{flex:1 1 auto;width:auto;max-width:none;min-width:80px}
+ .app{display:grid;grid-template-columns:minmax(0,1fr);gap:0;padding:0 12px}
+ .app>aside:not(.hc-desktop-right-rail){display:none!important}
+ .hc-desktop-right-rail{display:none!important}
+ .app>.main{max-width:680px;padding:12px 0 130px}
+ .hc-global-top>.btn{flex-basis:38px;width:38px;height:38px;min-height:38px}
+}
+@media(max-width:380px){.hc-global-top{padding:0 7px;gap:5px}.hc-global-top>.btn{flex-basis:34px;width:34px;height:34px;min-height:34px}.app{padding:0 9px}}

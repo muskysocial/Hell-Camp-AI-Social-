@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Hell Camp",
-  "short_name": "HellCamp",
-  "description": "Hell Camp social community, creators, AI tools and marketplace",
+  "name": "Terminator AI",
+  "short_name": "Terminator AI",
+  "description": "Terminator AI social community, creators, AI tools and marketplace",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

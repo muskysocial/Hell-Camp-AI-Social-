@@ -31,8 +31,8 @@ document.body.appendChild(modal);
 byId("ta-close").onclick=close;byId("ta-new").onclick=newChat;byId("ta-memory").onclick=memoryPanel;byId("ta-drafts").onclick=draftPanel;byId("ta-tasks").onclick=taskPanel;byId("ta-form").onsubmit=function(e){e.preventDefault();send()};
 modal.querySelectorAll("[data-prompt]").forEach(function(b){b.onclick=function(){var i=byId("ta-input");if(i){i.value=b.dataset.prompt;i.focus()}}});
 var menu=document.createElement("button");menu.type="button";menu.id="terminatorAgentMenu";menu.className="drawer-item ta-menu-entry";menu.innerHTML='<span class="ta-menu-icon">✦</span><span>Terminator AI Agent</span>';menu.onclick=function(){var closeMenu=byId("closeMenu");if(closeMenu)closeMenu.click();open()};
-var menuObserver=new MutationObserver(function(){var drawer=document.querySelector(".menu-drawer");if(drawer&&!byId("terminatorAgentMenu")){var section=Array.from(drawer.querySelectorAll(".drawer-section")).find(function(x){return /tools & services/i.test(x.textContent||"")});if(section)drawer.insertBefore(menu,section);else drawer.appendChild(menu)}});
-menuObserver.observe(document.documentElement,{childList:true,subtree:true});
+function injectMenu(){var drawer=document.querySelector(".menu-drawer");if(drawer&&!byId("terminatorAgentMenu")){var section=Array.from(drawer.querySelectorAll(".drawer-section")).find(function(x){return /tools & services/i.test(x.textContent||"")});if(section)drawer.insertBefore(menu,section);else drawer.appendChild(menu)}}
+var menuObserver=new MutationObserver(injectMenu);injectMenu();menuObserver.observe(document.documentElement,{childList:true,subtree:true});
 window.addEventListener("keydown",function(e){if(e.key==="Escape"&&state.open)close()});
 window.TerminatorAI={open:open,close:close,newChat:newChat,send:send,showMemory:memoryPanel,showTasks:taskPanel,showDrafts:draftPanel};
 }

@@ -575,7 +575,7 @@ Deno.serve(async (req: Request) => {
       const explicitDraftRequest = /\b(save|store|keep|put)\b.{0,70}\b(draft|draft library|my drafts)\b/i.test(message) || /\b(save|store|keep)\s+(this|it|that)\b/i.test(message);
       const explicitWorkflowRequest = /\b(create|save|build|design|make|automate)\b.{0,70}\b(workflow|automation|task plan|automated workflow)\b/i.test(message) || /\bautomate this\b/i.test(message);
       const explicitKnowledgeRequest = /\b(save|add|store|put)\b.{0,60}\b(knowledge|knowledge base|library|reference)\b/i.test(message) || /\b(remember|keep)\b.{0,60}\b(this information|this as a reference)\b/i.test(message);
-      const explicitPostRequest = /\\b(publish|post|share)\\b/i.test(message) && /\\b(this|it|that|following|post)\\b/i.test(message);
+      const explicitPostRequest = /\b(publish|post|share)\b/i.test(message) && /\b(this|it|that|following|post)\b/i.test(message);
 
       const toolSpecs = [
         { type: "function", function: { name: "save_draft", description: "Save a finished text draft to the member's private Terminator AI Draft Library. Only call when the member explicitly asks to save/store a draft.", parameters: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, draft_type: { type: "string", enum: ["post","bio","message","job","listing","event","learning","general"] } }, required: ["title","content","draft_type"], additionalProperties: false } } },

@@ -155,7 +155,7 @@ Deno.serve(async (req: Request) => {
           const { data: profile, error: profileError } = await admin.from("profiles").select("display_name").eq("id", userId).maybeSingle();
           if (profileError) operationError = profileError;
           else {
-            const inserted = await admin.from("posts").insert({ user_id: userId, author_name: profile?.display_name || "Termin ator AI member", content, media_urls: [], is_ad: false, ad_status: "approved" }).select("id,content,created_at").single();
+            const inserted = await admin.from("posts").insert({ user_id: userId, author_name: profile?.display_name || "Terminator AI member", content, media_urls: [], is_ad: false, ad_status: "approved" }).select("id,content,created_at").single();
             resultData = inserted.data; operationError = inserted.error; successMessage = "Your post was published after your approval.";
           }
         }

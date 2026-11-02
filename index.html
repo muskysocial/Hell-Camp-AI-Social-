@@ -2906,7 +2906,19 @@ body { touch-action: pan-y; }
 })();
 </script>
 
-</body>
+<style id="hc-complete-shell-last-pass">
+.menu-drawer{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;align-content:start!important;gap:7px!important;padding:14px!important;overflow-y:auto!important}
+.menu-drawer>.drawer-head,.menu-drawer>.drawer-profile,.menu-drawer>.drawer-section{grid-column:1/-1!important}
+@media(max-width:899px){
+ html body nav.mobile.hc-center-fab-nav{display:flex!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;max-width:none!important;height:64px!important;min-height:64px!important;margin:0!important;padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important;transform:none!important;flex-direction:row!important;justify-content:space-around!important;align-items:center!important;gap:2px!important;border:0!important;border-top:1px solid #d9dce3!important;border-radius:0!important;background:rgba(255,255,255,.98)!important;box-shadow:0 -2px 10px #1c24330d!important;backdrop-filter:blur(16px)!important;overflow:visible!important}
+ html body nav.mobile.hc-center-fab-nav button{display:flex!important;flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;height:54px!important;min-height:54px!important;margin:0!important;padding:3px 1px!important;transform:none!important;border:0!important;border-radius:7px!important;background:transparent!important;box-shadow:none!important;color:#65676b!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;font-family:inherit!important;font-size:10px!important;font-weight:650!important;line-height:1.1!important}
+ html body nav.mobile.hc-center-fab-nav button b{display:block!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;color:inherit!important;font-size:22px!important;line-height:1.1!important}
+ html body nav.mobile.hc-center-fab-nav button span{display:block!important;color:inherit!important;font-size:10px!important;line-height:1.1!important}
+ html body nav.mobile.hc-center-fab-nav button.active,html body nav.mobile.hc-center-fab-nav button.active b{color:#7438e8!important}
+ html body nav.mobile.hc-center-fab-nav button:nth-child(3){flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:none!important;height:54px!important;min-height:54px!important;margin:0!important;padding:3px 1px!important;border-radius:7px!important;background:transparent!important;color:#7438e8!important;box-shadow:none!important}
+ html body nav.mobile.hc-center-fab-nav button:nth-child(3) b{color:#7438e8!important}
+}
+</style></body>
 </html>
 
 

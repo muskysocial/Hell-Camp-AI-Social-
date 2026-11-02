@@ -752,7 +752,7 @@ Deno.serve(async (req: Request) => {
       const cleanFinal = cleanPlainText(finalAnswer).slice(0, 20000);
       const now = new Date().toISOString();
       const savedMessages = await admin.from("hellcamp_ai_messages").insert([
-        { conversation_id: conversationId, user_id: userId, role: "user", content: message, model: usedModel },
+        { conversation_id: conversationId, user_id: userId, role: "user", content: message, model: usedModel, metadata: {} },
         { conversation_id: conversationId, user_id: userId, role: "assistant", content: cleanFinal, model: usedModel, metadata: { agent: "terminator_ai", tools_used: toolActions.map((x: any) => x.tool) } }
       ]);
       if (savedMessages.error) throw new Error("Terminator AI could not safely save conversation history: " + savedMessages.error.message);

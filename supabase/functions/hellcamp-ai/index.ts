@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
       return response({ deleted: true }, 200, origin);
     }
 
-    if (action === "approve_agent_post") {
+    if (action === "pending_agent_post_approvals") {\n      const { data, error } = await admin.from("hellcamp_ai_tool_runs")\n        .select("id,input_summary,created_at")\n        .eq("user_id", userId).eq("tool_name", "Terminator AI Post Approval")\n        .eq("status", "pending").order("created_at", { ascending: false }).limit(20);\n      if (error) throw error;\n      const approvals = (data || []).map((run: any) => ({\n        id: run.id, created_at: run.created_at,\n        content: typeof run.input_summary?.content === "string" ? run.input_summary.content : ""\n      })).filter((run: any) => run.content.trim());\n      return response({ approvals }, 200, origin);\n    }\n\n    if (action === "approve_agent_post") {
       const runId = String(body.run_id || "");
       if (!/^[0-9a-f-]{36}$/i.test(runId)) return fail("A valid approval ID is required.", 400, origin);
       const { data: run, error: runError } = await admin.from("hellcamp_ai_tool_runs")

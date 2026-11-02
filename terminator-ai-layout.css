@@ -103,3 +103,13 @@ nav.mobile.hc-center-fab-nav button.active,nav.mobile.hc-center-fab-nav button.a
 @media(max-width:560px){.hc-global-top{padding:0 7px!important;gap:5px!important}.hc-logo-home{width:36px!important;height:36px!important;flex-basis:36px!important}.hc-global-top .search{font-size:14px!important;padding:0 12px!important}.hc-global-top .hc-header-actions{gap:4px}.hc-global-top .hc-header-actions>.btn,.hc-global-top .hc-header-actions>#openMenu{width:34px!important;height:34px!important;min-height:34px!important;flex-basis:34px!important;font-size:17px!important}.app{padding:0 9px!important}.app>.main{padding-top:8px!important}#view .card{padding:13px!important}#view .actions button{font-size:12px!important}#view .create-text{min-height:165px!important;font-size:16px!important}#view .create-top h1{font-size:19px!important}#view .media-tools button{flex-basis:100%}}
 @media(max-width:370px){.hc-global-top .hc-top-message-button{display:none!important}.hc-global-top{gap:4px!important}.menu-drawer>div:not(.drawer-head):not(.drawer-profile){grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Authentication and loading screens share the new Terminator AI identity */
+.auth-wrap.hc-purple-auth{background:linear-gradient(145deg,#e9f4f5,#f7fafb)!important;color:#182126!important}
+.hc-purple-auth .auth-card{background:#fff!important;border:1px solid #dfe7e9!important;border-radius:16px!important;box-shadow:0 16px 44px #0b4e5614!important;color:#172126!important}
+.hc-purple-auth .auth-logo,.hc-purple-auth .brand,.hc-purple-auth h1{color:var(--ta-accent-dark)!important}
+.hc-purple-auth .auth-card input,.hc-purple-auth .auth-card select{background:#f3f6f7!important;color:#182126!important;border:1px solid #dce4e7!important;border-radius:9px!important}
+.hc-purple-auth .btn.primary,.hc-purple-auth button.primary{background:var(--ta-accent)!important;color:#fff!important}
+#hcBootSplash{background:#f0f7f8!important;color:#17373b!important}
+#hcBootSplash .hc-splash-logo{filter:drop-shadow(0 8px 20px #087f8c25)}
+@media(max-width:899px){.auth-wrap.hc-purple-auth{min-height:calc(100dvh - 64px)!important}}
